@@ -65,7 +65,7 @@ export default function PricingPage() {
               </li>
             ))}
           </ul>
-          <Link href="/check" className={cn(link, "mt-8 self-start bg-primary text-primary-foreground hover:bg-primary/90")}>
+          <Link href="/plans#plus" className={cn(link, "mt-8 self-start bg-primary text-primary-foreground hover:bg-primary/90")}>
             Try Plus free
           </Link>
         </section>
@@ -75,7 +75,7 @@ export default function PricingPage() {
         <h2 id="terms" className="text-2xl font-bold">
           How the trial works
         </h2>
-        <p>Plus is free until your second payday from today. Cancel any time on the Check a buy page, and nothing is charged.</p>
+        <p>Plus is free until your second payday from today. Cancel any time in the app, and nothing is charged.</p>
         <p>Why a year: one cut limit or one average overdraft fee ($26.77, Bankrate 2025) costs about as much as a year of Plus.</p>
         <p className="text-sm text-muted-foreground">This is a hackathon demo: checkout runs in demo mode and no real payment is taken.</p>
       </section>

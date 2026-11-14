@@ -27,7 +27,7 @@ const QA: [string, string][] = [
   ],
   [
     "Where is my data stored?",
-    "Only in this browser. Nothing is saved on our server. Clear it any time with Start over on My plans.",
+    "Only in this browser. Nothing is saved on our server. Clear it any time with Start over on Guard.",
   ],
   [
     "How does reading a screenshot work?",

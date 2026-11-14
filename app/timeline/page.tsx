@@ -4,6 +4,7 @@ import { CalendarPlus, Lock } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { STATUS_TITLE } from "@/components/copy";
+import { downloadIcs } from "@/components/ics-download";
 import { LowestLine } from "@/components/money";
 import { cellsFromTimeline, DayStory, ForecastGrid, ForecastLegend } from "@/components/forecast-grid";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -11,20 +12,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAppState } from "@/hooks/use-app-state";
 import { useToday } from "@/hooks/use-today";
 import { formatShort, formatUSD } from "@/lib/dates";
-import { buildIcs } from "@/lib/ics";
 import { buildTimeline, debitRisks } from "@/lib/plan";
-import type { AppState, ISODate } from "@/lib/types";
+import type { ISODate } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
-function downloadIcs(state: AppState, today: ISODate) {
-  const blob = new Blob([buildIcs(state, today, window.location.origin)], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "fourcast-payments.ics";
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 export default function TimelinePage() {
   const [state] = useAppState();

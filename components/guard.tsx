@@ -1,20 +1,17 @@
 "use client";
 
 // Guard (LIMIT_GUARD.md F1): the payments that won't make it, and what to do the night before.
-import { ArrowRightLeft, CalendarCheck, Hand, ShieldCheck, TriangleAlert } from "lucide-react";
+import { ArrowRightLeft, BellRing, CalendarCheck, Hand, ShieldCheck, TriangleAlert } from "lucide-react";
 import { addDays, formatShort, formatUSD } from "@/lib/dates";
 import type { ISODate } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { LENDER_MARK } from "./copy";
+import { moveAmount } from "@/lib/plan";
 import type { DebitRisk } from "@/lib/types";
-
-/** "$12.50 short" → move $25: the gap plus $10, rounded up to $5. */
-export function moveAmount(shortBy: number): number {
-  return Math.ceil((shortBy + 1_000) / 500) * 500;
-}
+import { LENDER_MARK } from "./copy";
 
 export function guardTitle(risks: DebitRisk[]): string {
   if (risks.length === 0) return "Your limits are safe.";
+  if (risks.every((r) => r.level === "tight")) return risks.length === 1 ? "1 payment is tight." : `${risks.length} payments are tight.`;
   return risks.length === 1 ? "1 payment at risk." : `${risks.length} payments at risk.`;
 }
 
@@ -39,7 +36,9 @@ export function GuardSummary({ risks }: { risks: DebitRisk[] }) {
             ? "Every payment in the next 6 weeks has the money there before it's taken."
             : fails
               ? "Autopay runs in the morning. Fix these the night before so a late payment doesn't cost you your limit."
-              : "These clear, but with almost nothing left that morning."}
+              : risks.length === 1
+                ? "It clears, but leaves almost nothing that morning."
+                : "They clear, but leave almost nothing that morning."}
         </p>
       </div>
     </div>
@@ -52,7 +51,17 @@ function reason(r: DebitRisk): string {
   return r.paydayLater ? `${short} before your paycheck lands. Autopay usually runs first.` : `${short} that morning.`;
 }
 
-export function RiskCard({ risk, today }: { risk: DebitRisk; today: ISODate }) {
+export function RiskCard({
+  risk,
+  today,
+  plus = false,
+  onRemind,
+}: {
+  risk: DebitRisk;
+  today: ISODate;
+  plus?: boolean;
+  onRemind?: () => void;
+}) {
   const fails = risk.level === "fails";
   const night = addDays(risk.date, -1);
   return (
@@ -91,7 +100,7 @@ export function RiskCard({ risk, today }: { risk: DebitRisk; today: ISODate }) {
             <ArrowRightLeft className="mt-0.5 size-4 shrink-0" aria-hidden />
             <span>
               Move <span className="tabular font-semibold">{formatUSD(moveAmount(risk.shortBy))}</span> into checking{" "}
-              {night <= today ? "now" : "tonight"}.
+              {night === today ? "tonight" : night < today ? "now" : `on the evening of ${formatShort(night)}`}.
             </span>
           </li>
         )}
@@ -110,13 +119,25 @@ export function RiskCard({ risk, today }: { risk: DebitRisk; today: ISODate }) {
       </ul>
 
       {risk.date > today && (
-        <a
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+          {onRemind && (
+            <button
+              type="button"
+              onClick={onRemind}
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <BellRing className="size-4" aria-hidden />
+              {plus ? "Add the 8 pm reminders to my calendar" : `Remind me at 8 pm on ${formatShort(night)}`}
+            </button>
+          )}
+          <a
           href={`/plans?due=${risk.date}`}
           className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <CalendarCheck className="size-4" aria-hidden />
           Check my balance for {formatShort(risk.date)}
-        </a>
+          </a>
+        </div>
       )}
     </li>
   );

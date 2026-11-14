@@ -7,8 +7,10 @@ import { GuardSummary, RiskCard } from "@/components/guard";
 import { LowestLine } from "@/components/money";
 import { CheckIn } from "@/components/check-in";
 import { FREQUENCY_LABEL } from "@/components/copy";
+import { downloadIcs } from "@/components/ics-download";
 import { LimitsForm } from "@/components/limits-form";
 import { MoneyForm } from "@/components/money-form";
+import { PlusOffer } from "@/components/plus-offer";
 import { PlanCard } from "@/components/plan-card";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -67,11 +69,16 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
   const due = useQueryParam("due");
   const [checkInOpen, setCheckInOpen] = useState(true);
   const [editMoney, setEditMoney] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const timeline = state.money ? buildTimeline(state, today) : null;
   const returns: Record<string, ISODate> = Object.fromEntries(
     state.plans.filter((p) => p.status === "returned" && p.returnedOn).map((p) => [p.id, p.returnedOn as ISODate]),
   );
-  const risks = state.money ? debitRisks(state, today) : [];
+  const risks = state.money ? debitRisks(state, today).filter((r) => !r.disputed) : [];
+  const remind = () => {
+    if (state.plus) downloadIcs(state, today);
+    else document.getElementById("plus")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
   const setReturned = (id: string, on: ISODate | null) =>
     save({
       ...state,
@@ -99,6 +106,12 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
           </Button>
         </div>
       </div>
+
+      {notice && (
+        <p className="rounded-md bg-foreground px-4 py-3 font-semibold text-background" role="status">
+          {notice}
+        </p>
+      )}
 
       {showCheckIn && (
         <CheckIn
@@ -145,10 +158,11 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
           {risks.length > 0 && (
             <ul className="grid gap-3 md:grid-cols-2">
               {risks.map((r) => (
-                <RiskCard key={`${r.planId}-${r.date}`} risk={r} today={today} />
+                <RiskCard key={`${r.planId}-${r.date}`} risk={r} today={today} plus={Boolean(state.plus)} onRemind={remind} />
               ))}
             </ul>
           )}
+          {!state.plus && <PlusOffer state={state} timeline={timeline} today={today} save={save} />}
           <Link
             href="/timeline"
             className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-card px-4 py-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -189,7 +203,22 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
               No plans yet. Add your first Klarna, Afterpay or Affirm plan below.
             </p>
           )}
-          <AddPlan today={today} sample={state.sample} onAdd={(plan) => save({ ...state, plans: [...state.plans, plan] })} />
+          <AddPlan
+            today={today}
+            sample={state.sample}
+            onAdd={(plan) => {
+              const next = { ...state, plans: [...state.plans, plan] };
+              save(next);
+              if (next.money) {
+                const n = debitRisks(next, today).filter((r) => !r.disputed).length;
+                setNotice(
+                  `${plan.lender} plan added. Guard updated: ${n === 0 ? "your limits are safe." : n === 1 ? "1 payment at risk." : `${n} payments at risk.`}`,
+                );
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                setTimeout(() => setNotice(null), 8_000);
+              }
+            }}
+          />
         </div>
 
         <section aria-labelledby="money" className="h-fit space-y-3 rounded-md border bg-card p-4">

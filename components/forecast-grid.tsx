@@ -223,42 +223,53 @@ export function ForecastLegend({ mode = "balance" }: { mode?: "balance" | "fit" 
 }
 
 export function DayStory({ day, today }: { day: TimelineDay; today: ISODate }) {
-  const rows = [
-    ...day.events.map((e) => ({
-      text:
-        e.kind === "paycheck"
-          ? "Paycheck"
-          : e.kind === "rent"
-            ? "Rent"
-            : e.kind === "debit"
-              ? `${e.lender}${e.merchant ? `, ${e.merchant}` : ""}`
-              : "New buy",
-      amount: e.kind === "paycheck" ? e.amount : -e.amount,
-    })),
-    ...(day.spend > 0 ? [{ text: "Everyday spending", amount: -day.spend }] : []),
-  ];
+  // Morning first (payments go out before the paycheck lands), then the paycheck and the day's spending.
+  const label = (e: TimelineDay["events"][number]) =>
+    e.kind === "paycheck"
+      ? "Paycheck"
+      : e.kind === "rent"
+        ? "Rent"
+        : e.kind === "debit"
+          ? `${e.lender}${e.merchant ? `, ${e.merchant}` : ""}`
+          : "New buy";
+  const out = day.events.filter((e) => e.kind !== "paycheck").map((e) => ({ text: label(e), amount: -e.amount }));
+  const paid = day.events.filter((e) => e.kind === "paycheck").map((e) => ({ text: label(e), amount: e.amount }));
+  const hasMorning = out.length > 0;
+  const money = (v: number, strong = false) => (
+    <span className={cn("tabular", strong && "font-semibold", v < 0 && "text-short", v > 0 && !strong && "text-ok")}>
+      {v < 0 ? "−" : v > 0 && !strong ? "+" : ""}
+      {formatUSD(Math.abs(v))}
+    </span>
+  );
   return (
     <div className="space-y-2">
       <p className="font-semibold">{day.date === today ? "Today" : formatShort(day.date)}</p>
       <ul className="space-y-1 text-sm">
-        {rows.map((r, i) => (
-          <li key={i} className="flex justify-between gap-4">
+        {out.map((r, i) => (
+          <li key={`o${i}`} className="flex justify-between gap-4">
             <span className="text-muted-foreground">{r.text}</span>
-            <span className={cn("tabular", r.amount > 0 && "text-ok")}>
-              {r.amount > 0 ? "+" : "−"}
-              {formatUSD(Math.abs(r.amount))}
-            </span>
+            {money(r.amount)}
           </li>
         ))}
-        {day.events.some((e) => e.kind === "debit" || e.kind === "rent") && (
+        {hasMorning && (
           <li className="flex justify-between gap-4 border-t pt-1">
-            <span className="text-muted-foreground">
-              {day.events.some((e) => e.kind === "paycheck") ? "Before your paycheck lands" : "After this morning's payments"}
-            </span>
+            <span>{paid.length > 0 ? "Before your paycheck lands" : "After this morning's payments"}</span>
             <span className={cn("tabular font-medium", day.morning < 0 && "text-short")}>
               {day.morning < 0 ? "−" : ""}
               {formatUSD(Math.abs(day.morning))}
             </span>
+          </li>
+        )}
+        {paid.map((r, i) => (
+          <li key={`p${i}`} className="flex justify-between gap-4">
+            <span className="text-muted-foreground">{r.text}</span>
+            {money(r.amount)}
+          </li>
+        ))}
+        {day.spend > 0 && (
+          <li className="flex justify-between gap-4">
+            <span className="text-muted-foreground">Everyday spending</span>
+            {money(-day.spend)}
           </li>
         )}
         <li className="flex justify-between gap-4 border-t pt-1 font-semibold">
