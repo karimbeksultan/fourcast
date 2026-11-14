@@ -237,6 +237,11 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
   };
 }
 
+/** What to move into checking the night before a failing debit: the shortfall plus $10, rounded up to $5 ($12.50 → $25). */
+export function moveAmount(shortBy: Cents): Cents {
+  return Math.ceil((shortBy + 1_000) / 500) * 500;
+}
+
 /**
  * Guard: plan payments in the next 42 days that may not go through. Each debit is checked against the
  * morning (yesterday's end-of-day balance minus this day's rent and earlier debits, before the paycheck).

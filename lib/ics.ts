@@ -1,8 +1,10 @@
-// Calendar file: one all-day event per plan debit with a reminder the evening
-// before and a link to the one-number check-in (/?due=YYYY-MM-DD), plus payday events.
-import { addDays, formatUSD } from "./dates";
-import { paydaysBetween, planDebits, WINDOW_DAYS } from "./plan";
-import type { AppState, ISODate } from "./types";
+// Calendar file: one all-day event per plan debit with a reminder the evening before
+// and a link to the one-number check-in (/?due=YYYY-MM-DD), plus payday events.
+// Lenders debit in the morning, so the reminder speaks about tomorrow morning and, for a
+// payment Guard flags, says what to do tonight (numbers as of the day the file was made).
+import { addDays, formatShort, formatUSD } from "./dates";
+import { debitRisks, moveAmount, paydaysBetween, planDebits, WINDOW_DAYS } from "./plan";
+import type { AppState, DebitRisk, ISODate } from "./types";
 
 const compact = (date: ISODate) => date.replaceAll("-", "");
 
@@ -68,18 +70,36 @@ export function buildIcs(state: AppState, today: ISODate, baseUrl: string): stri
     lines.push("END:VEVENT");
   };
 
+  const risks = new Map<string, DebitRisk>(debitRisks(state, today).map((r) => [`${r.planId}-${r.date}`, r]));
+  const paydays = new Set(paydaysBetween(state.money, today, addDays(today, WINDOW_DAYS - 1)));
+  const asOf = `On your numbers from ${formatShort(today)}`;
+
   for (const plan of state.plans) {
     for (const date of planDebits(plan, today)) {
       const amount = formatUSD(plan.installment);
       const where = plan.merchant ? ` (${plan.merchant})` : "";
       const url = `${base}/?due=${date}`;
+      const risk = risks.get(`${plan.id}-${date}`);
+      const beforePay = paydays.has(date) ? ", before your paycheck lands" : "";
+      const tomorrow = `Tomorrow morning ${plan.lender} takes ${amount}${beforePay}.`;
+
+      let alarm = `${tomorrow} What's in checking? ${url}`;
+      let summary = `${plan.lender} takes ${amount}${where}`;
+      if (risk?.level === "fails") {
+        const handPay = risk.paydayLater ? `, or pay it by hand in the ${plan.lender} app after your paycheck lands` : "";
+        alarm = `${tomorrow} ${asOf} you'd be ${formatUSD(risk.shortBy)} short. Move ${formatUSD(moveAmount(risk.shortBy))} into checking tonight${handPay}. Check in: ${url}`;
+        summary += `: ${formatUSD(risk.shortBy)} short`;
+      } else if (risk?.level === "tight") {
+        alarm = `${tomorrow} ${asOf} it clears with ${formatUSD(risk.morning)} left. Hold off on card spending until it does. Check in: ${url}`;
+      }
+
       event(
         `${plan.id}-${date}`,
         date,
-        `${plan.lender} takes ${amount}${where}`,
-        `${plan.lender} takes ${amount} today. The night before, check in with what's in checking: ${url}`,
+        summary,
+        `${plan.lender} takes ${amount} this morning${beforePay}. The night before, check in with what's in checking: ${url}`,
         url,
-        `Tomorrow ${plan.lender} takes ${amount}. What's in checking? ${url}`,
+        alarm,
       );
     }
   }

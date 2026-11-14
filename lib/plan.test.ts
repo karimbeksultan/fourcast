@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { addDays, toISODate } from "./dates";
 import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
-import { buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, paydaySync, splitPayments, spendOn } from "./plan";
+import { buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaySync, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
 import { AppStateSchema, DisputeRequestSchema } from "./schema";
 import type { AppState, Money } from "./types";
@@ -240,6 +240,13 @@ describe("calendar file", () => {
     const ics = buildIcs(withKlarna(), TODAY, "https://fourcast.example");
     expect(ics.startsWith("BEGIN:VCALENDAR\r\n")).toBe(true);
     expect(ics.match(/BEGIN:VALARM/g)).toHaveLength(7);
+    // The risky Zip payment on payday morning: the reminder says what to do tonight.
+    const unfolded = ics.replace(/\r\n /g, "");
+    expect(unfolded).toContain("SUMMARY:Zip takes $40.00 (Walmart): $12.50 short");
+    expect(unfolded).toContain(
+      "Tomorrow morning Zip takes $40.00\\, before your paycheck lands. On your numbers from Sun\\, Nov 15 you'd be $12.50 short. Move $25.00 into checking tonight\\, or pay it by hand in the Zip app after your paycheck lands.",
+    );
+    expect(moveAmount(1_250)).toBe(2_500);
     expect(ics).toContain("https://fourcast.example/?due=2026-12-03");
     expect(ics.split("\r\n").every((line) => line.length <= 75)).toBe(true);
   });
