@@ -22,6 +22,8 @@ export const PlanSchema = z.object({
   paymentsLeft: z.number().int().min(1).max(12),
   nextDue: isoDate,
   intervalDays: z.number().int().min(1).max(31),
+  status: z.enum(["active", "returned"]).optional(),
+  returnedOn: isoDate.optional(),
 });
 
 export const PlusSchema = z.object({
@@ -36,6 +38,8 @@ export const AppStateSchema = z.object({
   plans: z.array(PlanSchema),
   plus: PlusSchema.nullable(),
   sample: z.boolean(),
+  // New fields are optional, so data saved before v2 still loads (schema version stays 1).
+  limits: z.partialRecord(z.enum(LENDERS), cents).optional(),
 });
 
 /** What the AI must return when it reads a confirmation (dollars, not cents). */

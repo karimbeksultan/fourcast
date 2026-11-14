@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { addDays, toISODate } from "./dates";
 import { buildIcs } from "./ics";
-import { buildTimeline, checkPurchase, paydaySync, splitPayments, spendOn } from "./plan";
+import { buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, paydaySync, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
 import { AppStateSchema } from "./schema";
 import type { AppState, Money } from "./types";
@@ -33,31 +33,55 @@ const state = (m: Money, plans: AppState["plans"] = []): AppState => ({
 });
 
 describe("demo story (opened on Nov 15, 2026)", () => {
-  it("two sample plans: ok", () => {
-    const t = buildTimeline(getSampleState(TODAY), TODAY);
+  it("three sample plans: ok, and Guard sees no risky payment", () => {
+    const s = getSampleState(TODAY);
+    const t = buildTimeline(s, TODAY);
     expect(t.status).toBe("ok");
     expect(t.lowest).toMatchObject({ date: "2026-12-03", balance: 18_750 });
+    expect(debitRisks(s, TODAY)).toEqual([]);
   });
 
-  it("after adding Klarna: tight, lowest $27.50 on Dec 3, $640 owed, 6 debits", () => {
+  it("after adding Klarna: tight, lowest $27.50 on Dec 3, $680 owed, 7 debits", () => {
     const t = buildTimeline(withKlarna(), TODAY);
     expect(t.status).toBe("tight");
     expect(t.lowest).toEqual({ date: "2026-12-03", balance: 2_750, topPlanId: "sample-affirm" });
-    expect(t.owed).toBe(64_000);
-    expect(t.debitsInWindow).toBe(6);
+    expect(t.owed).toBe(68_000);
+    expect(t.debitsInWindow).toBe(7);
     expect(t.paydays).toEqual(["2026-11-20", "2026-12-04", "2026-12-18"]);
     expect(t.days).toHaveLength(42);
   });
 
-  it("$240 in 4 today: not now, $92.50 short on Dec 3, fits from Fri Dec 4 with Payday Sync", () => {
+  it("Guard after adding Klarna: the Zip payment on payday morning fails, $12.50 short", () => {
+    const s = withKlarna();
+    expect(debitRisks(s, TODAY)).toEqual([
+      {
+        date: "2026-12-04",
+        planId: "sample-zip",
+        lender: "Zip",
+        merchant: "Walmart",
+        amount: 4_000,
+        level: "fails",
+        morning: -1_250,
+        shortBy: 1_250,
+        paydayLater: true,
+        disputed: false,
+      },
+    ]);
+    // End of day is fine (the paycheck has landed); only the morning is short.
+    const dec4 = buildTimeline(s, TODAY).days.find((d) => d.date === "2026-12-04")!;
+    expect(dec4.morning).toBe(-1_250);
+    expect(dec4.balance).toBeGreaterThan(0);
+  });
+
+  it("$240 in 4 today: not now, $92.50 short on Dec 3, fits from Fri Dec 4, Payday Sync on Sat Dec 5", () => {
     const v = checkPurchase(withKlarna(), { price: 24_000, payments: 4 }, TODAY);
     expect(v.verdict).toBe("not_now");
     expect(v.firstShort).toEqual({ date: "2026-12-03", amount: 9_250 });
     expect(v.deepest).toEqual({ date: "2026-12-03", amount: 9_250 });
     expect(v.bestDay).toBe("2026-12-04");
     expect(v.paydaySync).toEqual({
-      buyOn: "2026-12-04",
-      debits: ["2026-12-04", "2026-12-18", "2027-01-01", "2027-01-15"],
+      buyOn: "2026-12-05",
+      debits: ["2026-12-05", "2026-12-19", "2027-01-02", "2027-01-16"],
     });
     expect(v.fitsByDay).toHaveLength(42);
     expect(v.fitsByDay.filter((f) => f.fits)[0].date).toBe("2026-12-04");
@@ -122,7 +146,7 @@ describe("edge cases", () => {
     const s = state(money({ balance: 500_000, paycheck: 300_000, frequency: "monthly", nextPayday: "2026-12-01" }));
     expect(checkPurchase(s, { price: 24_000, payments: 4 }, TODAY).paydaySync).toBeNull();
     const weekly = state(money({ balance: 500_000, paycheck: 80_000, frequency: "weekly", nextPayday: "2026-11-20" }));
-    expect(checkPurchase(weekly, { price: 24_000, payments: 4 }, TODAY).paydaySync?.buyOn).toBe("2026-11-20");
+    expect(checkPurchase(weekly, { price: 24_000, payments: 4 }, TODAY).paydaySync?.buyOn).toBe("2026-11-21");
   });
 
   it("semimonthly pay lands on the 15th and the last day", () => {
@@ -131,11 +155,54 @@ describe("edge cases", () => {
   });
 });
 
+describe("Guard: the morning model", () => {
+  const plan = (id: string, installment: number, nextDue = TODAY) => ({
+    id,
+    lender: "Klarna" as const,
+    merchant: "",
+    installment,
+    paymentsLeft: 1,
+    nextDue,
+    intervalDays: 14,
+  });
+
+  it("a debit on payday morning fails even though the end of day is fine", () => {
+    const s = state(money({ balance: 0, paycheck: 10_000 }), [plan("p", 10_000)]);
+    expect(buildTimeline(s, TODAY).days[0].balance).toBe(0);
+    expect(debitRisks(s, TODAY)).toMatchObject([{ level: "fails", morning: -10_000, shortBy: 10_000, paydayLater: true }]);
+  });
+
+  it("two debits on one day are taken in order: the second sees what the first left", () => {
+    const s = state(money({ balance: 10_000, nextPayday: "2026-12-31" }), [plan("a", 6_000), plan("b", 6_000)]);
+    expect(debitRisks(s, TODAY)).toMatchObject([
+      { planId: "b", level: "fails", morning: -2_000, shortBy: 2_000, paydayLater: false },
+      { planId: "a", level: "tight", morning: 4_000, shortBy: 0 },
+    ]);
+  });
+
+  it("tight means it clears with less than $50 left; $50 or more is safe", () => {
+    const left = (balance: number) => state(money({ balance, nextPayday: "2026-12-31" }), [plan("p", 10_000)]);
+    expect(debitRisks(left(10_000 + GUARD_BUFFER - 1), TODAY)).toMatchObject([{ level: "tight", morning: 4_999 }]);
+    expect(debitRisks(left(10_000 + GUARD_BUFFER), TODAY)).toEqual([]);
+  });
+
+  it("rent the same morning counts before the plan payment", () => {
+    const s = state(money({ balance: 120_000, rent: 100_000, rentDay: 15, nextPayday: "2026-12-31" }), [plan("p", 30_000)]);
+    expect(debitRisks(s, TODAY)).toMatchObject([{ level: "fails", morning: -10_000, shortBy: 10_000 }]);
+  });
+
+  it("payments of a returned plan stay in the math and are marked disputed", () => {
+    const s = state(money({ balance: 0, nextPayday: "2026-12-31" }), [{ ...plan("r", 5_000), status: "returned", returnedOn: TODAY }]);
+    expect(debitRisks(s, TODAY)).toMatchObject([{ planId: "r", level: "fails", disputed: true }]);
+    expect(AppStateSchema.safeParse({ ...s, limits: { Afterpay: 100_000 } }).success).toBe(true);
+  });
+});
+
 describe("calendar file", () => {
   it("has a reminder the night before every debit and a check-in link", () => {
     const ics = buildIcs(withKlarna(), TODAY, "https://fourcast.example");
     expect(ics.startsWith("BEGIN:VCALENDAR\r\n")).toBe(true);
-    expect(ics.match(/BEGIN:VALARM/g)).toHaveLength(6);
+    expect(ics.match(/BEGIN:VALARM/g)).toHaveLength(7);
     expect(ics).toContain("https://fourcast.example/?due=2026-12-03");
     expect(ics.split("\r\n").every((line) => line.length <= 75)).toBe(true);
   });

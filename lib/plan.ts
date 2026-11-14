@@ -3,12 +3,15 @@
 // - Dates are "YYYY-MM-DD" strings, money is integer cents.
 // - `today` always comes from the caller (the browser), never from the server clock.
 // - Balances are end of day. On a day with a paycheck and a debit, the paycheck lands first.
+// - Guard uses the morning instead: lenders debit in the morning, the paycheck lands in the
+//   afternoon. morning = yesterday's end-of-day balance minus today's rent and plan debits, in order.
 // - Everyday spending is spread evenly: exactly `weeklySpend` every 7 days.
 import { addDays, clampedDate, diffDays, parts } from "./dates";
 import type {
   AppState,
   Cents,
   DayEvent,
+  DebitRisk,
   ISODate,
   Money,
   Plan,
@@ -25,6 +28,8 @@ export const WINDOW_DAYS = 42;
 /** Below this lowest balance the timeline says "tight". */
 export const TIGHT_BELOW: Cents = 10_000;
 export const PAY_IN_4_INTERVAL = 14;
+/** A debit that clears but leaves less than this in checking that morning is "tight": one card swipe and it fails. */
+export const GUARD_BUFFER: Cents = 5_000;
 
 // ---------- schedules ----------
 
@@ -135,10 +140,11 @@ function simulate(
   for (let i = 0; i < length; i++) {
     const date = addDays(today, i);
     const events = (byDate.get(date) ?? []).sort((a, b) => ORDER[a.kind] - ORDER[b.kind]);
+    const morning = events.reduce((m, e) => (e.kind === "paycheck" ? m : m - e.amount), balance);
     for (const e of events) balance += e.kind === "paycheck" ? e.amount : -e.amount;
     const spend = spendOn(money?.weeklySpend ?? 0, i);
     balance -= spend;
-    days.push({ date, events, spend, balance });
+    days.push({ date, events, spend, morning, balance });
   }
   return days;
 }
@@ -210,11 +216,13 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
 
   const scheduleFrom = (s: ISODate) => amounts.map((amount, k) => ({ date: addDays(s, k * interval), amount }));
 
+  // Buy the day after a payday: with weekly or every-two-weeks pay, every later payment then
+  // lands the morning after a payday, when the paycheck is already in checking.
   let paydaySync: Verdict["paydaySync"] = null;
   const money = state.money;
   if (money && (money.frequency === "weekly" || money.frequency === "biweekly")) {
-    const paydays = new Set(paydaysBetween(money, today, addDays(today, WINDOW_DAYS - 1)));
-    const hit = fitsByDay.find((f) => f.fits && paydays.has(f.date));
+    const dayAfter = new Set(paydaysBetween(money, addDays(today, -1), addDays(today, WINDOW_DAYS - 2)).map((d) => addDays(d, 1)));
+    const hit = fitsByDay.find((f) => f.fits && dayAfter.has(f.date));
     if (hit) paydaySync = { buyOn: hit.date, debits: scheduleFrom(hit.date).map((p) => p.date) };
   }
 
@@ -227,6 +235,43 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
     fitsByDay,
     paydaySync,
   };
+}
+
+/**
+ * Guard: plan payments in the next 42 days that may not go through. Each debit is checked against the
+ * morning (yesterday's end-of-day balance minus this day's rent and earlier debits, before the paycheck).
+ * "fails" below $0, "tight" below GUARD_BUFFER. Safe debits are left out. Order: fails first, then by date.
+ */
+export function debitRisks(state: AppState, today: ISODate): DebitRisk[] {
+  if (!state.money) return [];
+  const returned = new Set(state.plans.filter((p) => p.status === "returned").map((p) => p.id));
+  const days = simulate(state, today, WINDOW_DAYS);
+  const risks: DebitRisk[] = [];
+
+  days.forEach((day, i) => {
+    let morning = i === 0 ? state.money!.balance : days[i - 1].balance;
+    const paydayLater = day.events.some((e) => e.kind === "paycheck");
+    for (const e of day.events) {
+      if (e.kind === "paycheck") continue;
+      morning -= e.amount;
+      if (e.kind !== "debit" || morning >= GUARD_BUFFER) continue;
+      risks.push({
+        date: day.date,
+        planId: e.planId,
+        lender: e.lender,
+        merchant: e.merchant,
+        amount: e.amount,
+        level: morning < 0 ? "fails" : "tight",
+        morning,
+        shortBy: morning < 0 ? -morning : 0,
+        paydayLater,
+        disputed: returned.has(e.planId),
+      });
+    }
+  });
+
+  const rank = { fails: 0, tight: 1 } as const;
+  return risks.sort((a, b) => rank[a.level] - rank[b.level] || a.date.localeCompare(b.date));
 }
 
 /** How many of a plan's remaining debits land on a payday (badge on the plan card). */

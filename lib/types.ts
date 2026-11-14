@@ -35,6 +35,9 @@ export type Plan = {
   nextDue: ISODate;
   /** 14 for Pay in 4. */
   intervalDays: number;
+  /** "returned": the item went back but the lender may still take the payments (F3). Missing means active. */
+  status?: "active" | "returned";
+  returnedOn?: ISODate;
 };
 
 export type Plus = {
@@ -51,6 +54,8 @@ export type AppState = {
   plus: Plus | null;
   /** true when the user started from "Use sample data". */
   sample: boolean;
+  /** Spending limit per lender, as the lender's app shows it (F4). Typed in, never calculated. */
+  limits?: Partial<Record<Lender, Cents>>;
 };
 
 export type DayEvent =
@@ -65,8 +70,29 @@ export type TimelineDay = {
   events: DayEvent[];
   /** Everyday spending taken that day. */
   spend: Cents;
+  /** Morning: yesterday's end-of-day balance minus this day's rent, plan debits and purchase, before the paycheck and spending. */
+  morning: Cents;
   /** End of day. */
   balance: Cents;
+};
+
+/** A plan payment that may not go through (Guard). Lenders debit in the morning, the paycheck lands later. */
+export type DebitRisk = {
+  date: ISODate;
+  planId: string;
+  lender: Lender;
+  merchant: string;
+  amount: Cents;
+  /** "fails": checking goes below $0 that morning. "tight": it clears but leaves less than GUARD_BUFFER. */
+  level: "fails" | "tight";
+  /** In checking that morning after this debit and the earlier ones that day, before the paycheck. */
+  morning: Cents;
+  /** How much to add before the morning so it goes through; 0 when "tight". */
+  shortBy: Cents;
+  /** A paycheck lands later the same day (the case from the reviews: debit at 6 am, pay at 3 pm). */
+  paydayLater: boolean;
+  /** The plan is marked returned, so this payment may be disputed. */
+  disputed: boolean;
 };
 
 export type Status = "ok" | "tight" | "short";
@@ -109,7 +135,7 @@ export type Verdict = {
   /** First day in the next 42 when buying never takes the account below $0. */
   bestDay: ISODate | null;
   fitsByDay: { date: ISODate; fits: boolean; lowest: Cents }[];
-  /** Weekly or every-two-weeks pay only: a payday to buy on so every payment lands on a payday. */
+  /** Weekly or every-two-weeks pay only: the day after a payday to buy on, so every payment lands the morning after a payday. */
   paydaySync: { buyOn: ISODate; debits: ISODate[] } | null;
 };
 

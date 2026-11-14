@@ -37,6 +37,17 @@ export function getSampleState(today: ISODate): AppState {
         nextDue: addDays(today, 7),
         intervalDays: 14,
       },
+      {
+        // Due on a payday (today+19): autopay runs in the morning, the paycheck lands later.
+        // Safe on its own; once the Klarna plan is added, checking is $12.50 short that morning (Guard).
+        id: "sample-zip",
+        lender: "Zip",
+        merchant: "Walmart",
+        installment: 4_000,
+        paymentsLeft: 1,
+        nextDue: addDays(today, 19),
+        intervalDays: 14,
+      },
     ],
   };
 }
