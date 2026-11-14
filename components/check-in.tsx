@@ -30,11 +30,12 @@ export function CheckIn({
   if (!state.money) return null;
   const day = buildTimeline(state, today).days.find((d) => d.date === due);
   const debits = day?.events.filter((e) => e.kind === "debit") ?? [];
-  const whenLower = due === addDays(today, 1) ? "tomorrow" : due === today ? "today" : `on ${formatShort(due)}`;
-  const when = whenLower[0].toUpperCase() + whenLower.slice(1) + (whenLower.startsWith("on ") ? "," : "");
+  // Morning model (LIMIT_GUARD.md F1): lenders take the payment before the paycheck lands.
+  const morning = due === addDays(today, 1) ? "tomorrow morning" : due === today ? "this morning" : `the morning of ${formatShort(due)}`;
+  const paydayLater = day?.events.some((e) => e.kind === "paycheck") ?? false;
   const what = debits.length
-    ? debits.map((e) => (e.kind === "debit" ? `${e.lender} takes ${formatUSD(e.amount)}` : "")).join(" and ")
-    : "nothing is due";
+    ? `${debits.map((e) => (e.kind === "debit" ? `${e.lender} takes ${formatUSD(e.amount)}` : "")).join(" and ")} ${morning}${paydayLater ? ", before your paycheck lands" : ""}`
+    : `Nothing is due ${morning}`;
 
   const update = () => {
     const cents = toCents(balance);
@@ -43,13 +44,13 @@ export function CheckIn({
     const next = { ...state, money: { ...state.money!, balance: cents } };
     onSave(next);
     const after = buildTimeline(next, today).days.find((d) => d.date === due);
-    if (after) setResult({ ok: after.balance >= 0, amount: Math.abs(after.balance) });
+    if (after) setResult({ ok: after.morning >= 0, amount: Math.abs(after.morning) });
   };
 
   return (
     <section className="space-y-3 rounded-md border-2 border-payday bg-card p-4" aria-labelledby="checkin">
       <h2 id="checkin" className="text-xl font-semibold text-balance">
-        {when} {what}. What&apos;s in checking right now?
+        {what}. What&apos;s in checking right now?
       </h2>
       {!result ? (
         <form
@@ -84,8 +85,8 @@ export function CheckIn({
         <div className="space-y-2" role="status">
           <p className={result.ok ? "text-lg font-semibold text-ok" : "text-lg font-semibold text-short"}>
             {result.ok
-              ? `You're covered: ${formatUSD(result.amount)} left after it.`
-              : `You'll be ${formatUSD(result.amount)} short ${whenLower}. Move money in tonight or skip a buy.`}
+              ? `You're covered: ${formatUSD(result.amount)} left after it that morning.`
+              : `You'll be ${formatUSD(result.amount)} short ${morning}. Move money in tonight${paydayLater ? " or pay it by hand after your paycheck lands" : ""}.`}
           </p>
           <Button variant="outline" className="h-10" onClick={onClose}>
             Done

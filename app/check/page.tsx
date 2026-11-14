@@ -323,10 +323,9 @@ function Plus({
         See the day it fits
       </h2>
       <ul className="list-disc space-y-1 pl-5 text-sm">
-        <li>The exact day you&apos;d run short, and by how much</li>
-        <li>The first day it fits</li>
+        <li>A heads-up at 8 pm the night before a payment won&apos;t make it</li>
         <li>Payday Sync: the day to buy so every payment lands the morning after payday</li>
-        <li>A reminder the night before each payment</li>
+        <li>The exact day this buy would run you short, and the first day it fits</li>
       </ul>
 
       {step === "offer" ? (
