@@ -79,6 +79,11 @@ export function RiskCard({ risk, today }: { risk: DebitRisk; today: ISODate }) {
       </div>
 
       <p className={cn("mt-3 font-medium", fails ? "text-short" : "text-tight")}>{reason(risk)}</p>
+      {risk.limit !== null && risk.limit !== undefined && (
+        <p className="mt-1 text-sm">
+          What&apos;s at stake: your <span className="tabular font-semibold">{formatUSD(risk.limit)}</span> {risk.lender} limit.
+        </p>
+      )}
 
       <ul className="mt-3 space-y-2 text-sm">
         {fails && (
