@@ -22,8 +22,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${sans.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <AppNav />
-        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pt-6 pb-8 sm:pt-10 sm:pb-12">{children}</main>
-        <footer className="mx-auto w-full max-w-5xl px-4 pb-24 text-xs text-muted-foreground sm:pb-6">
+        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 pt-6 pb-8 sm:pt-10 sm:pb-12">{children}</main>
+        <footer className="mx-auto w-full max-w-6xl px-4 pb-24 text-xs text-muted-foreground sm:pb-6">
           Not financial advice. Your data stays in your browser.
         </footer>
       </body>

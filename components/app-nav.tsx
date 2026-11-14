@@ -11,24 +11,28 @@ const LINKS = [
   { href: "/check", label: "Check a buy", icon: ShoppingBag },
 ];
 
+// Zimran-style: a flat violet bar on top, a black tab bar on phones.
 export function AppNav() {
   const path = usePathname();
   return (
     <>
-      <header className="border-b bg-card">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <Link href="/" className="text-lg font-bold tracking-tight outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-            Fourcast
+      <header className="sticky top-0 z-20 bg-payday text-on-payday">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+          <Link
+            href="/"
+            className="text-2xl font-bold tracking-tight outline-none focus-visible:ring-3 focus-visible:ring-on-payday/60"
+          >
+            fourcast
           </Link>
-          <nav aria-label="Main" className="hidden gap-1 sm:flex">
+          <nav aria-label="Main" className="hidden items-center gap-1 sm:flex">
             {LINKS.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 aria-current={path === l.href ? "page" : undefined}
                 className={cn(
-                  "rounded-lg px-3 py-2 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                  path === l.href ? "bg-payday-soft text-accent-foreground" : "text-muted-foreground hover:text-foreground",
+                  "rounded-md px-4 py-2 text-base font-medium outline-none focus-visible:ring-3 focus-visible:ring-on-payday/60",
+                  path === l.href ? "bg-foreground text-on-payday" : "text-on-payday/75 hover:text-on-payday",
                 )}
               >
                 {l.label}
@@ -37,7 +41,10 @@ export function AppNav() {
           </nav>
         </div>
       </header>
-      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-10 border-t bg-card pb-[env(safe-area-inset-bottom)] sm:hidden">
+      <nav
+        aria-label="Main"
+        className="fixed inset-x-0 bottom-0 z-20 bg-foreground pb-[env(safe-area-inset-bottom)] text-on-payday sm:hidden"
+      >
         <div className="grid grid-cols-3">
           {LINKS.map((l) => (
             <Link
@@ -45,10 +52,11 @@ export function AppNav() {
               href={l.href}
               aria-current={path === l.href ? "page" : undefined}
               className={cn(
-                "flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium outline-none focus-visible:bg-muted",
-                path === l.href ? "text-primary" : "text-muted-foreground",
+                "relative flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium outline-none focus-visible:bg-on-payday/10",
+                path === l.href ? "text-on-payday" : "text-on-payday/55",
               )}
             >
+              {path === l.href && <span className="absolute inset-x-6 top-0 h-1 bg-payday" aria-hidden />}
               <l.icon className="size-5" aria-hidden />
               {l.label}
             </Link>

@@ -114,11 +114,11 @@ export function AddPlan({ today, sample, onAdd }: { today: ISODate; sample: bool
   );
 
   return (
-    <section className="space-y-3 rounded-2xl border bg-card p-4" aria-labelledby="add-plan">
+    <section className="space-y-3 rounded-md border bg-card p-4" aria-labelledby="add-plan">
       <h2 id="add-plan" className="text-lg font-semibold">
         Add a plan
       </h2>
-      <div role="tablist" className="flex gap-1 rounded-xl bg-muted p-1">
+      <div role="tablist" className="flex gap-1 rounded-md bg-muted p-1">
         {tab("paste", "Paste text")}
         {tab("screenshot", "Screenshot")}
         {tab("manual", "Type it in")}
@@ -177,7 +177,7 @@ export function AddPlan({ today, sample, onAdd }: { today: ISODate; sample: bool
       )}
 
       {found && (
-        <div className="space-y-3 rounded-xl border p-3">
+        <div className="space-y-3 rounded-md border p-3">
           <p className="text-sm text-muted-foreground">Check what we read:</p>
           <p className="font-semibold">
             {found.lender}

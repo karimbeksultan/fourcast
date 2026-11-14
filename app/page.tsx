@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AddPlan } from "@/components/add-plan";
+import { Landing } from "@/components/landing";
+import { LowestLine } from "@/components/money";
 import { CheckIn } from "@/components/check-in";
-import { FREQUENCY_LABEL, lowestLine, STATUS_TITLE } from "@/components/copy";
+import { FREQUENCY_LABEL, STATUS_TITLE } from "@/components/copy";
 import { MoneyForm } from "@/components/money-form";
 import { PlanCard } from "@/components/plan-card";
 import { Badge } from "@/components/ui/badge";
@@ -41,24 +43,7 @@ function HomeSkeleton() {
 }
 
 function Welcome({ onSample, onStart }: { onSample: () => void; onStart: () => void }) {
-  return (
-    <section className="flex max-w-2xl flex-col gap-6 py-6 sm:py-16">
-      <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-6xl">See every Pay in 4 before it lands.</h1>
-      <p className="max-w-xl text-lg text-muted-foreground sm:text-xl">
-        Put your Klarna, Afterpay and Affirm payments on one 6-week forecast from your paycheck, and check any new one before you
-        buy.
-      </p>
-      <div className="flex flex-wrap gap-3">
-        <Button className="h-12 px-6 text-base" onClick={onSample}>
-          Try it with sample data
-        </Button>
-        <Button variant="outline" className="h-12 px-6 text-base" onClick={onStart}>
-          Start with my numbers
-        </Button>
-      </div>
-      <p className="text-sm text-muted-foreground">No sign-up. Your data stays in this browser.</p>
-    </section>
-  );
+  return <Landing onSample={onSample} onStart={onStart} />;
 }
 
 function Overview({ state, today, save }: { state: AppState; today: ISODate; save: (s: AppState) => void }) {
@@ -72,7 +57,7 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-semibold">Your plans</h1>
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Your plans</h1>
           {state.sample && <Badge variant="secondary">Sample data</Badge>}
         </div>
         <Button variant="ghost" className="h-10 text-muted-foreground" onClick={() => clearState()}>
@@ -97,12 +82,12 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
         <Link
           href="/timeline"
           className={cn(
-            "block rounded-2xl border-l-4 bg-card p-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-5",
+            "block rounded-md border-l-4 bg-card p-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-5",
             timeline.status === "ok" ? "border-ok" : timeline.status === "tight" ? "border-tight" : "border-short",
           )}
         >
-          <p className="text-3xl font-bold tracking-tight sm:text-4xl">{STATUS_TITLE[timeline.status]}</p>
-          <p className="tabular mt-1 text-lg">{lowestLine(timeline)}</p>
+          <p className="text-4xl font-bold tracking-tight sm:text-5xl">{STATUS_TITLE[timeline.status]}</p>
+          <LowestLine timeline={timeline} className="mt-1 text-lg" />
           <p className="mt-2 text-sm font-medium text-primary underline-offset-4 hover:underline">See your 6-week forecast</p>
         </Link>
       )}
@@ -130,14 +115,14 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
               </ul>
             </section>
           ) : (
-            <p className="rounded-2xl border border-dashed p-4 text-muted-foreground">
+            <p className="rounded-md border border-dashed p-4 text-muted-foreground">
               No plans yet. Add your first Klarna, Afterpay or Affirm plan below.
             </p>
           )}
           <AddPlan today={today} sample={state.sample} onAdd={(plan) => save({ ...state, plans: [...state.plans, plan] })} />
         </div>
 
-        <section aria-labelledby="money" className="h-fit space-y-3 rounded-2xl border bg-card p-4">
+        <section aria-labelledby="money" className="h-fit space-y-3 rounded-md border bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <h2 id="money" className="text-lg font-semibold">
               Your money

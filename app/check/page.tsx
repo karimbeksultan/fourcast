@@ -58,7 +58,7 @@ export default function CheckPage() {
   return (
     <>
       <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Check a buy</h1>
+        <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">Check a buy</h1>
         <p className="text-muted-foreground">Pay in 4: the first payment today, then one every 2 weeks.</p>
       </header>
 
@@ -97,7 +97,7 @@ export default function CheckPage() {
       {verdict && purchase && (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-6">
-            <section className={cn("rounded-2xl border-l-4 bg-card p-4 sm:p-5", verdict.verdict === "fits" ? "border-ok" : "border-short")} aria-live="polite">
+            <section className={cn("rounded-md border-l-4 bg-card p-4 sm:p-5", verdict.verdict === "fits" ? "border-ok" : "border-short")} aria-live="polite">
               <p className={cn("text-4xl font-bold tracking-tight", verdict.verdict === "fits" ? "text-ok" : "text-short")}>
                 {verdict.verdict === "fits" ? "It fits." : "Not right now."}
               </p>
@@ -168,7 +168,7 @@ function PlusAnswer({ verdict, timeline, state, today }: { verdict: Verdict; tim
       </div>
 
       {verdict.paydaySync ? (
-        <div className="rounded-2xl bg-payday p-4 text-primary-foreground sm:p-5">
+        <div className="rounded-md bg-payday p-4 text-primary-foreground sm:p-5">
           <p className="text-2xl font-bold tracking-tight">
             Buy {formatShort(verdict.paydaySync.buyOn)}: all 4 payments land on paydays.
           </p>
@@ -201,7 +201,7 @@ function Plus({ state, timeline, today, save }: { state: AppState; timeline: Tim
 
   if (state.plus) {
     return (
-      <aside className="h-fit space-y-2 rounded-2xl border bg-card p-4 text-sm">
+      <aside className="h-fit space-y-2 rounded-md border bg-card p-4 text-sm">
         <p className="font-semibold">Plus is on until {formatShort(state.plus.trialEnds)}.</p>
         <p className="text-muted-foreground">
           {state.plus.via === "demo" ? "Demo trial, no real payment." : "Test-mode payment."} Then $29.99 a year.
@@ -214,7 +214,7 @@ function Plus({ state, timeline, today, save }: { state: AppState; timeline: Tim
   }
 
   return (
-    <aside className="h-fit space-y-4 rounded-2xl border-2 border-payday bg-card p-4 sm:p-5" aria-labelledby="plus">
+    <aside className="h-fit space-y-4 rounded-md border-2 border-payday bg-card p-4 sm:p-5" aria-labelledby="plus">
       <h2 id="plus" className="text-xl font-semibold">
         See the day it fits
       </h2>

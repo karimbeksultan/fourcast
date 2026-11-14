@@ -135,7 +135,7 @@ export function ForecastGrid({
                   aria-label={`${WEEKDAY_NAMES[weekday(cell.date)]}, ${cell.label}`}
                   aria-selected={onSelect ? selected === cell.date : undefined}
                   className={cn(
-                    "relative flex min-h-12 flex-col justify-between overflow-hidden rounded-lg p-1 text-left outline-none sm:min-h-16 sm:p-1.5",
+                    "relative flex min-h-12 flex-col justify-between overflow-hidden rounded-[4px] p-1 text-left outline-none sm:min-h-16 sm:p-1.5",
                     TONE_CLASS[cell.tone],
                     onSelect && "cursor-pointer transition-[box-shadow] focus-visible:ring-3 focus-visible:ring-ring/50",
                     cell.date === today && "ring-1 ring-foreground",

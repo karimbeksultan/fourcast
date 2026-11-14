@@ -1,5 +1,7 @@
 # DESIGN — Fourcast
 
+> **v2 (14.11, ~21:00): Zimran direction.** The team asked for the look of zimran.io. What we took: flat violet `#5B42DC` blocks and a violet top bar; light gray `#F2F2F2` page; pure black text and **black primary buttons** with 6 px corners; huge bold Title Case headings with one phrase in a **black box** ("Before It Lands"); a black marquee with the lender names; step cards in black / white / violet with big faint icons. Not taken: their logo, their UpMax font (we keep Geologica), their photos. Our own memorable thing stays the 6-week forecast grid with violet paydays. Components from Magic UI: Marquee, Number Ticker (amounts count up), Blur Fade (hero entrance). The token table below is updated; the sections after it still hold for layout, copy and states.
+
 Who: Americans 25–45 paying off several Pay in 4 plans, checking on a phone, a little anxious about money.
 Job: say in one sentence whether the money is there, then show why on a 6-week calendar.
 Tone: calm, plain, exact. A forecast, not a bank and not a game.
@@ -16,17 +18,17 @@ Everything else stays quiet so the grid carries the page.
 ## Tokens (`app/globals.css`)
 | Name | Hex | Use |
 |---|---|---|
-| paper | `#F4F6FB` | page background (cool, not cream) |
+| paper | `#F2F2F2` | page background (Zimran light gray) |
 | surface | `#FFFFFF` | panels |
-| ink | `#1C1F3B` | text, today outline |
-| ink-muted | `#5E6382` | secondary text |
-| line | `#DDE1EE` | borders |
-| payday (primary) | `#5B42DC`, soft `#ECE8FC` | paydays, main buttons, Payday Sync |
+| ink | `#000000` | text, primary buttons, highlight boxes |
+| ink-muted | `#5C5C66` | secondary text |
+| line | `#DCDCDC` | borders |
+| payday | `#5B42DC`, soft `#ECE8FC`, text on it `#F2F2F2` | top bar, hero, paydays, Payday Sync |
 | ok | `#17845E`, soft `#DDF3EA` | balance above $100, "fits" |
 | tight | `#9A6200`, soft `#FDF0D2` | balance $0–$100 |
 | short | `#C2373A`, soft `#FBE3E3` | below $0 |
 
-No hex in components: use `bg-ok-soft`, `text-short`, `bg-payday` and the shadcn tokens. No shadows, borders do the separating. Radii: panels 16 px, buttons and inputs 10 px, grid cells 8 px.
+No hex in components: use `bg-ok-soft`, `text-short`, `bg-payday` and the shadcn tokens. No shadows, borders do the separating. Radii: 6 px for panels, buttons and inputs, 4 px for grid cells.
 
 **Type:** Geologica only. Status sentence 34–48 px / 700 / −0.02 em, follow-up line 20 px / 450, section titles 20 px / 650, body 16 px / 1.55, small 14 px. All money in tabular figures. Sentence case everywhere, no all-caps labels, no arrows in button text, no "·" lists.
 

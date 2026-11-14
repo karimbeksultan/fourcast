@@ -24,9 +24,9 @@ export function PlanCard({
   const allSynced = sync.total > 0 && sync.onPayday === sync.total;
 
   return (
-    <li className="flex items-start gap-3 rounded-2xl border bg-card p-3 sm:p-4">
+    <li className="flex items-start gap-3 rounded-md border bg-card p-3 sm:p-4">
       <span
-        className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-payday-soft text-sm font-semibold text-accent-foreground"
+        className="flex size-10 shrink-0 items-center justify-center rounded-md bg-payday-soft text-sm font-semibold text-accent-foreground"
         aria-hidden
       >
         {LENDER_MARK[plan.lender]}

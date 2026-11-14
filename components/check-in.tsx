@@ -47,7 +47,7 @@ export function CheckIn({
   };
 
   return (
-    <section className="space-y-3 rounded-2xl border-2 border-payday bg-card p-4" aria-labelledby="checkin">
+    <section className="space-y-3 rounded-md border-2 border-payday bg-card p-4" aria-labelledby="checkin">
       <h2 id="checkin" className="text-xl font-semibold text-balance">
         {when} {what}. What&apos;s in checking right now?
       </h2>

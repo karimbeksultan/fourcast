@@ -3,7 +3,8 @@
 import { CalendarPlus, Lock } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { lowestLine, STATUS_TITLE } from "@/components/copy";
+import { STATUS_TITLE } from "@/components/copy";
+import { LowestLine } from "@/components/money";
 import { cellsFromTimeline, DayStory, ForecastGrid, ForecastLegend } from "@/components/forecast-grid";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -59,8 +60,8 @@ export default function TimelinePage() {
   return (
     <>
       <header className="space-y-1">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{STATUS_TITLE[t.status]}</h1>
-        <p className="tabular max-w-2xl text-lg sm:text-xl">{lowestLine(t)}</p>
+        <h1 className="text-5xl font-bold tracking-tight sm:text-7xl">{STATUS_TITLE[t.status]}</h1>
+        <LowestLine timeline={t} className="max-w-2xl text-lg sm:text-xl" />
         <p className="tabular text-sm text-muted-foreground">
           {formatUSD(t.owed)} left to pay, {t.debitsInWindow} payments in the next 6 weeks.
         </p>
@@ -79,14 +80,14 @@ export default function TimelinePage() {
         </div>
 
         <aside className="space-y-4">
-          <div className="rounded-2xl border bg-card p-4">
+          <div className="rounded-md border bg-card p-4">
             <DayStory day={day} today={today} />
             {day.date === t.lowest.date && (
               <p className="mt-3 text-sm text-muted-foreground">This is your lowest point in the next 6 weeks.</p>
             )}
           </div>
 
-          <div className="rounded-2xl border bg-card p-4">
+          <div className="rounded-md border bg-card p-4">
             <h2 className="mb-2 font-semibold">Coming up</h2>
             <ul className="space-y-1.5 text-sm">
               {upcoming.map((d) => (
@@ -110,7 +111,7 @@ export default function TimelinePage() {
             </ul>
           </div>
 
-          <div className="rounded-2xl border bg-card p-4">
+          <div className="rounded-md border bg-card p-4">
             {state.plus ? (
               <Button className="h-11 w-full px-5 text-base" onClick={() => downloadIcs(state, today)}>
                 <CalendarPlus aria-hidden />
