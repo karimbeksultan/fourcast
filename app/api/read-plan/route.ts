@@ -16,7 +16,9 @@ const fail = (code: ReadPlanError, error: string, status: number) => Response.js
 export async function POST(request: Request) {
   let body: ReadPlanRequest;
   try {
-    body = (await request.json()) as ReadPlanRequest;
+    const raw: unknown = await request.json();
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("not an object");
+    body = raw as ReadPlanRequest;
   } catch {
     return fail("unreadable", "Send JSON: { text } or { imageBase64 }.", 400);
   }
