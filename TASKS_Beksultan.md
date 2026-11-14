@@ -2,6 +2,13 @@
 
 Файл самодостаточный: его можно целиком вставить в новую сессию Claude Code. Сначала прочитай `BRIEF.md` и свою строку в `TASKS.md`.
 
+## ⚡ v2 СЕЙЧАС (14.11, 22:15): Fourcast Limit Guard — читай [`LIMIT_GUARD.md`](LIMIT_GUARD.md)
+- **Основа — Limit Guard.** Вкладка **Guard** (`/plans`) открывается первой: какие платежи не пройдут утром до зарплаты и что сделать вечером. **Forecast** (`/timeline`) и **Before you buy** (`/check`) — дополнительные вкладки, это наш калькулятор (лента на 6 недель, «влезет ли покупка», Payday Sync).
+- **Ничего нового не заводим.** Тот же репозиторий `karimbeksultan/fourcast`, тот же проект Vercel **https://fourcast-zimran.vercel.app** (push в `main` = прод, ветки = превью), те же ключи в Vercel: `LLM_1…3`, `STRIPE_SECRET_KEY`. Новых переменных окружения v2 не требует: `/api/dispute` ходит через тот же `lib/llm.ts`.
+- **Твои задачи v2:** G-B1 контракт и заглушки (типы `DebitRisk`, `Plan.status`/`returnedOn`, `TimelineDay.morning`, заглушка `/api/dispute`) → G-B2 модель утра и `debitRisks` + Zip $40 в образце + тесты → G-B3 Payday Sync на следующий день после зарплаты → G-B4 `/api/dispute` (шаблон без ключей, AI с ключом) → G-B5 тексты `.ics` и check-in → G-B6 деплой, smoke, Stripe Branding → G-B7 лимиты (Should). Часы и критерии готовности — `LIMIT_GUARD.md` §6.
+- **Что уже сделал фронт:** Guard на `/plans` и вкладки Guard · Forecast · Before you buy (коммит c663375). Пока нет твоего `debitRisks`, фронт берёт его из временного `components/guard-shim.ts` (та же сигнатура). Возврат и письмо (G-A3) делаю сейчас; до твоего `/api/dispute` фронт пишет письмо по шаблону сам и переключится на API, когда оно появится.
+- **Не ломать `main`:** перед push `npm run lint && npm test && npm run build`.
+
 ## Уже сделано за тебя (коммит 34d5bb0, 19:10)
 Каркас (B1 без сервера), контракт (B2), логика с Payday Sync и `demo_inputs.md` (B3), тесты и CI (B3t), `lib/llm.ts` и `/api/read-plan` (B4 без проверки ключом), `lib/storage.ts` и `lib/ics.ts` (B5 без деплоя), `/api/health`, `deploy.sh`, `CLAUDE.md`, README. Сначала `git pull`, свой каркас не пушь.
 
