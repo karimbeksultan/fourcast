@@ -1,6 +1,7 @@
 // Golden cases. The jury types their own numbers and reads this file (FAQ Q96):
 // every number below comes out of lib/plan.ts, nothing is hardcoded in the UI.
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { getConceptSample, nextRisk } from "./concept";
 import { addDays, toISODate } from "./dates";
 import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
@@ -113,6 +114,33 @@ describe("demo story (opened on Nov 15, 2026)", () => {
   it("sample state passes the storage schema and its balance is dated today", () => {
     expect(AppStateSchema.safeParse(withKlarna()).success).toBe(true);
     expect(withKlarna().money?.balanceOn).toBe(TODAY);
+  });
+});
+
+describe("Tonight sample (the landing's \"Try it with sample data\")", () => {
+  // The usual sample + Klarna + a returned Nordstrom order on Afterpay ($40 x 2, still scheduled).
+  const s = getConceptSample(TODAY);
+
+  it("Tonight: Klarna won't clear on Thu, Dec 3, $12.50 short; Zip after it, $92.50 short on payday morning", () => {
+    expect(nextRisk(s, TODAY)).toMatchObject({ date: "2026-12-03", lender: "Klarna", level: "fails", shortBy: 1_250, limit: 75_000, paydayLater: false });
+    expect(moveAmount(1_250)).toBe(2_500);
+    expect(debitRisks(s, TODAY).map((r) => [r.date, r.lender, r.shortBy])).toEqual([
+      ["2026-12-03", "Klarna", 1_250],
+      ["2026-12-04", "Zip", 9_250],
+    ]);
+    expect(buildTimeline(s, TODAY).lowest).toMatchObject({ date: "2026-12-04", balance: -9_250, when: "morning" });
+  });
+
+  it("$240 in 4 on Tonight: not now; best day Sat, Dec 5 = Payday Sync", () => {
+    const v = checkPurchase(s, { price: 24_000, payments: 4 }, TODAY);
+    expect(v).toMatchObject({
+      verdict: "not_now",
+      firstShort: { date: "2026-12-02", amount: 5_250 },
+      morningRisk: { date: "2026-12-02", lender: "Afterpay", merchant: "Nordstrom", shortBy: 1_250 },
+      alreadyShort: { date: "2026-12-03", amount: 1_250, reason: "morning" },
+      bestDay: "2026-12-05",
+    });
+    expect(v.paydaySync?.buyOn).toBe("2026-12-05");
   });
 });
 

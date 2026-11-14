@@ -43,5 +43,16 @@ If AI is off, the same plan is entered by hand in four fields.
 | Payday Sync | **Buy Sat, Dec 5: every payment lands the morning after payday** (Dec 5, Dec 19, Jan 2, Jan 16) |
 | Calendar file | 7 payment events with a reminder at 8 pm the evening before + 3 payday events; links `/?due=YYYY-MM-DD` |
 
+## Tonight sample (the landing's "Try it with sample data" opens `/tonight`)
+`getConceptSample(today)` in `lib/concept.ts`: the sample above **plus** the Klarna plan **plus** a returned Nordstrom order on Afterpay (2 payments of $40.00 still scheduled, Wed Nov 18 and Wed Dec 2, returned 9 days ago), limits Klarna $750, Zip $600. Same math, different numbers:
+
+| Input | Expected |
+|---|---|
+| Tonight | **Klarna won't clear on Thu, Dec 3**: $80.00 that morning, **$12.50 short**, at stake the $750 Klarna limit · **Move $25.00** on the evening of Wed, Dec 2 · 1 more payment at risk: Zip, Fri Dec 4, **$92.50 short** |
+| Forecast | short · lowest −$92.50 on the morning of Fri, Dec 4 |
+| Money in returns | $80.00 still scheduled on returned orders (Nordstrom, Afterpay) |
+| Check $240 in 4, today | **Not right now** · $52.50 short on Wed, Dec 2 · morning risk: Afterpay · Nordstrom on Wed, Dec 2, $12.50 short · already short without the buy: Thu, Dec 3, morning, $12.50 |
+| Best day / Payday Sync | **Sat, Dec 5** |
+
 ## Edge cases (in the tests)
 Paycheck and payment on the same day (end of day fine, morning fails) · two payments on one morning taken in order · tight below $50 · rent before a plan payment the same morning · a returned plan's payments marked disputed · rent on the 31st in February · a purchase followed past day 42 · $100 split in 3 · weekly spending adds up exactly · time zones and DST · Payday Sync is off for monthly pay · a purchase that deepens a failing morning debit does not fit (Afterpay $25 → $40 short) · already short without the purchase, even $1 does not fit · semimonthly paydays on the 15th and the last day (Jan 15, Jan 31, Feb 15, Feb 28; a debit on Jan 31 with $0 fails that morning) · evening check-in on Dec 3 with $27.50 keeps Zip $12.50 short (today's debits are not taken twice).
