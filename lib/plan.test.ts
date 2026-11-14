@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { addDays, toISODate } from "./dates";
 import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
-import { applyCheckIn, buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, paydaySync, splitPayments, spendOn } from "./plan";
+import { applyCheckIn, buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
 import { AppStateSchema, DisputeRequestSchema, MAX_CENTS } from "./schema";
 import { loadState, saveState } from "./storage";
@@ -110,12 +110,6 @@ describe("demo story (opened on Nov 15, 2026)", () => {
     expect(applyCheckIn({ ...next, money: null }, 2_750, today).money).toBeNull();
   });
 
-  it("sample plans hit the day before payday, not on it", () => {
-    const s = withKlarna();
-    const klarna = s.plans.find((p) => p.lender === "Klarna")!;
-    expect(paydaySync(s, klarna, TODAY)).toEqual({ onPayday: 0, total: 3 });
-  });
-
   it("sample state passes the storage schema and its balance is dated today", () => {
     expect(AppStateSchema.safeParse(withKlarna()).success).toBe(true);
     expect(withKlarna().money?.balanceOn).toBe(TODAY);
@@ -171,6 +165,9 @@ describe("edge cases", () => {
     expect(checkPurchase(s, { price: 24_000, payments: 4 }, TODAY).paydaySync).toBeNull();
     const weekly = state(money({ balance: 500_000, paycheck: 80_000, frequency: "weekly", nextPayday: "2026-11-20" }));
     expect(checkPurchase(weekly, { price: 24_000, payments: 4 }, TODAY).paydaySync?.buyOn).toBe("2026-11-21");
+    // Paid yesterday and nextPayday already moved two weeks on: today is the day after a payday.
+    const paidYesterday = state(money({ balance: 500_000, paycheck: 80_000, nextPayday: addDays(TODAY, 13) }));
+    expect(checkPurchase(paidYesterday, { price: 24_000, payments: 4 }, TODAY).paydaySync?.buyOn).toBe(TODAY);
   });
 
   it("semimonthly pay lands on the 15th and the last day", () => {
@@ -324,6 +321,12 @@ describe("dispute letter (works without AI keys)", () => {
     // null from the UI means "not given", as for a double charge with no return date.
     const parsed = DisputeRequestSchema.safeParse({ ...request, issue: "double_charge", returnedOn: null, details: null });
     expect(parsed.success && parsed.data.returnedOn === undefined && parsed.data.details === undefined).toBe(true);
+    // A paid-off plan charged twice, and a store name longer than 80 characters: still a letter, not a 400.
+    const paidOff = DisputeRequestSchema.safeParse({ ...request, issue: "double_charge", paymentsLeft: 0, merchant: "N".repeat(120) });
+    expect(paidOff.success && paidOff.data.merchant.length).toBe(80);
+    const letter = templateLetter({ ...request, issue: "double_charge", paymentsLeft: 0 });
+    expect(letter.body).toContain("No more payments are scheduled on this plan.");
+    expect(keepsFacts(letter, { ...request, paymentsLeft: 0 })).toBe(true);
   });
 });
 

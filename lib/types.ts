@@ -150,8 +150,6 @@ export type Verdict = {
   alreadyShort: { date: ISODate; amount: Cents; reason: "end_of_day" | "morning" } | null;
 };
 
-export type PlanSync = { onPayday: number; total: number };
-
 export const DISPUTE_ISSUES = ["refund_not_applied", "charged_after_cancel", "double_charge", "other"] as const;
 export type DisputeIssue = (typeof DISPUTE_ISSUES)[number];
 

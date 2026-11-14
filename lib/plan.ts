@@ -15,7 +15,6 @@ import type {
   ISODate,
   Money,
   Plan,
-  PlanSync,
   Purchase,
   Shortfall,
   Status,
@@ -288,7 +287,10 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
   let paydaySync: Verdict["paydaySync"] = null;
   const money = state.money;
   if (money && (money.frequency === "weekly" || money.frequency === "biweekly")) {
-    const dayAfter = new Set(paydaysBetween(money, addDays(today, -1), addDays(today, WINDOW_DAYS - 2)).map((d) => addDays(d, 1)));
+    // nextPayday may already point past yesterday's payday, so the one before it counts too (buy today).
+    const before = addDays(money.nextPayday, money.frequency === "weekly" ? -7 : -14);
+    const paydays = [before, ...paydaysBetween(money, addDays(today, -1), addDays(today, WINDOW_DAYS - 2))];
+    const dayAfter = new Set(paydays.map((d) => addDays(d, 1)));
     const hit = fitsByDay.find((f) => f.fits && dayAfter.has(f.date));
     if (hit) paydaySync = { buyOn: hit.date, debits: scheduleFrom(hit.date).map((p) => p.date) };
   }
@@ -347,12 +349,4 @@ export function debitRisks(state: AppState, today: ISODate): DebitRisk[] {
 
   const rank = { fails: 0, tight: 1 } as const;
   return risks.sort((a, b) => rank[a.level] - rank[b.level] || a.date.localeCompare(b.date));
-}
-
-/** How many of a plan's remaining debits land on a payday (badge on the plan card). */
-export function paydaySync(state: AppState, plan: Plan, today: ISODate): PlanSync {
-  const debits = planDebits(plan, today);
-  if (debits.length === 0) return { onPayday: 0, total: 0 };
-  const paydays = new Set(paydaysBetween(state.money, today, debits[debits.length - 1]));
-  return { onPayday: debits.filter((d) => paydays.has(d)).length, total: debits.length };
 }

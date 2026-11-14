@@ -14,7 +14,14 @@ const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 export function templateLetter(r: DisputeRequest): DisputeLetter {
   const amount = formatUSD(r.installment);
   const order = r.merchant ? `my ${r.merchant} order` : "my order";
-  const left = `${r.paymentsLeft} ${plural(r.paymentsLeft, "payment", "payments")} of ${amount} ${plural(r.paymentsLeft, "is", "are")} still scheduled, the next one on ${formatLong(r.nextDue)}`;
+  const left =
+    r.paymentsLeft > 0
+      ? `${r.paymentsLeft} ${plural(r.paymentsLeft, "payment", "payments")} of ${amount} ${plural(r.paymentsLeft, "is", "are")} still scheduled, the next one on ${formatLong(r.nextDue)}`
+      : `The plan shows no payments left; the last one of ${amount} was due on ${formatLong(r.nextDue)}`;
+  const next =
+    r.paymentsLeft > 0
+      ? `My next payment of ${amount} is scheduled for ${formatLong(r.nextDue)}.`
+      : "No more payments are scheduled on this plan.";
   const on = r.returnedOn ? ` on ${formatLong(r.returnedOn)}` : "";
 
   const cases = {
@@ -30,7 +37,7 @@ export function templateLetter(r: DisputeRequest): DisputeLetter {
     },
     double_charge: {
       subject: `Charged twice for ${order}`,
-      facts: `I was charged twice for one payment of ${amount} on this plan. My next payment of ${amount} is scheduled for ${formatLong(r.nextDue)}.`,
+      facts: `I was charged twice for one payment of ${amount} on this plan. ${next}`,
       ask: "Please refund the duplicate payment.",
     },
     other: {
