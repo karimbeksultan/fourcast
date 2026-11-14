@@ -139,11 +139,15 @@ export type Verdict = {
   firstShort: Shortfall | null;
   /** Worst day if bought today. */
   deepest: Shortfall | null;
-  /** First day in the next 42 when buying never takes the account below $0. */
+  /** First day in the next 42 when buying never takes the account below $0 and no plan payment fails (deeper) that morning because of it. */
   bestDay: ISODate | null;
   fitsByDay: { date: ISODate; fits: boolean; lowest: Cents }[];
   /** Weekly or every-two-weeks pay only: the day after a payday to buy on, so every payment lands the morning after a payday. */
   paydaySync: { buyOn: ISODate; debits: ISODate[] } | null;
+  /** Bought today: the first plan payment that would fail that morning because of the purchase (or fail deeper). shortBy = how short that morning. */
+  morningRisk: { date: ISODate; lender: Lender; merchant: string; shortBy: Cents } | null;
+  /** Without this purchase: the first day in the 42 when a plan payment fails that morning or the day ends below $0. */
+  alreadyShort: { date: ISODate; amount: Cents; reason: "end_of_day" | "morning" } | null;
 };
 
 export type PlanSync = { onPayday: number; total: number };

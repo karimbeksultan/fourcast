@@ -78,18 +78,22 @@ describe("demo story (opened on Nov 15, 2026)", () => {
     expect(dec4.balance).toBeGreaterThan(0);
   });
 
-  it("$240 in 4 today: not now, $92.50 short on Dec 3, fits from Fri Dec 4, Payday Sync on Sat Dec 5", () => {
+  it("$240 in 4 today: not now, $92.50 short on Dec 3, Klarna $52.50 short that morning; fits from Sat Dec 5 = Payday Sync", () => {
     const v = checkPurchase(withKlarna(), { price: 24_000, payments: 4 }, TODAY);
     expect(v.verdict).toBe("not_now");
     expect(v.firstShort).toEqual({ date: "2026-12-03", amount: 9_250 });
     expect(v.deepest).toEqual({ date: "2026-12-03", amount: 9_250 });
-    expect(v.bestDay).toBe("2026-12-04");
+    // Morning model: the purchase would make Klarna's Dec 3 autopay fail; without it Zip on Dec 4 is already short.
+    expect(v.morningRisk).toEqual({ date: "2026-12-03", lender: "Klarna", merchant: "Target", shortBy: 5_250 });
+    expect(v.alreadyShort).toEqual({ date: "2026-12-04", amount: 1_250, reason: "morning" });
+    // Not Fri Dec 4: buying then makes Zip's failing payment that morning deeper.
+    expect(v.bestDay).toBe("2026-12-05");
     expect(v.paydaySync).toEqual({
       buyOn: "2026-12-05",
       debits: ["2026-12-05", "2026-12-19", "2027-01-02", "2027-01-16"],
     });
     expect(v.fitsByDay).toHaveLength(42);
-    expect(v.fitsByDay.filter((f) => f.fits)[0].date).toBe("2026-12-04");
+    expect(v.fitsByDay.filter((f) => f.fits)[0].date).toBe("2026-12-05");
     expect(v.schedule.map((p) => p.amount)).toEqual([6_000, 6_000, 6_000, 6_000]);
   });
 
@@ -226,6 +230,37 @@ describe("Guard: the morning model", () => {
     const s = state(money({ balance: 0, nextPayday: "2026-12-31" }), [{ ...plan("r", 5_000), status: "returned", returnedOn: TODAY }]);
     expect(debitRisks(s, TODAY)).toMatchObject([{ planId: "r", level: "fails", disputed: true }]);
     expect(AppStateSchema.safeParse({ ...s, limits: { Afterpay: 100_000 } }).success).toBe(true);
+  });
+});
+
+describe("Before you buy: the morning model", () => {
+  const afterpay = { id: "a", lender: "Afterpay" as const, merchant: "Nike", installment: 4_500, paymentsLeft: 1, nextDue: "2026-11-16", intervalDays: 14 };
+  // $200 today, rent $180 today, Afterpay $45 tomorrow morning, the paycheck lands that afternoon.
+  const tight = state(money({ balance: 20_000, rent: 18_000, rentDay: 15, paycheck: 100_000, nextPayday: "2026-11-16" }), [afterpay]);
+
+  it("a purchase that makes a morning debit fail deeper does not fit, though every end of day is fine", () => {
+    expect(debitRisks(tight, TODAY)).toMatchObject([{ lender: "Afterpay", level: "fails", shortBy: 2_500 }]);
+    const v = checkPurchase(tight, { price: 6_000, payments: 4 }, TODAY);
+    expect(v.firstShort).toBeNull();
+    expect(v.verdict).toBe("not_now");
+    expect(v.morningRisk).toEqual({ date: "2026-11-16", lender: "Afterpay", merchant: "Nike", shortBy: 4_000 });
+    expect(v.alreadyShort).toEqual({ date: "2026-11-16", amount: 2_500, reason: "morning" });
+    // Bought the day after, it no longer touches that morning.
+    expect(v.bestDay).toBe("2026-11-17");
+  });
+
+  it("already short without the purchase: even $1 does not fit, and the reason is given", () => {
+    const s = state(money({ balance: 1_000, weeklySpend: 5_000, nextPayday: "2027-06-01" }));
+    const v = checkPurchase(s, { price: 100, payments: 4 }, TODAY);
+    expect(v.verdict).toBe("not_now");
+    expect(v.alreadyShort).toMatchObject({ reason: "end_of_day" });
+    expect(v.alreadyShort!.date < "2026-11-18").toBe(true);
+    expect(v.morningRisk).toBeNull();
+  });
+
+  it("nothing short, nothing at risk: both stay null", () => {
+    const v = checkPurchase(getSampleState(TODAY), { price: 24_000, payments: 4 }, TODAY);
+    expect(v).toMatchObject({ verdict: "fits", morningRisk: null, alreadyShort: null });
   });
 });
 

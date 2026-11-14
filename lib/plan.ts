@@ -231,11 +231,45 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
     return paid;
   };
 
+  // Plan debits run in the morning, before the paycheck (Guard). Bought on day `s`, the purchase must not
+  // make a debit on day `d` fail, or fail deeper than it already would. Returns how short that morning gets.
+  const morningHit = (s: number, d: number): Cents | null => {
+    const day = base[d];
+    if (!day.events.some((e) => e.kind === "debit")) return null;
+    const withBuy = day.morning - paidBy(s, d);
+    return withBuy < Math.min(0, day.morning) ? -withBuy : null;
+  };
+
   const fitsByDay: Verdict["fitsByDay"] = [];
   for (let s = 0; s < WINDOW_DAYS; s++) {
     let lowest = Infinity;
-    for (let d = s; d < length; d++) lowest = Math.min(lowest, base[d].balance - paidBy(s, d));
-    fitsByDay.push({ date: base[s].date, fits: lowest >= 0, lowest });
+    let mornings = true;
+    for (let d = s; d < length; d++) {
+      lowest = Math.min(lowest, base[d].balance - paidBy(s, d));
+      if (mornings && morningHit(s, d) !== null) mornings = false;
+    }
+    fitsByDay.push({ date: base[s].date, fits: lowest >= 0 && mornings, lowest });
+  }
+
+  let morningRisk: Verdict["morningRisk"] = null;
+  for (let d = 0; d < length && !morningRisk; d++) {
+    const shortBy = morningHit(0, d);
+    if (shortBy === null) continue;
+    // The last debit that morning is the one that sees the least in checking.
+    const debit = base[d].events.filter((e) => e.kind === "debit").at(-1)!;
+    morningRisk = { date: base[d].date, lender: debit.lender, merchant: debit.merchant, shortBy };
+  }
+
+  // Without the purchase: the first day in the window that is already short (a debit fails that morning,
+  // or the day ends below $0). Then no price fits until that is fixed on Guard.
+  let alreadyShort: Verdict["alreadyShort"] = null;
+  for (let d = 0; d < WINDOW_DAYS && !alreadyShort; d++) {
+    const day = base[d];
+    if (day.morning < 0 && day.events.some((e) => e.kind === "debit")) {
+      alreadyShort = { date: day.date, amount: -day.morning, reason: "morning" };
+    } else if (day.balance < 0) {
+      alreadyShort = { date: day.date, amount: -day.balance, reason: "end_of_day" };
+    }
   }
 
   let firstShort: Shortfall | null = null;
@@ -267,6 +301,8 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
     bestDay: fitsByDay.find((f) => f.fits)?.date ?? null,
     fitsByDay,
     paydaySync,
+    morningRisk,
+    alreadyShort,
   };
 }
 

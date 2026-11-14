@@ -11,7 +11,8 @@ Dates are relative to the day the page is opened; the table shows them for **Sun
 - **Guard (morning model):** lenders debit in the morning, the paycheck lands in the afternoon. A plan payment's *morning* = yesterday's end-of-day balance minus that day's rent and plan payments, in order, before the paycheck and spending. **fails** if the morning goes below $0 (short by that much), **tight** if it clears with less than $50 left. End-of-day numbers do not change.
 - Twice-a-month pay: a payday on the 15th or the 28th–31st means the 15th and the last day of each month; on the 1st, the 1st and the 15th; otherwise two days 15 apart (a day past the end of a short month moves to its last day).
 - Pay in 4: the first payment on the day of purchase, then every 14 days; leftover cents go to the first payment.
-- A purchase "fits" on a day if, bought that day, the balance never goes below $0 from then until after its last payment (even past day 42).
+- A purchase "fits" on a day if, bought that day, the balance never goes below $0 from then until after its last payment (even past day 42), **and** no plan payment fails that morning because of it (or fails deeper than it already would). Its own payments count in the morning of the day they land.
+- **Already short:** without the purchase, the first day in the 42 when a plan payment fails that morning or the day ends below $0. Then no price fits until that is fixed on Guard.
 - **Payday Sync** (weekly or every-two-weeks pay only): the first day **after** a payday on which the purchase fits. Every payment then lands the morning after a payday.
 
 ## Sample data ("Use sample data")
@@ -36,11 +37,11 @@ If AI is off, the same plan is entered by hand in four fields.
 | Timeline after adding Klarna | **short · $12.50 short on the morning of Fri, Dec 4** (end of day Dec 3 is $27.50) · $680 owed · 7 payments in 6 weeks · biggest pull: Affirm |
 | **Guard after adding Klarna** | **1 payment at risk: Zip · Walmart $40.00, Fri Dec 4, morning — $12.50 short, paycheck lands later that day** (end of day Dec 3 is $27.50; the Klarna plan put the Zip payment at risk) |
 | Paydays in the window | Nov 20, Dec 4, Dec 18 |
-| Check $240 in 4, today | **Not right now** · $92.50 short on Thu, Dec 3 |
-| Best day | **Fri, Dec 4** |
+| Check $240 in 4, today | **Not right now** · $92.50 short on Thu, Dec 3 · morning risk: **Klarna · Target on Thu, Dec 3 would be $52.50 short that morning** |
+| Already short without the buy | **Fri, Dec 4, morning, $12.50** (the Zip payment, same as Guard) |
+| Best day | **Sat, Dec 5** (not Fri, Dec 4: buying then makes Zip's failing payment that morning deeper) |
 | Payday Sync | **Buy Sat, Dec 5: every payment lands the morning after payday** (Dec 5, Dec 19, Jan 2, Jan 16) |
-| Klarna badge | 0 of 3 on payday (it hits the day before payday) |
 | Calendar file | 7 payment events with a reminder at 8 pm the evening before + 3 payday events; links `/?due=YYYY-MM-DD` |
 
 ## Edge cases (in the tests)
-Paycheck and payment on the same day (end of day fine, morning fails) · two payments on one morning taken in order · tight below $50 · rent before a plan payment the same morning · a returned plan's payments marked disputed · rent on the 31st in February · a purchase followed past day 42 · $100 split in 3 · weekly spending adds up exactly · time zones and DST · Payday Sync is off for monthly pay · semimonthly paydays on the 15th and the last day (Jan 15, Jan 31, Feb 15, Feb 28; a debit on Jan 31 with $0 fails that morning) · evening check-in on Dec 3 with $27.50 keeps Zip $12.50 short (today's debits are not taken twice).
+Paycheck and payment on the same day (end of day fine, morning fails) · two payments on one morning taken in order · tight below $50 · rent before a plan payment the same morning · a returned plan's payments marked disputed · rent on the 31st in February · a purchase followed past day 42 · $100 split in 3 · weekly spending adds up exactly · time zones and DST · Payday Sync is off for monthly pay · a purchase that deepens a failing morning debit does not fit (Afterpay $25 → $40 short) · already short without the purchase, even $1 does not fit · semimonthly paydays on the 15th and the last day (Jan 15, Jan 31, Feb 15, Feb 28; a debit on Jan 31 with $0 fails that morning) · evening check-in on Dec 3 with $27.50 keeps Zip $12.50 short (today's debits are not taken twice).
