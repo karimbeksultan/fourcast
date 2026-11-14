@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addDays, formatShort, formatUSD } from "@/lib/dates";
-import { buildTimeline } from "@/lib/plan";
+import { applyCheckIn, buildTimeline } from "@/lib/plan";
 import type { AppState, ISODate } from "@/lib/types";
 import { toCents } from "./copy";
 
@@ -41,7 +41,9 @@ export function CheckIn({
     const cents = toCents(balance);
     if (cents === null) return setError("Enter what's in checking, like 412.30.");
     setError(null);
-    const next = { ...state, money: { ...state.money!, balance: cents } };
+    // The typed number is what's in checking now, at the end of today. Money.balance is the start of today,
+    // so applyCheckIn puts today's debits and spending back; otherwise they'd be subtracted twice.
+    const next = applyCheckIn(state, cents, today);
     onSave(next);
     const after = buildTimeline(next, today).days.find((d) => d.date === due);
     if (after) setResult({ ok: after.morning >= 0, amount: Math.abs(after.morning) });
