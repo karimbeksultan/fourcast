@@ -1,5 +1,5 @@
 // Smoke check after every deploy: npm run smoke -- https://your-app.vercel.app
-// Pages answer 200, /api/health says ok, /api/read-plan refuses an empty body.
+// Pages answer 200, /api/health says ok, /api/read-plan and /api/dispute refuse an empty body.
 // No AI call is made, so it costs no model quota.
 const base = (process.argv[2] || process.env.SMOKE_URL || "").replace(/\/+$/, "");
 if (!base) {
@@ -27,7 +27,8 @@ async function get(path) {
 }
 
 const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
-for (const path of ["/", "/timeline", "/check", `/?due=${tomorrow}`]) {
+const pages = ["/", "/plans", "/timeline", "/check", "/dispute", "/pricing", "/faq", `/?due=${tomorrow}`, `/plans?due=${tomorrow}`];
+for (const path of pages) {
   await check(`GET ${path}`, () => get(path).then(() => ""));
 }
 
@@ -51,6 +52,20 @@ await check("POST /api/read-plan with an empty body", async () => {
     throw new Error(`expected 400 unreadable, got ${res.status} ${JSON.stringify(body)}`);
   }
   return "400 unreadable";
+});
+
+await check("POST /api/dispute with an empty body", async () => {
+  const res = await fetch(`${base}/api/dispute`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: "{}",
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  });
+  const body = await res.json().catch(() => null);
+  if (res.status !== 400 || body?.code !== "bad_request") {
+    throw new Error(`expected 400 bad_request, got ${res.status} ${JSON.stringify(body)}`);
+  }
+  return "400 bad_request";
 });
 
 // exitCode, not process.exit(): exiting with fetch sockets still open crashes Node on Windows.
