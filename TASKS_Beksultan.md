@@ -2,6 +2,22 @@
 
 Файл самодостаточный: его можно целиком вставить в новую сессию Claude Code. Сначала прочитай `BRIEF.md` и свою строку в `TASKS.md`.
 
+## ✅ Статус на 23:30 14.11
+- **Бэкенд v2 готов и на проде:** G-B1…G-B7 (модель утра, `debitRisks`, Payday Sync на день после зарплаты, `/api/dispute`, `.ics` про утро, лимиты), 23 теста, CI и smoke зелёные. Фронт уже на настоящем контракте (заглушки удалены).
+- **Сделано из старого списка:** Vercel вместо сервера, AI-цепочка моделей, Stripe в тестовом режиме (туда и обратно), B6 `research/` (+ `search-demand.md`), B7 ревью дизайна, прогон жюри №1 (`docs/jury-run-1.md`), предпрогон B8 (pass/fail в «Передаче»), README v2, чистка: ключей в истории нет, `npm audit --omit=dev` = 0.
+- **Осталось:** КТ2 05:00 · B8 повтор и B9 (строгий прогон жюри №2) в 08:00 · B11 сдача.
+
+## 📤 Сдача (B11), не позже 11:45 — по ссылке из письма организаторов (FAQ Q82)
+1. **Перед сдачей (11:00–11:30):** `npm run smoke -- https://fourcast-zimran.vercel.app` зелёный; пройти демо с телефона и ноутбука (шаги — `LIMIT_GUARD.md` §10, после Klarna — «1 payment at risk»).
+2. **В форму:**
+   - Дек — PDF от Аят, до 10 слайдов, трек **Money** на титульном.
+   - Продукт — **https://fourcast-zimran.vercel.app** (без логина).
+   - Репозиторий — **https://github.com/karimbeksultan/fourcast** (публичный, проверено).
+   - Трек — **Money**.
+3. **Сразу после отправки:** Vercel → fourcast → Settings → Git → Ignored Build Step → «Don't build anything». Прод не меняется до конца финала (Q73); чинить можно только упавшую ссылку.
+4. **По желанию, 1 минута:** на странице репозитория ⚙ у «About»: Website → `https://fourcast-zimran.vercel.app` (сейчас там `fourcast-five…`, он редиректит, но лучше прямая), Description → `Limit Guard for Pay in 4: never lose your limit to a payment that's 5 hours late.`
+5. **15:00** — список топ-10 в Telegram @business_cup_2026; питчи в 16:30, Green Hall.
+
 ## ⚡ v2 СЕЙЧАС (14.11, 22:15): Fourcast Limit Guard — читай [`LIMIT_GUARD.md`](LIMIT_GUARD.md)
 - **Основа — Limit Guard.** Вкладка **Guard** (`/plans`) открывается первой: какие платежи не пройдут утром до зарплаты и что сделать вечером. **Forecast** (`/timeline`) и **Before you buy** (`/check`) — дополнительные вкладки, это наш калькулятор (лента на 6 недель, «влезет ли покупка», Payday Sync).
 - **Ничего нового не заводим.** Тот же репозиторий `karimbeksultan/fourcast`, тот же проект Vercel **https://fourcast-zimran.vercel.app** (push в `main` = прод, ветки = превью), те же ключи в Vercel: `LLM_1…3`, `STRIPE_SECRET_KEY`. Новых переменных окружения v2 не требует: `/api/dispute` ходит через тот же `lib/llm.ts`.
