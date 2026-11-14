@@ -51,7 +51,7 @@ export default function TimelinePage() {
   return (
     <>
       <header className="space-y-1">
-        <h1 className="text-5xl font-bold tracking-tight sm:text-7xl">{STATUS_TITLE[t.status]}</h1>
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{STATUS_TITLE[t.status]}</h1>
         <LowestLine timeline={t} className="max-w-2xl text-lg sm:text-xl" />
         <p className="tabular text-sm text-muted-foreground">
           {formatUSD(t.owed)} left to pay, {t.debitsInWindow} payments in the next 6 weeks.
@@ -63,7 +63,7 @@ export default function TimelinePage() {
         )}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-3">
           <ForecastGrid
             cells={cellsFromTimeline(t, risks)}

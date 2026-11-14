@@ -82,7 +82,7 @@ export default function CheckPage() {
   return (
     <>
       <header className="space-y-1">
-        <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">Check a buy</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Check a buy</h1>
         <p className="text-muted-foreground">Pay in 4: the first payment today, then one every 2 weeks.</p>
         {stripeNote && (
           <p className="rounded-md bg-ok-soft px-3 py-2 font-medium" role="status">
@@ -124,12 +124,12 @@ export default function CheckPage() {
       </form>
 
       {verdict && purchase && (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
           <VerdictCard verdict={verdict} plus={Boolean(state.plus)} />
-          <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <div className="xl:col-start-2 xl:row-span-2 xl:row-start-1">
             <Plus state={state} timeline={timeline} verdict={verdict} today={today} save={save} />
           </div>
-          <div className="lg:col-start-1">
+          <div className="xl:col-start-1">
             {state.plus ? (
               <PlusAnswer verdict={verdict} timeline={timeline} state={state} today={today} />
             ) : (
@@ -168,7 +168,7 @@ function VerdictCard({ verdict, plus }: { verdict: Verdict; plus: boolean }) {
       : verdictLine(verdict);
   return (
     <section
-      className={cn("rounded-md p-4 sm:p-6 lg:col-start-1", fits ? "bg-ok-soft" : answer ? "bg-payday-soft" : "bg-short-soft")}
+      className={cn("rounded-md p-4 sm:p-6 xl:col-start-1", fits ? "bg-ok-soft" : answer ? "bg-payday-soft" : "bg-short-soft")}
       aria-live="polite"
     >
       <p className={cn("text-4xl font-bold tracking-tight sm:text-5xl", fits ? "text-ok" : answer ? "text-accent-foreground" : "text-short")}>

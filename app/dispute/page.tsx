@@ -98,7 +98,7 @@ export default function DisputePage() {
   return (
     <>
       <header className="max-w-3xl space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Write my dispute</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Write my dispute</h1>
         <p className="text-lg text-muted-foreground">
           {plan.lender}
           {plan.merchant ? `, ${plan.merchant}` : ""}: {formatUSD(plan.installment)} × {left.length} left
@@ -107,7 +107,7 @@ export default function DisputePage() {
         </p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
         <form
           className="space-y-4 rounded-md border bg-card p-4 sm:p-6"
           onSubmit={(e) => {

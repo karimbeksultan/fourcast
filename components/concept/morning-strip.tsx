@@ -53,7 +53,7 @@ export function MorningStrip({ timeline, focus }: { timeline: Timeline; focus?: 
       </div>
 
       <div ref={strip} className="relative overflow-x-auto rounded-lg border bg-card p-3 sm:p-4">
-        <ol className="grid min-w-[720px] gap-1.5" style={{ gridTemplateColumns: `repeat(${DAYS}, minmax(0, 1fr))` }}>
+        <ol className="grid min-w-[620px] gap-1" style={{ gridTemplateColumns: `repeat(${DAYS}, minmax(0, 1fr))` }}>
           {days.map((d, i) => {
             const pay = d.events.some((e) => e.kind === "paycheck");
             const debits = d.events.filter((e) => e.kind === "debit");
@@ -64,7 +64,7 @@ export function MorningStrip({ timeline, focus }: { timeline: Timeline; focus?: 
                   type="button"
                   onClick={() => setPicked(i)}
                   aria-pressed={picked === i}
-                  aria-label={`${formatShort(d.date)}: ${formatUSD(d.morning)} in the morning${pay ? ", payday" : ""}${debits.length ? `, ${debits.length} payment${debits.length > 1 ? "s" : ""}` : ""}`}
+                  aria-label={`${i === 0 ? "Today, " : ""}${formatShort(d.date)}: ${formatUSD(d.morning)} in the morning${pay ? ", payday" : ""}${debits.length ? `, ${debits.length} payment${debits.length > 1 ? "s" : ""}` : ""}`}
                   className={cn(
                     "flex w-full flex-col items-center rounded-md px-0.5 pt-1 pb-2 outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                     picked === i ? "bg-muted" : "hover:bg-muted/60",
@@ -93,8 +93,10 @@ export function MorningStrip({ timeline, focus }: { timeline: Timeline; focus?: 
                       />
                     )}
                   </span>
-                  <span className="mt-1 text-xs text-muted-foreground">{i === 0 ? "Today" : weekday(d.date)}</span>
-                  <span className="tabular text-sm font-semibold">{parts(d.date).day}</span>
+                  <span className="mt-1 text-xs text-muted-foreground">{weekday(d.date)}</span>
+                  <span className={cn("tabular rounded-full px-1.5 text-sm font-semibold", i === 0 && "bg-foreground text-background")}>
+                    {parts(d.date).day}
+                  </span>
                   <span className="mt-1 flex h-5 flex-wrap justify-center gap-0.5">
                     {pay && <span className="rounded-sm bg-payday px-1 text-[10px] font-semibold leading-5 text-on-payday">Pay</span>}
                     {debits.map((e) =>

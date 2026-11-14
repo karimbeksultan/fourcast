@@ -76,7 +76,7 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
                 </>
               )}
             </div>
-            <p className="mt-4 text-sm text-pretty text-primary-foreground">No sign-up, no bank login. Your data stays in this browser.</p>
+            <p className="mt-4 text-sm text-pretty text-primary-foreground">No sign-up, no bank login. Your plans are saved only in this browser.</p>
           </BlurFade>
           <BlurFade delay={0.2} inView className="mx-auto w-full max-w-md lg:max-w-none">
             <Preview />

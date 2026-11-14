@@ -12,7 +12,6 @@ import { MoneyForm } from "@/components/money-form";
 import { PlusOffer } from "@/components/plus-offer";
 import { PaymentsList } from "@/components/payments-list";
 import { PlanCard } from "@/components/plan-card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppState } from "@/hooks/use-app-state";
@@ -80,7 +79,7 @@ function Welcome({
         </Button>
       </div>
       <p className="text-sm text-muted-foreground">
-        No sign-up. Your data stays in this browser.
+        No sign-up. Your plans are saved only in this browser.
       </p>
     </section>
   );
@@ -137,7 +136,7 @@ function Overview({
       {/* One job here: your plans and your money, the inputs. What to do about them lives on Tonight. */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Your plans
           </h1>
           {timeline && state.plans.length > 0 && (
@@ -147,17 +146,11 @@ function Overview({
             </p>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {state.sample && <Badge variant="secondary">Sample data</Badge>}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8"
-            onClick={() => clearState()}
-          >
-            {state.sample ? "Clear sample data" : "Start over"}
+        {!state.sample && (
+          <Button variant="outline" size="sm" className="h-8" onClick={() => clearState()}>
+            Start over
           </Button>
-        </div>
+        )}
       </div>
 
       {notice && (
@@ -216,7 +209,7 @@ function Overview({
         </Link>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
         <div className="space-y-4">
           {state.plans.length > 0 ? (
             <section aria-labelledby="plans" className="space-y-3">

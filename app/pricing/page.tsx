@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Pricing — Fourcast" };
 const FREE = [
   "Unlimited Klarna, Afterpay, Affirm, Zip and PayPal plans",
   "Read plans from text or a screenshot",
-  "Guard: the payments that may not go through, and what to do about each",
+  "Tonight: the payments that may not go through, and what to do about each",
   "Mark a return and get a dispute letter",
   "Your 6-week forecast and a yes or not-yet before you buy",
 ];

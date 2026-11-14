@@ -24,7 +24,6 @@ import {
   type RefundStage,
 } from "@/lib/concept";
 import { buildTimeline, debitRisks } from "@/lib/plan";
-import { clearState } from "@/lib/storage";
 import type { AppState, ISODate, Plan } from "@/lib/types";
 
 export default function TonightPage() {
@@ -81,22 +80,6 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
 
   return (
     <div className="space-y-8">
-      {state.sample && (
-        <p className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-          <span className="rounded-sm bg-muted px-2 py-0.5 font-semibold text-foreground">Sample data</span>
-          <button
-            type="button"
-            onClick={() => {
-              clearState();
-              saveAcks({});
-            }}
-            className="font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            Clear sample data
-          </button>
-        </p>
-      )}
-
       <TonightHero
         risk={risk}
         more={Math.max(0, openRisks - 1)}
@@ -115,7 +98,7 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
         }}
       />
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-8">
           <MorningStrip timeline={timeline} focus={risk?.date} />
           <div className="space-y-3">
@@ -165,7 +148,7 @@ function TonightSkeleton() {
 function Start({ onSample }: { onSample: () => void }) {
   return (
     <section className="max-w-2xl space-y-5 py-6 sm:py-12">
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">One question every evening: will tomorrow&apos;s payments clear?</h1>
+      <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-5xl">One question every evening: will tomorrow&apos;s payments clear?</h1>
       <p className="text-lg text-muted-foreground">
         Fourcast checks every Klarna, Afterpay, Affirm and Zip payment against the morning it&apos;s taken, before your paycheck lands,
         and follows your refunds until the lender credits them.
@@ -185,7 +168,7 @@ function Start({ onSample }: { onSample: () => void }) {
           Start with my numbers
         </Link>
       </div>
-      <p className="text-sm text-muted-foreground">No sign-up. Your data stays in this browser.</p>
+      <p className="text-sm text-muted-foreground">No sign-up. Your plans are saved only in this browser.</p>
     </section>
   );
 }
