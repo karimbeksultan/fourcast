@@ -1,7 +1,7 @@
 "use client";
 
 // The answer first: one sentence about the next payment that won't make it, and the one thing to do tonight.
-import { ArrowRightLeft, Check, Hand, MoonStar, ShieldCheck } from "lucide-react";
+import { ArrowRightLeft, BellRing, Check, Hand, MoonStar, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { addDays, formatShort, formatUSD } from "@/lib/dates";
 import { moveAmount } from "@/lib/plan";
@@ -21,12 +21,17 @@ export function TonightHero({
   today,
   done = false,
   onDone,
+  onRemind,
+  plus = false,
 }: {
+  /** Calendar reminder the evening before (Plus); without Plus the page sends the person to the offer. */
+  onRemind?: () => void;
+  plus?: boolean;
   risk: DebitRisk | null;
   /** The person said they handled this payment (saved by the page). Without onDone the hero keeps it locally. */
   done?: boolean;
   onDone?: (done: boolean) => void;
-  /** Other payments at risk after this one (they live on Guard). */
+  /** Other payments at risk after this one (marked on the 6-week forecast). */
   more?: number;
   timeline: Timeline;
   today: ISODate;
@@ -146,6 +151,16 @@ export function TonightHero({
             {fails ? `I moved ${formatUSD(move)}` : "Got it"}
           </button>
         )}
+        {!isDone && onRemind && risk.date > today && (
+          <button
+            type="button"
+            onClick={onRemind}
+            className="inline-flex h-11 items-center gap-2 rounded-md border border-foreground/25 bg-card px-4 font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <BellRing className="size-4" aria-hidden />
+            {plus ? "Add the 8 pm reminder" : `Remind me ${formatShort(night).split(",")[0]} at 8 pm`}
+          </button>
+        )}
         <a
           href={`/plans?due=${risk.date}`}
           className="text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -154,7 +169,7 @@ export function TonightHero({
         </a>
         {more > 0 && (
           <a
-            href="/plans"
+            href="/timeline"
             className="text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {more} more payment{more === 1 ? "" : "s"} at risk after this one

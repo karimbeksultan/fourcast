@@ -59,7 +59,7 @@ export function AppNav() {
           <div className="flex items-center gap-2">
             {/* One action: outside the app it opens Tonight; inside, adding a plan is the next most common job. */}
             <Link
-              href={inApp ? "/plans" : "/tonight"}
+              href={inApp ? "/plans#add" : "/tonight"}
               className={cn(
                 "inline-flex h-11 items-center rounded-md bg-primary px-3 text-sm font-semibold whitespace-nowrap text-primary-foreground hover:bg-primary/90 sm:px-4 sm:text-base",
                 focus,

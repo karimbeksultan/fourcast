@@ -3,6 +3,8 @@
 // "Tonight" (CONCEPT.md): one screen that answers, in order, "do I need to do anything tonight?",
 // "what do my next mornings look like?", "where is my refund?" and "what do I owe?".
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { downloadIcs } from "@/components/ics-download";
 import { useState } from "react";
 import { MorningStrip } from "@/components/concept/morning-strip";
 import { OwedSummary, QuickCheck } from "@/components/concept/owed-and-check";
@@ -41,6 +43,7 @@ export default function TonightPage() {
 }
 
 function Tonight({ state, today, save }: { state: AppState; today: ISODate; save: (s: AppState) => void }) {
+  const router = useRouter();
   // Rendered only in the browser (state is undefined on the server), so localStorage is safe here.
   // The last return marked credited, kept so "Undo" can put the plan back.
   const [closed, setClosed] = useState<{ plan: Plan; text: string } | null>(null);
@@ -99,6 +102,8 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
         more={Math.max(0, openRisks - 1)}
         timeline={timeline}
         today={today}
+        plus={Boolean(state.plus)}
+        onRemind={() => (state.plus ? downloadIcs(state, today) : router.push("/plans#plus"))}
         done={risk ? Boolean(acks[ackKey(risk.planId, risk.date)]) : false}
         onDone={(done) => {
           if (!risk) return;
