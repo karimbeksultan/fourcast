@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { AddPlan } from "@/components/add-plan";
 import { GuardSummary, RiskCard } from "@/components/guard";
-import { debitRisks } from "@/components/guard-shim";
-import { markReturned, undoReturned, useReturns } from "@/components/returns";
 import { LowestLine } from "@/components/money";
 import { CheckIn } from "@/components/check-in";
 import { FREQUENCY_LABEL } from "@/components/copy";
@@ -18,7 +16,7 @@ import { useAppState } from "@/hooks/use-app-state";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useToday } from "@/hooks/use-today";
 import { formatShort, formatUSD } from "@/lib/dates";
-import { buildTimeline, planDebits } from "@/lib/plan";
+import { buildTimeline, debitRisks, planDebits } from "@/lib/plan";
 import { getSampleState } from "@/lib/sample";
 import { clearState, emptyState } from "@/lib/storage";
 import type { AppState, ISODate } from "@/lib/types";
@@ -69,8 +67,21 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
   const [checkInOpen, setCheckInOpen] = useState(true);
   const [editMoney, setEditMoney] = useState(false);
   const timeline = state.money ? buildTimeline(state, today) : null;
-  const returns = useReturns();
-  const risks = state.money ? debitRisks(state, today, returns) : [];
+  const returns: Record<string, ISODate> = Object.fromEntries(
+    state.plans.filter((p) => p.status === "returned" && p.returnedOn).map((p) => [p.id, p.returnedOn as ISODate]),
+  );
+  const risks = state.money ? debitRisks(state, today) : [];
+  const setReturned = (id: string, on: ISODate | null) =>
+    save({
+      ...state,
+      plans: state.plans.map((x) => {
+        if (x.id !== id) return x;
+        if (on) return { ...x, status: "returned" as const, returnedOn: on };
+        const rest = { ...x };
+        delete rest.returnedOn;
+        return { ...rest, status: "active" as const };
+      }),
+    });
   const disputed = state.plans.filter((p) => returns[p.id] && planDebits(p, today).length > 0);
   const showCheckIn = checkInOpen && due && /^\d{4}-\d{2}-\d{2}$/.test(due) && state.money;
 
@@ -165,12 +176,9 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
                     state={state}
                     today={today}
                     returnedOn={returns[p.id] ?? null}
-                    onReturned={(on) => markReturned(p.id, on)}
-                    onUndoReturn={() => undoReturned(p.id)}
-                    onRemove={() => {
-                      undoReturned(p.id);
-                      save({ ...state, plans: state.plans.filter((x) => x.id !== p.id) });
-                    }}
+                    onReturned={(on) => setReturned(p.id, on)}
+                    onUndoReturn={() => setReturned(p.id, null)}
+                    onRemove={() => save({ ...state, plans: state.plans.filter((x) => x.id !== p.id) })}
                   />
                 ))}
               </ul>

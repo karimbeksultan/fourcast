@@ -5,7 +5,6 @@ import { Check, Copy, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { draftDispute, ISSUES, type DisputeIssue, type Letter } from "@/components/dispute-template";
-import { useReturns } from "@/components/returns";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,7 +21,6 @@ export default function DisputePage() {
   const [state] = useAppState();
   const today = useToday();
   const planId = useQueryParam("plan");
-  const returns = useReturns();
   const [issue, setIssue] = useState<DisputeIssue>("refund_not_applied");
   const [details, setDetails] = useState("");
   const [letter, setLetter] = useState<(Letter & { source: "ai" | "template" }) | null>(null);
@@ -59,7 +57,7 @@ export default function DisputePage() {
     paymentsLeft: left.length,
     nextDue: left[0] ?? null,
     issue,
-    returnedOn: returns[plan.id] ?? null,
+    returnedOn: plan.returnedOn ?? null,
     details,
   };
 
@@ -105,7 +103,7 @@ export default function DisputePage() {
           {plan.lender}
           {plan.merchant ? `, ${plan.merchant}` : ""}: {formatUSD(plan.installment)} × {left.length} left
           {left[0] ? `, next ${formatShort(left[0])}` : ""}.
-          {returns[plan.id] ? ` Returned ${formatShort(returns[plan.id])}.` : ""}
+          {plan.returnedOn ? ` Returned ${formatShort(plan.returnedOn)}.` : ""}
         </p>
       </header>
 

@@ -6,7 +6,7 @@ import { addDays, formatShort, formatUSD } from "@/lib/dates";
 import type { ISODate } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { LENDER_MARK } from "./copy";
-import type { DebitRisk } from "./guard-shim";
+import type { DebitRisk } from "@/lib/types";
 
 /** "$12.50 short" → move $25: the gap plus $10, rounded up to $5. */
 export function moveAmount(shortBy: number): number {
