@@ -6,6 +6,7 @@
 **На GitHub:** ТЗ и трекинг — закреплённый issue [#13](https://github.com/karimbeksultan/fourcast/issues/13); задачи — #1–#7, #14 (тесты), #15 (Stripe) — бэкенд, Бексултан; #8–#12, #16 (опрос) — фронт и питч, Аят. Закрывать коммитом: `Closes #N`.
 
 **v2 с 21:45 14.11: [`LIMIT_GUARD.md`](LIMIT_GUARD.md) — главное обещание «не потерять лимит», калькулятор остаётся. Задачи G-B1…G-B7 (Бексултан) и G-A1…G-A8 (Аят) — там же; где расходится с этим файлом, прав LIMIT_GUARD.md.**
+**Ночь на 15.11: задачи Бексултана после ревью №2 — [`TASKS_Beksultan_v2.md`](TASKS_Beksultan_v2.md) (M1–M4, M7, S4, S6 с контрактами, порядком и временем).**
 **Где работаем:** тот же репозиторий, тот же Vercel https://fourcast-zimran.vercel.app, те же ключи в Vercel (LLM_1…3, STRIPE_SECRET_KEY) — ничего нового не заводим. **Guard** (`/plans`) — главная вкладка; **Forecast** (`/timeline`) и **Before you buy** (`/check`) — дополнительные (калькулятор).
 
 Статусы: todo · doing · done · blocked

@@ -18,6 +18,8 @@
 4. **По желанию, 1 минута:** на странице репозитория ⚙ у «About»: Website → `https://fourcast-zimran.vercel.app` (сейчас там `fourcast-five…`, он редиректит, но лучше прямая), Description → `Limit Guard for Pay in 4: never lose your limit to a payment that's 5 hours late.`
 5. **15:00** — список топ-10 в Telegram @business_cup_2026; питчи в 16:30, Green Hall.
 
+> **Сейчас (ночь на 15.11) работай по [`TASKS_Beksultan_v2.md`](TASKS_Beksultan_v2.md)** — правки после ревью №2.
+
 ## ⚡ v2 СЕЙЧАС (14.11, 22:15): Fourcast Limit Guard — читай [`LIMIT_GUARD.md`](LIMIT_GUARD.md)
 - **Основа — Limit Guard.** Вкладка **Guard** (`/plans`) открывается первой: какие платежи не пройдут утром до зарплаты и что сделать вечером. **Forecast** (`/timeline`) и **Before you buy** (`/check`) — дополнительные вкладки, это наш калькулятор (лента на 6 недель, «влезет ли покупка», Payday Sync).
 - **Ничего нового не заводим.** Тот же репозиторий `karimbeksultan/fourcast`, тот же проект Vercel **https://fourcast-zimran.vercel.app** (push в `main` = прод, ветки = превью), те же ключи в Vercel: `LLM_1…3`, `STRIPE_SECRET_KEY`. Новых переменных окружения v2 не требует: `/api/dispute` ходит через тот же `lib/llm.ts`.
