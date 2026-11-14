@@ -163,7 +163,7 @@ function VerdictCard({ verdict, plus }: { verdict: Verdict; plus: boolean }) {
   const line = fits
     ? "Buying today keeps you above $0 for the next 6 weeks."
     : answer && sync
-      ? "Then all 4 payments land on paydays."
+      ? "Then every payment lands the morning after payday."
       : "Buying today would take you below $0.";
   return (
     <section
@@ -196,7 +196,7 @@ function PlusAnswer({ verdict, timeline, state, today }: { verdict: Verdict; tim
       {verdict.paydaySync ? (
         <div className="rounded-md bg-payday p-5 text-on-payday sm:p-6">
           <p className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Buy {formatShort(verdict.paydaySync.buyOn)}: all 4 payments land on paydays.
+            Buy {formatShort(verdict.paydaySync.buyOn)}: every payment lands the morning after payday.
           </p>
           <p className="tabular mt-1 opacity-90">{verdict.paydaySync.debits.map((d) => formatShort(d)).join(", ")}</p>
         </div>
@@ -279,7 +279,8 @@ function Plus({
     // The 4 payments if bought on the recommended day: Payday Sync first, then the first day it fits.
     const buyOn = verdict.paydaySync?.buyOn ?? verdict.bestDay ?? today;
     const payments = verdict.schedule.map((p, k) => ({ date: addDays(buyOn, k * PAY_IN_4_INTERVAL), amount: p.amount }));
-    const paydays = new Set(paydaysBetween(state.money, buyOn, payments[payments.length - 1].date));
+    // Payday Sync puts payments the morning after a paycheck, when the money is already there.
+    const paydays = new Set(paydaysBetween(state.money, addDays(buyOn, -1), payments[payments.length - 1].date));
     return (
       <aside className="h-fit space-y-4 rounded-md border bg-card p-4 sm:p-5" aria-labelledby="payments">
         <div>
@@ -295,8 +296,8 @@ function Plus({
                 <span className="text-muted-foreground">{i + 1}.</span> {formatShort(p.date)}
               </span>
               <span className="flex items-center gap-2">
-                {paydays.has(p.date) && (
-                  <span className="rounded bg-payday-soft px-1.5 py-0.5 text-xs font-medium text-accent-foreground">Payday</span>
+                {paydays.has(addDays(p.date, -1)) && (
+                  <span className="rounded bg-payday-soft px-1.5 py-0.5 text-xs font-medium text-accent-foreground">After payday</span>
                 )}
                 <span className="tabular font-semibold">{formatUSD(p.amount)}</span>
               </span>
@@ -324,7 +325,7 @@ function Plus({
       <ul className="list-disc space-y-1 pl-5 text-sm">
         <li>The exact day you&apos;d run short, and by how much</li>
         <li>The first day it fits</li>
-        <li>Payday Sync: the day to buy so every payment lands on a payday</li>
+        <li>Payday Sync: the day to buy so every payment lands the morning after payday</li>
         <li>A reminder the night before each payment</li>
       </ul>
 

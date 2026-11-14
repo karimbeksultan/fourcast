@@ -8,16 +8,15 @@ export const metadata: Metadata = { title: "Pricing — Fourcast" };
 const FREE = [
   "Unlimited Klarna, Afterpay, Affirm, Zip and PayPal plans",
   "Read plans from text or a screenshot",
-  "Your 6-week forecast with the lowest day",
-  "A yes or not-yet before you buy",
-  "One-number check-in from any reminder link",
+  "Guard: the payments that may not go through, and what to do about each",
+  "Mark a return and get a dispute letter",
+  "Your 6-week forecast and a yes or not-yet before you buy",
 ];
 const PLUS = [
   "Everything in Free",
-  "The exact day you'd run short, and by how much",
-  "The first day a new buy fits",
-  "Payday Sync: the day to buy so all 4 payments land on paydays",
-  "Calendar reminders the night before each payment",
+  "A reminder at 8 pm the night before every risky payment, with a one-number check-in",
+  "Payday Sync: the day to buy so every payment lands the morning after payday",
+  "The exact day a new buy would run you short, and the first day it fits",
 ];
 
 const link =
@@ -28,7 +27,7 @@ export default function PricingPage() {
     <>
       <header className="max-w-3xl space-y-3">
         <h1 className="text-5xl font-bold tracking-tight sm:text-7xl">Pricing</h1>
-        <p className="text-xl text-muted-foreground">Seeing your plans is free. The answer to &quot;when can I buy it?&quot; is Plus.</p>
+        <p className="text-xl text-muted-foreground">Seeing the risk is free. Plus watches it for you and answers &quot;when can I buy it?&quot;.</p>
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -77,7 +76,7 @@ export default function PricingPage() {
           How the trial works
         </h2>
         <p>Plus is free until your second payday from today. Cancel any time on the Check a buy page, and nothing is charged.</p>
-        <p>Why a year: one average overdraft fee ($26.77, Bankrate 2025) costs about as much as a year of Plus.</p>
+        <p>Why a year: one cut limit or one average overdraft fee ($26.77, Bankrate 2025) costs about as much as a year of Plus.</p>
         <p className="text-sm text-muted-foreground">This is a hackathon demo: checkout runs in demo mode and no real payment is taken.</p>
       </section>
     </>

@@ -12,7 +12,7 @@ import { useAppState } from "@/hooks/use-app-state";
 import { useToday } from "@/hooks/use-today";
 import { formatShort, formatUSD } from "@/lib/dates";
 import { buildIcs } from "@/lib/ics";
-import { buildTimeline } from "@/lib/plan";
+import { buildTimeline, debitRisks } from "@/lib/plan";
 import type { AppState, ISODate } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +54,8 @@ export default function TimelinePage() {
   }
 
   const t = buildTimeline(state, today);
-  const day = t.days.find((d) => d.date === (selected ?? t.lowest.date)) ?? t.days[0];
+  const risks = debitRisks(state, today);
+  const day = t.days.find((d) => d.date === (selected ?? risks[0]?.date ?? t.lowest.date)) ?? t.days[0];
   const upcoming = t.days.filter((d) => d.events.length > 0).slice(0, 8);
 
   return (
@@ -65,12 +66,17 @@ export default function TimelinePage() {
         <p className="tabular text-sm text-muted-foreground">
           {formatUSD(t.owed)} left to pay, {t.debitsInWindow} payments in the next 6 weeks.
         </p>
+        {risks.length > 0 && (
+          <Link href="/plans" className="inline-block font-semibold text-short underline underline-offset-4">
+            {risks.length === 1 ? "1 payment" : `${risks.length} payments`} may not go through. See what to do on Guard.
+          </Link>
+        )}
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-3">
           <ForecastGrid
-            cells={cellsFromTimeline(t)}
+            cells={cellsFromTimeline(t, risks)}
             today={today}
             ring={t.lowest.date}
             selected={day.date}

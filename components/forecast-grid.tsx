@@ -5,7 +5,7 @@ import { House } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatShort, formatUSD, parts } from "@/lib/dates";
 import { TIGHT_BELOW } from "@/lib/plan";
-import type { ISODate, Timeline, TimelineDay, Verdict } from "@/lib/types";
+import type { DebitRisk, ISODate, Timeline, TimelineDay, Verdict } from "@/lib/types";
 import { LENDER_MARK } from "./copy";
 
 export type Tone = "ok" | "tight" | "short" | "fit" | "nofit";
@@ -17,6 +17,8 @@ export type Cell = {
   marks: string[];
   rent: boolean;
   label: string;
+  /** A plan payment that day may not go through in the morning (Guard). */
+  risk?: "fails" | "tight";
 };
 
 const TONE_CLASS: Record<Tone, string> = {
@@ -54,15 +56,21 @@ function dayLabel(day: TimelineDay): string {
   return `${formatShort(day.date)}: ${formatUSD(day.balance)} at end of day${parts.length ? `, ${parts.join(", ")}` : ""}`;
 }
 
-export function cellsFromTimeline(t: Timeline): Cell[] {
-  return t.days.map((d) => ({
-    date: d.date,
-    tone: toneOf(d.balance),
-    payday: d.events.some((e) => e.kind === "paycheck"),
-    rent: d.events.some((e) => e.kind === "rent"),
-    marks: d.events.flatMap((e) => (e.kind === "debit" ? [LENDER_MARK[e.lender]] : [])),
-    label: dayLabel(d),
-  }));
+export function cellsFromTimeline(t: Timeline, risks: DebitRisk[] = []): Cell[] {
+  const worst = new Map<ISODate, "fails" | "tight">();
+  for (const r of risks) if (worst.get(r.date) !== "fails") worst.set(r.date, r.level);
+  return t.days.map((d) => {
+    const risk = worst.get(d.date);
+    return {
+      date: d.date,
+      tone: toneOf(d.balance),
+      payday: d.events.some((e) => e.kind === "paycheck"),
+      rent: d.events.some((e) => e.kind === "rent"),
+      marks: d.events.flatMap((e) => (e.kind === "debit" ? [LENDER_MARK[e.lender]] : [])),
+      label: dayLabel(d) + (risk === "fails" ? ", a payment may not go through that morning" : risk === "tight" ? ", a payment leaves almost nothing that morning" : ""),
+      risk,
+    };
+  });
 }
 
 export function cellsFromVerdict(v: Verdict, t: Timeline): Cell[] {
@@ -141,8 +149,21 @@ export function ForecastGrid({
                     cell.date === today && "ring-1 ring-foreground",
                     isRing && (ringTone === "payday" ? "ring-3 ring-payday" : "ring-3 ring-foreground"),
                     selected === cell.date && !isRing && "ring-2 ring-primary",
+                    cell.risk === "fails" && "outline-2 -outline-offset-2 outline-short",
+                    cell.risk === "tight" && "outline-2 -outline-offset-2 outline-tight",
                   )}
                 >
+                  {cell.risk && (
+                    <span
+                      className={cn(
+                        "absolute top-1 right-1 flex size-4 items-center justify-center rounded-full text-[10px] font-bold text-white",
+                        cell.risk === "fails" ? "bg-short" : "bg-tight",
+                      )}
+                      aria-hidden
+                    >
+                      !
+                    </span>
+                  )}
                   {cell.payday && <span className="absolute inset-x-0 top-0 h-1.5 bg-payday" aria-hidden />}
                   <span className="tabular text-[11px] leading-none text-foreground/80 sm:text-xs">
                     {first ? `${new Date(Date.UTC(2000, month - 1, 1)).toLocaleString("en-US", { month: "short", timeZone: "UTC" })} ${day}` : day}
@@ -176,6 +197,14 @@ export function ForecastLegend({ mode = "balance" }: { mode?: "balance" | "fit" 
         <span className="inline-block h-1.5 w-3 rounded-full bg-payday" aria-hidden />
         Payday
       </span>
+      {mode === "balance" && (
+        <span className="flex items-center gap-1.5">
+          <span className="flex size-3.5 items-center justify-center rounded-full bg-short text-[9px] font-bold text-white" aria-hidden>
+            !
+          </span>
+          May not go through that morning
+        </span>
+      )}
       {mode === "balance" ? (
         <>
           {item("border border-border bg-card", "Over $100")}
@@ -221,6 +250,17 @@ export function DayStory({ day, today }: { day: TimelineDay; today: ISODate }) {
             </span>
           </li>
         ))}
+        {day.events.some((e) => e.kind === "debit" || e.kind === "rent") && (
+          <li className="flex justify-between gap-4 border-t pt-1">
+            <span className="text-muted-foreground">
+              {day.events.some((e) => e.kind === "paycheck") ? "Before your paycheck lands" : "After this morning's payments"}
+            </span>
+            <span className={cn("tabular font-medium", day.morning < 0 && "text-short")}>
+              {day.morning < 0 ? "−" : ""}
+              {formatUSD(Math.abs(day.morning))}
+            </span>
+          </li>
+        )}
         <li className="flex justify-between gap-4 border-t pt-1 font-semibold">
           <span>End of day</span>
           <span className={cn("tabular", day.balance < 0 && "text-short")}>

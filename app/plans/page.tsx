@@ -7,6 +7,7 @@ import { GuardSummary, RiskCard } from "@/components/guard";
 import { LowestLine } from "@/components/money";
 import { CheckIn } from "@/components/check-in";
 import { FREQUENCY_LABEL } from "@/components/copy";
+import { LimitsForm } from "@/components/limits-form";
 import { MoneyForm } from "@/components/money-form";
 import { PlanCard } from "@/components/plan-card";
 import { Badge } from "@/components/ui/badge";
@@ -230,6 +231,7 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
               />
             </>
           )}
+          {state.money && !editMoney && <LimitsForm state={state} onSave={save} />}
         </section>
       </div>
 

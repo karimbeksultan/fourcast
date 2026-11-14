@@ -6,14 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatShort, formatUSD } from "@/lib/dates";
-import { paydaySync, planDebits } from "@/lib/plan";
+import { planDebits } from "@/lib/plan";
 import type { AppState, ISODate, Plan } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { LENDER_MARK } from "./copy";
 
 export function PlanCard({
   plan,
-  state,
   today,
   returnedOn,
   onRemove,
@@ -29,8 +28,6 @@ export function PlanCard({
   onUndoReturn?: () => void;
 }) {
   const left = planDebits(plan, today);
-  const sync = paydaySync(state, plan, today);
-  const allSynced = sync.total > 0 && sync.onPayday === sync.total;
   const [asking, setAsking] = useState(false);
   const [on, setOn] = useState(today);
 
@@ -54,16 +51,6 @@ export function PlanCard({
             {returnedOn && (
               <span className="inline-block rounded-md bg-tight-soft px-1.5 py-0.5 text-xs font-medium text-tight">
                 Returned {formatShort(returnedOn)} · may still be taken
-              </span>
-            )}
-            {state.money && sync.total > 0 && !returnedOn && (
-              <span
-                className={cn(
-                  "inline-block rounded-md px-1.5 py-0.5 text-xs",
-                  allSynced ? "bg-payday-soft text-accent-foreground" : "bg-muted text-muted-foreground",
-                )}
-              >
-                {allSynced ? "All on paydays" : `${sync.onPayday} of ${sync.total} on payday`}
               </span>
             )}
           </div>

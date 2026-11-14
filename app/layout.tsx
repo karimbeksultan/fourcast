@@ -12,9 +12,9 @@ const sans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Fourcast — See every Pay in 4 before it lands",
+  title: "Fourcast — Never lose your limit to a payment that's 5 hours late",
   description:
-    "All your Klarna, Afterpay and Affirm payments on one 6-week forecast from your paycheck, and a yes or no before you buy.",
+    "Fourcast finds the Klarna, Afterpay and Affirm payments that won't make it before your paycheck lands, and tells you what to do the night before.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

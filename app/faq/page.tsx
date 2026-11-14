@@ -6,6 +6,18 @@ export const metadata: Metadata = { title: "FAQ — Fourcast" };
 
 const QA: [string, string][] = [
   [
+    "Why would a payment fail if I'm getting paid that day?",
+    "Pay-later apps usually take the payment in the morning, and paychecks often land in the afternoon. If checking can't cover it in between, the payment fails, a late fee may follow, and some lenders cut your spending limit. Guard checks every payment against what's there that morning.",
+  ],
+  [
+    "Do you know exactly when my lender takes the payment?",
+    "No. Fourcast assumes the careful case: in the morning, before your paycheck. A $25 transfer the night before costs less than a cut limit.",
+  ],
+  [
+    "I returned something but the payments keep coming. What do I do?",
+    "Mark the plan as returned on Guard. Its next payments show as \"may still be taken\", and you get a ready letter for the lender with blanks for your name and order number, plus the CFPB complaint link if they don't answer in 15 days.",
+  ],
+  [
     "Which services does Fourcast work with?",
     "Klarna, Afterpay, Affirm, Zip and PayPal Pay in 4. Any other plan works too if you type it in: the amount of each payment, how many are left and the next date.",
   ],
@@ -27,11 +39,11 @@ const QA: [string, string][] = [
   ],
   [
     "What is Payday Sync?",
-    "Pay in 4 takes a payment every 2 weeks. If you're paid every week or every 2 weeks, buying on the right payday makes all 4 payments land on paydays. Fourcast finds that day for you.",
+    "Pay in 4 takes a payment every 2 weeks. If you're paid every week or every 2 weeks, buying the day after a payday makes every payment land the morning after a paycheck, when the money is already there. Fourcast finds that day for you.",
   ],
   [
     "How do reminders work?",
-    "With Plus you download a calendar file. Each payment gets a reminder at 8 pm the evening before, with a link that asks one thing: what's in checking? Then you see if tomorrow is covered.",
+    "With Plus you download a calendar file. Each payment gets a reminder at 8 pm the evening before, with a link that asks one thing: what's in checking? Then you see if tomorrow morning is covered.",
   ],
   [
     "What does Plus cost, and can I cancel?",
