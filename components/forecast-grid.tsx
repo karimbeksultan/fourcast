@@ -4,7 +4,7 @@
 import { House } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatShort, formatUSD, parts } from "@/lib/dates";
-import { TIGHT_BELOW } from "@/lib/plan";
+import { TIGHT_BELOW, dayLow } from "@/lib/plan";
 import type { DebitRisk, ISODate, Timeline, TimelineDay, Verdict } from "@/lib/types";
 import { LENDER_MARK } from "./copy";
 
@@ -53,7 +53,8 @@ function dayLabel(day: TimelineDay): string {
           ? `${e.lender} ${formatUSD(e.amount)}`
           : `new buy ${formatUSD(e.amount)}`,
   );
-  return `${formatShort(day.date)}: ${formatUSD(day.balance)} at end of day${parts.length ? `, ${parts.join(", ")}` : ""}`;
+  const morning = day.morning < day.balance ? `${formatUSD(day.morning)} in the morning, ` : "";
+  return `${formatShort(day.date)}: ${morning}${formatUSD(day.balance)} at end of day${parts.length ? `, ${parts.join(", ")}` : ""}`;
 }
 
 export function cellsFromTimeline(t: Timeline, risks: DebitRisk[] = []): Cell[] {
@@ -63,7 +64,7 @@ export function cellsFromTimeline(t: Timeline, risks: DebitRisk[] = []): Cell[] 
     const risk = worst.get(d.date);
     return {
       date: d.date,
-      tone: toneOf(d.balance),
+      tone: toneOf(dayLow(d)),
       payday: d.events.some((e) => e.kind === "paycheck"),
       rent: d.events.some((e) => e.kind === "rent"),
       marks: d.events.flatMap((e) => (e.kind === "debit" ? [LENDER_MARK[e.lender]] : [])),

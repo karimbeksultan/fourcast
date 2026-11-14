@@ -38,14 +38,15 @@ describe("demo story (opened on Nov 15, 2026)", () => {
     const s = getSampleState(TODAY);
     const t = buildTimeline(s, TODAY);
     expect(t.status).toBe("ok");
-    expect(t.lowest).toMatchObject({ date: "2026-12-03", balance: 18_750 });
+    // Lowest is the morning of Fri, Dec 4: Zip's autopay runs before the paycheck lands.
+    expect(t.lowest).toMatchObject({ date: "2026-12-04", balance: 14_750, when: "morning" });
     expect(debitRisks(s, TODAY)).toEqual([]);
   });
 
-  it("after adding Klarna: tight, lowest $27.50 on Dec 3, $680 owed, 7 debits", () => {
+  it("after adding Klarna: short, $12.50 below $0 on the morning of Dec 4 (same answer as Guard), $680 owed, 7 debits", () => {
     const t = buildTimeline(withKlarna(), TODAY);
-    expect(t.status).toBe("tight");
-    expect(t.lowest).toEqual({ date: "2026-12-03", balance: 2_750, topPlanId: "sample-affirm" });
+    expect(t.status).toBe("short");
+    expect(t.lowest).toEqual({ date: "2026-12-04", balance: -1_250, topPlanId: "sample-affirm", when: "morning" });
     expect(t.owed).toBe(68_000);
     expect(t.debitsInWindow).toBe(7);
     expect(t.paydays).toEqual(["2026-11-20", "2026-12-04", "2026-12-18"]);
@@ -104,14 +105,15 @@ describe("demo story (opened on Nov 15, 2026)", () => {
 });
 
 describe("edge cases", () => {
-  it("paycheck and debit on the same day: the paycheck lands first", () => {
+  it("paycheck and debit on the same day: autopay hits the morning first, so it counts as short", () => {
     const s = state(money({ balance: 0, paycheck: 10_000 }), [
       { id: "p", lender: "Klarna", merchant: "", installment: 10_000, paymentsLeft: 1, nextDue: TODAY, intervalDays: 14 },
     ]);
     const t = buildTimeline(s, TODAY);
     expect(t.days[0].events.map((e) => e.kind)).toEqual(["paycheck", "debit"]);
     expect(t.days[0].balance).toBe(0);
-    expect(t.status).toBe("tight");
+    expect(t.days[0].morning).toBe(-10_000);
+    expect(t.status).toBe("short");
   });
 
   it("rent on the 31st moves to the last day of a short month", () => {

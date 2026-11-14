@@ -41,7 +41,7 @@ export default function DisputePage() {
     return (
       <section className="max-w-xl space-y-4 py-8">
         <h1 className="text-3xl font-bold tracking-tight">Write my dispute</h1>
-        <p className="text-lg text-muted-foreground">Open a plan on Guard and choose &quot;I returned this&quot; first.</p>
+        <p className="text-lg text-muted-foreground">Open a plan on Plans and choose &quot;I returned this&quot; first.</p>
         <Link href="/plans" className={cn(buttonVariants(), "h-12 px-6 text-base")}>
           Go to Guard
         </Link>

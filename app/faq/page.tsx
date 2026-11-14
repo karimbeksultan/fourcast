@@ -15,7 +15,7 @@ const QA: [string, string][] = [
   ],
   [
     "I returned something but the payments keep coming. What do I do?",
-    "Mark the plan as returned on Guard. Its next payments show as \"may still be taken\", and you get a ready letter for the lender with blanks for your name and order number, plus the CFPB complaint link if they don't answer in 15 days.",
+    "Mark the plan as returned on Tonight or Plans. Its next payments show as \"may still be taken\", and you get a ready letter for the lender with blanks for your name and order number, plus the CFPB complaint link if they don't answer in 15 days.",
   ],
   [
     "Which services does Fourcast work with?",
@@ -27,7 +27,7 @@ const QA: [string, string][] = [
   ],
   [
     "Where is my data stored?",
-    "Only in this browser. Nothing is saved on our server. Clear it any time with Start over on Guard.",
+    "Only in this browser. Nothing is saved on our server. Clear it any time with Start over on Plans.",
   ],
   [
     "How does reading a screenshot work?",

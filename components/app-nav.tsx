@@ -2,11 +2,12 @@
 
 // Site structure taken from zimran.io (sticky header, page links in the middle, one action on the right),
 // with two kinds of tabs: what a buyer reads before paying, and the app itself.
-import { CalendarDays, Menu, ShieldCheck, ShoppingBag, X } from "lucide-react";
+import { CalendarDays, Menu, MoonStar, ShieldCheck, ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Logo } from "./logo";
 
 const SITE = [
   { href: "/#how", label: "How it works" },
@@ -15,7 +16,8 @@ const SITE = [
 ];
 
 export const APP_TABS = [
-  { href: "/plans", label: "Guard", icon: ShieldCheck },
+  { href: "/tonight", label: "Tonight", icon: MoonStar },
+  { href: "/plans", label: "Plans", icon: ShieldCheck },
   { href: "/timeline", label: "Forecast", icon: CalendarDays },
   { href: "/check", label: "Before you buy", icon: ShoppingBag },
 ];
@@ -25,7 +27,7 @@ const focus = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 export function AppNav() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
-  // /dispute belongs to Guard
+  // /dispute belongs to Plans
   const active = (href: string) => path.startsWith(href) || (href === "/plans" && path.startsWith("/dispute"));
   const inApp = APP_TABS.some((t) => active(t.href));
 
@@ -33,11 +35,8 @@ export function AppNav() {
     <>
       <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-          <Link href="/" className={cn("flex items-center gap-2 text-2xl font-bold tracking-tight", focus)} onClick={() => setOpen(false)}>
-            <span className="flex size-8 items-center justify-center rounded-md bg-primary text-base text-primary-foreground" aria-hidden>
-              4
-            </span>
-            fourcast
+          <Link href="/" aria-label="Fourcast home" className={cn("rounded-md", focus)} onClick={() => setOpen(false)}>
+            <Logo />
           </Link>
 
           <nav aria-label="Site" className="hidden items-center gap-1 md:flex">
@@ -58,14 +57,15 @@ export function AppNav() {
           </nav>
 
           <div className="flex items-center gap-2">
+            {/* One action: outside the app it opens Tonight; inside, adding a plan is the next most common job. */}
             <Link
-              href="/plans"
+              href={inApp ? "/plans" : "/tonight"}
               className={cn(
                 "inline-flex h-11 items-center rounded-md bg-primary px-4 text-base font-semibold text-primary-foreground hover:bg-primary/90",
                 focus,
               )}
             >
-              {inApp ? "Guard" : "Open my Guard"}
+              {inApp ? "Add a plan" : "Open Tonight"}
             </Link>
             <button
               type="button"
@@ -115,7 +115,7 @@ export function AppNav() {
 
       {inApp && (
         <nav aria-label="App" className="fixed inset-x-0 bottom-0 z-30 border-t bg-card pb-[env(safe-area-inset-bottom)] sm:hidden">
-          <div className="grid grid-cols-3">
+          <div className="grid grid-cols-4">
             {APP_TABS.map((t) => (
               <Link
                 key={t.href}

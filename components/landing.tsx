@@ -1,272 +1,205 @@
 "use client";
 
-// Welcome page, v2 (LIMIT_GUARD.md §9). Structure follows zimran.io: big hero with one action, marquee
-// bands as transitions, a statement block, a grid of cards, "what it means for you", how it works,
-// pricing, a closing call to action. Colors are our own (DESIGN.md v3).
-import { CalendarDays, FileText, Moon, ShieldAlert, ShieldCheck, ShoppingBag } from "lucide-react";
+// Welcome page, concept "Tonight" (CONCEPT.md). Calm, plain, exact (DESIGN.md): sentence case, one static
+// statement band instead of marquees, and the real Tonight screen as the proof instead of stat cards.
+import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { cellsFromTimeline, ForecastGrid } from "@/components/forecast-grid";
-import { guardTitle, RiskCard } from "@/components/guard";
+import { TonightHero } from "@/components/concept/tonight-hero";
+import { LogoMark } from "@/components/logo";
 import { BlurFade } from "@/components/ui/blur-fade";
-import { Marquee } from "@/components/ui/marquee";
-import { NumberTicker } from "@/components/ui/number-ticker";
 import { useToday } from "@/hooks/use-today";
-import { buildTimeline, debitRisks } from "@/lib/plan";
-import { getSampleKlarnaPlan, getSampleState } from "@/lib/sample";
+import { getConceptSample, nextRisk } from "@/lib/concept";
+import { buildTimeline } from "@/lib/plan";
 import { cn } from "@/lib/utils";
 
 const btn =
   "inline-flex h-14 items-center justify-center rounded-md px-7 text-lg font-bold outline-none transition-transform focus-visible:ring-4 focus-visible:ring-ring/50 active:translate-y-px";
 
-function Band({ text, tone = "ink" }: { text: string; tone?: "ink" | "sky" }) {
-  return (
-    <div className={cn("py-4", tone === "ink" ? "bg-foreground text-background" : "bg-payday text-on-payday")} aria-hidden>
-      <Marquee pauseOnHover className="[--duration:32s] [--gap:2.5rem]">
-        {[0, 1].map((i) => (
-          <span key={i} className="flex items-center gap-10 text-2xl font-bold whitespace-nowrap sm:text-3xl">
-            {text}
-            <span className={cn("flex size-9 items-center justify-center rounded-md text-lg", tone === "ink" ? "bg-primary" : "bg-foreground")}>
-              4
-            </span>
-          </span>
-        ))}
-      </Marquee>
-    </div>
-  );
-}
-
-/** The real Guard on sample data (the same calculation as the app), counted from today. */
+/** The real Tonight answer on sample data (same calculation as the app), counted from today. */
 function Preview() {
   const today = useToday();
   if (!today) return <div className="aspect-[4/5] w-full rounded-lg bg-primary-foreground/10" aria-hidden />;
-  const sample = getSampleState(today);
-  const state = { ...sample, plans: [...sample.plans, getSampleKlarnaPlan(today)] };
-  const risks = debitRisks(state, today);
-  const t = buildTimeline(state, today);
+  const state = getConceptSample(today);
+  // Returns don't belong in the hero preview: show the morning story only.
+  const plain = { ...state, plans: state.plans.filter((p) => p.status !== "returned") };
   return (
-    <figure className="space-y-3 rounded-lg bg-card p-4 text-foreground shadow-[0_24px_60px_-30px_rgb(0_0_0/0.5)] sm:p-5 lg:rotate-2">
-      <p className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-        <ShieldAlert className="size-7 text-short" aria-hidden />
-        {guardTitle(risks)}
-      </p>
-      {risks[0] && (
-        <ul>
-          <RiskCard risk={risks[0]} today={today} />
-        </ul>
-      )}
-      <ForecastGrid cells={cellsFromTimeline(t, risks).slice(0, 21)} today={today} />
-      <figcaption className="text-xs text-muted-foreground">Sample data, counted live from today.</figcaption>
+    <figure className="space-y-3 text-foreground">
+      <TonightHero risk={nextRisk(plain, today)} timeline={buildTimeline(plain, today)} today={today} />
+      <figcaption className="text-sm text-primary-foreground">Sample data, counted live from today.</figcaption>
     </figure>
   );
 }
 
-const FEATURES = [
+const ANSWERS = [
   {
-    icon: ShieldAlert,
-    title: "See What Won't Make It",
-    body: "Every payment is checked against what's in checking that morning, before your paycheck lands.",
-    cls: "bg-foreground text-background",
+    q: "Will tomorrow's payments clear?",
+    a: "Every Klarna, Afterpay, Affirm and Zip payment is checked against the morning it's taken, before your paycheck lands. If one won't make it, you get one sentence and one thing to do that evening.",
+    eg: "Zip won't clear on Fri, Dec 4. Move $25 into checking on Thursday evening.",
   },
   {
-    icon: Moon,
-    title: "Fix It The Night Before",
-    body: "Move $25 tonight, or pay it by hand after payday. Your calendar reminds you at 8 pm.",
-    cls: "bg-card text-foreground",
+    q: "What do my next mornings look like?",
+    a: "Three weeks of balances after autopay, with paydays and every lender on one strip. Tap a day to see what came in and what went out.",
+    eg: "Fri, Dec 4: −$12.50 at 6 am, +$1,450 paycheck later that day.",
   },
   {
-    icon: FileText,
-    title: "Returned It? Dispute It.",
-    body: "Mark a return and get a ready letter for the lender, plus the CFPB link if they don't answer.",
-    cls: "bg-primary text-primary-foreground",
-  },
-  {
-    icon: CalendarDays,
-    title: "See 6 Weeks Ahead",
-    body: "Paychecks, rent and every Klarna, Afterpay and Affirm payment on one calendar.",
-    cls: "bg-payday text-on-payday",
-  },
-  {
-    icon: ShoppingBag,
-    title: "Buy The Morning After Payday",
-    body: "Check a new plan before you buy. Payday Sync picks the day so every payment lands after your paycheck.",
-    cls: "bg-card text-foreground",
+    q: "Where is my refund?",
+    a: "Mark a return and Fourcast follows it: sent back, store refunded, lender credited. When it stalls, the dispute letter is ready.",
+    eg: "Nordstrom with Afterpay: waiting 9 days, $40 still scheduled for Wed.",
   },
 ];
 
 export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSample: () => void; onStart: () => void }) {
   return (
     <div className="full-bleed -mt-6 -mb-8 sm:-mt-10 sm:-mb-12">
-      {/* 1. Hero */}
+      {/* Hero */}
       <section className="bg-primary text-primary-foreground">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-16 sm:pt-20 lg:grid-cols-[1.2fr_1fr] lg:pb-24">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-16 sm:pt-20 lg:grid-cols-[1fr_1.05fr] lg:pb-24">
           <BlurFade delay={0.05} inView>
-            <h1 className="text-[clamp(2.5rem,6.4vw,5.75rem)] leading-[1.03] font-bold tracking-tight text-balance">
-              Never Lose Your Limit To A Payment That&apos;s{" "}
-              <span className="rounded-md bg-payday box-decoration-clone px-3 text-on-payday">5 Hours Late</span>
+            <h1 className="text-[clamp(2.25rem,4.6vw,4rem)] leading-[1.05] font-bold tracking-tight text-balance">
+              Know tonight if tomorrow&apos;s payment{" "}
+              <span className="rounded-md bg-payday box-decoration-clone px-2.5 text-on-payday">will clear</span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-primary-foreground/85 sm:text-xl">
+            <p className="mt-6 max-w-xl text-lg text-pretty sm:text-xl">
               Autopay runs in the morning. Your paycheck lands in the afternoon. Fourcast finds the Klarna, Afterpay and Affirm
-              payments that won&apos;t make it and tells you what to do the night before.
+              payments that won&apos;t make it and tells you what to do the evening before.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               {hasData ? (
-                <Link href="/plans" className={cn(btn, "bg-background text-foreground hover:-translate-y-0.5")}>
-                  Open My Guard
+                <Link href="/tonight" className={cn(btn, "bg-background text-foreground hover:-translate-y-0.5")}>
+                  Open Tonight
                 </Link>
               ) : (
                 <>
                   <button type="button" onClick={onSample} className={cn(btn, "bg-background text-foreground hover:-translate-y-0.5")}>
-                    Try It With Sample Data
+                    Try it with sample data
                   </button>
                   <button
                     type="button"
                     onClick={onStart}
-                    className={cn(btn, "border-2 border-primary-foreground/70 text-primary-foreground hover:bg-primary-foreground/10")}
+                    className={cn(btn, "border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10")}
                   >
-                    Start With My Numbers
+                    Start with my numbers
                   </button>
                 </>
               )}
             </div>
-            <p className="mt-4 text-sm text-primary-foreground/75">No sign-up, no bank login. Your data stays in this browser.</p>
+            <p className="mt-4 text-sm text-pretty text-primary-foreground">No sign-up, no bank login. Your data stays in this browser.</p>
           </BlurFade>
-          <BlurFade delay={0.25} inView className="mx-auto w-full max-w-md lg:max-w-none">
+          <BlurFade delay={0.2} inView className="mx-auto w-full max-w-md lg:max-w-none">
             <Preview />
           </BlurFade>
         </div>
       </section>
 
-      {/* 2. Transition band */}
-      <Band text="Debit at 6 am. Paycheck at 3 pm. Limit cut by 5 pm." />
+      {/* One static statement, no motion */}
+      <div className="bg-foreground text-background">
+        <p className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-5 text-2xl font-bold tracking-tight text-balance sm:text-3xl">
+          <LogoMark className="size-9" />
+          Debit at 6 am. Paycheck at 3 pm. Limit cut by 5 pm.
+        </p>
+      </div>
 
-      {/* 3. Statement */}
+      {/* The problem, in a user's words, with independent numbers beside it */}
       <section className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:py-24 lg:grid-cols-[1.4fr_1fr]">
-        <div>
-          <p className="text-lg font-semibold text-primary">The problem</p>
-          <blockquote className="mt-3 text-[clamp(2rem,4.4vw,3.5rem)] leading-[1.08] font-bold tracking-tight">
+        <figure>
+          <blockquote className="text-[clamp(1.875rem,3.8vw,3rem)] leading-[1.1] font-bold tracking-tight text-balance">
             &ldquo;Missed a $7 payment by 5 hours&hellip; spending power went from{" "}
             <span className="rounded-md bg-foreground box-decoration-clone px-2 text-background">1000 to 200</span>.&rdquo;
           </blockquote>
-          <p className="mt-4 text-muted-foreground">An Afterpay user, App Store review, 2026. Klarna shows Klarna. Afterpay shows Afterpay. Nobody warns you first.</p>
-        </div>
+          <figcaption className="mt-4 max-w-xl text-pretty text-muted-foreground">
+            An Afterpay user, App Store review, 2026. Klarna shows Klarna. Afterpay shows Afterpay. Nobody warns you first.
+          </figcaption>
+        </figure>
         <dl className="grid content-end gap-6">
           <div className="border-t-2 border-foreground pt-3">
-            <dt className="text-5xl font-bold tracking-tight">1 in 10</dt>
-            <dd className="mt-1 text-base">
-              one- and two-star reviews of Klarna, Afterpay, Affirm and Zip is about a failed payment, a cut limit or a refund that
-              never landed. <span className="text-sm text-muted-foreground">617 App Store reviews, Nov 2026, keyword count</span>
-            </dd>
-          </div>
-          <div className="border-t-2 border-foreground pt-3">
-            <dt className="text-5xl font-bold tracking-tight">
-              <NumberTicker value={47} className="tracking-tight text-current" />%
-            </dt>
-            <dd className="mt-1 text-base">
-              of pay-later users paid late at least once in the past year.{" "}
-              <a className="text-sm text-muted-foreground underline underline-offset-4" href="https://www.lendingtree.com/personal/buy-now-pay-later-loan-statistics/" target="_blank" rel="noreferrer">
-                LendingTree, 2026
+            <dt className="tabular text-4xl font-bold tracking-tight">26%</dt>
+            <dd className="mt-1 text-pretty">
+              of US pay-later users paid late in the past year.{" "}
+              <a
+                className="text-sm text-muted-foreground underline underline-offset-4"
+                href="https://www.federalreserve.gov/publications/2026-economic-well-being-of-us-households-in-2025-credit.htm"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Federal Reserve, 2025 survey
               </a>
             </dd>
           </div>
           <div className="border-t-2 border-foreground pt-3">
-            <dt className="text-5xl font-bold tracking-tight">
-              <NumberTicker value={17.6} decimalPlaces={1} className="tracking-tight text-current" />M
-            </dt>
-            <dd className="mt-1 text-base">
-              Americans with pay-later plans at more than one lender. <span className="text-sm text-muted-foreground">CFPB, 2022 data</span>
+            <dt className="tabular text-4xl font-bold tracking-tight">11%</dt>
+            <dd className="mt-1 text-pretty">
+              had a pay-later payment set off a bank overdraft or NSF fee.{" "}
+              <span className="text-sm text-muted-foreground">Same survey</span>
             </dd>
           </div>
         </dl>
       </section>
 
-      {/* 4. What it does: card grid */}
-      <section className="mx-auto max-w-6xl px-4 pb-16 sm:pb-24" aria-labelledby="does">
-        <h2 id="does" className="text-[clamp(2.25rem,5vw,4rem)] leading-[1.05] font-bold tracking-tight">
-          What Fourcast Does
+      {/* What it answers: three questions, one evening */}
+      <section className="mx-auto max-w-6xl px-4 pb-16 sm:pb-24" aria-labelledby="answers">
+        <h2 id="answers" className="text-[clamp(2rem,4vw,3.25rem)] leading-[1.08] font-bold tracking-tight text-balance">
+          Three questions, answered every evening
         </h2>
-        <ul className="mt-10 grid gap-4 md:grid-cols-6">
-          {FEATURES.map((f, i) => (
-            <li
-              key={f.title}
-              className={cn(
-                "relative flex min-h-64 flex-col overflow-hidden rounded-lg border p-6",
-                f.cls,
-                i < 3 ? "md:col-span-2" : "md:col-span-3",
-              )}
-            >
-              <h3 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{f.title}</h3>
-              <p className="relative z-10 mt-3 max-w-sm text-base opacity-90">{f.body}</p>
-              <f.icon className="absolute -right-5 -bottom-5 size-36 opacity-15" strokeWidth={2.25} aria-hidden />
+        <ol className="mt-10 divide-y border-y">
+          {ANSWERS.map((x) => (
+            <li key={x.q} className="grid gap-3 py-8 md:grid-cols-[1fr_1.2fr] md:gap-10">
+              <h3 className="text-2xl leading-tight font-bold tracking-tight text-balance sm:text-3xl">{x.q}</h3>
+              <div className="space-y-3">
+                <p className="max-w-[60ch] text-lg text-pretty">{x.a}</p>
+                <p className="tabular inline-block rounded-md bg-muted px-3 py-2 text-sm font-medium text-pretty">
+                  <span className="text-muted-foreground">Example: </span>
+                  {x.eg}
+                </p>
+              </div>
             </li>
           ))}
-        </ul>
+        </ol>
+        <p className="mt-6 text-muted-foreground">
+          Also there when you need it: a 6-week forecast, and a check before a new Pay in 4.
+        </p>
       </section>
 
-      {/* 5. Transition band */}
-      <Band text="And here's what it means for your money" tone="sky" />
-
-      {/* 6. What it means for you */}
-      <section className="mx-auto grid max-w-6xl gap-4 px-4 py-16 sm:py-24 md:grid-cols-3">
-        <article className="rounded-lg border bg-card p-6">
-          <p className="text-6xl font-bold tracking-tight text-primary">$1,000</p>
-          <h3 className="mt-3 text-2xl font-bold">The limit you keep</h3>
-          <p className="mt-2 text-muted-foreground">In the review above, one $7 payment five hours late cut it to $200. A $25 transfer the night before keeps it.</p>
-        </article>
-        <article className="rounded-lg border bg-card p-6">
-          <p className="text-6xl font-bold tracking-tight text-primary">
-            $<NumberTicker value={26.77} decimalPlaces={2} className="tracking-tight text-current" />
-          </p>
-          <h3 className="mt-3 text-2xl font-bold">The overdraft you skip</h3>
-          <p className="mt-2 text-muted-foreground">The average US overdraft fee. One of them costs about as much as a year of Plus.</p>
-          <a className="mt-3 inline-block text-sm underline underline-offset-4" href="https://www.bankrate.com/banking/checking/checking-account-survey/" target="_blank" rel="noreferrer">
-            Bankrate, 2025
-          </a>
-        </article>
-        <article className="rounded-lg border bg-card p-6">
-          <p className="text-6xl font-bold tracking-tight text-primary">0</p>
-          <h3 className="mt-3 text-2xl font-bold">Bank logins needed</h3>
-          <p className="mt-2 text-muted-foreground">No account, no bank link, no email. Your numbers never leave this browser.</p>
-        </article>
-      </section>
-
-      {/* 7. How it works */}
+      {/* How it works */}
       <section id="how" className="scroll-mt-20 bg-foreground text-background">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
-          <h2 className="text-[clamp(2.25rem,5vw,4rem)] leading-[1.05] font-bold tracking-tight">How It Works</h2>
+          <h2 className="text-[clamp(2rem,4vw,3.25rem)] leading-[1.08] font-bold tracking-tight">How it works</h2>
           <ol className="mt-10 grid gap-8 md:grid-cols-3">
             {[
               ["Add your plans", "Paste, screenshot or type each Klarna, Afterpay or Affirm plan."],
-              ["Add your money", "Balance, paycheck, rent and everyday spending. Seven fields, one minute."],
-              ["Fix it the night before", "Guard shows the payments that won't make it and what to do about each one."],
+              ["Add your paycheck", "Balance, paycheck, rent and everyday spending. Seven fields, one minute."],
+              ["Open Tonight each evening", "It tells you which payment won't make it and what to do before morning."],
             ].map(([title, body], i) => (
               <li key={title} className="border-t-2 border-background/40 pt-4">
-                <span className="text-sm text-background/70">Step {i + 1}</span>
-                <h3 className="mt-1 text-3xl font-bold">{title}</h3>
-                <p className="mt-2 text-background/80">{body}</p>
+                <h3 className="text-2xl font-bold sm:text-3xl">
+                  <span className="tabular text-background/70">{i + 1}.</span> {title}
+                </h3>
+                <p className="mt-2 text-pretty text-background/85">{body}</p>
               </li>
             ))}
           </ol>
-          <p className="mt-10 flex items-center gap-2 text-background/80">
+          <p className="mt-10 flex items-center gap-2 text-background/85">
             <ShieldCheck className="size-5" aria-hidden />
             Not financial advice. Fourcast only counts your own numbers; you decide.
           </p>
         </div>
       </section>
 
-      {/* 8. Pricing */}
+      {/* Pricing */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24" aria-labelledby="price">
-        <h2 id="price" className="max-w-4xl text-[clamp(2.25rem,5vw,4rem)] leading-[1.05] font-bold tracking-tight">
-          See The Risk Free. <span className="rounded-md bg-primary box-decoration-clone px-3 text-primary-foreground">$29.99 A Year</span> To
-          Never Watch It Yourself.
+        <h2 id="price" className="max-w-4xl text-[clamp(2rem,4vw,3.25rem)] leading-[1.08] font-bold tracking-tight text-balance">
+          Seeing the risk is free. The evening reminder is{" "}
+          <span className="rounded-md bg-primary box-decoration-clone px-2.5 text-primary-foreground">$29.99 a year</span>
         </h2>
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border bg-card p-6">
             <p className="text-2xl font-bold">Free</p>
-            <p className="mt-1 text-muted-foreground">All your plans, Guard, return disputes, the 6-week forecast and a yes or not-yet before you buy.</p>
+            <p className="mt-1 text-pretty text-muted-foreground">
+              Tonight, all your plans, returns and dispute letters, the 6-week forecast and a yes or not-yet before you buy.
+            </p>
           </div>
           <div className="rounded-lg border-2 border-primary bg-card p-6">
             <p className="text-2xl font-bold">Plus, $29.99 a year</p>
-            <p className="mt-1 text-muted-foreground">
+            <p className="mt-1 text-pretty text-muted-foreground">
               A reminder at 8 pm before every risky payment, Payday Sync, and the exact day a new buy would run you short. Free for
               your next 2 paydays.
             </p>
@@ -277,24 +210,26 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
         </Link>
       </section>
 
-      <Band text="Klarna   Afterpay   Affirm   Zip   PayPal Pay in 4   One Guard for all of them" />
-
-      {/* 9. Closing call to action */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
-        <h2 className="max-w-4xl text-[clamp(2.5rem,6vw,5rem)] leading-[1.02] font-bold tracking-tight">Ready To Keep Your Limits?</h2>
-        <div className="mt-8 flex flex-wrap gap-3">
-          {hasData ? (
-            <Link href="/plans" className={cn(btn, "bg-primary text-primary-foreground hover:-translate-y-0.5")}>
-              Open My Guard
+      {/* Closing call to action */}
+      <section className="border-t">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+          <h2 className="max-w-4xl text-[clamp(2rem,4.4vw,3.5rem)] leading-[1.05] font-bold tracking-tight text-balance">
+            Keep your limits. Check tonight.
+          </h2>
+          <div className="mt-8 flex flex-wrap gap-3">
+            {hasData ? (
+              <Link href="/tonight" className={cn(btn, "bg-primary text-primary-foreground hover:-translate-y-0.5")}>
+                Open Tonight
+              </Link>
+            ) : (
+              <button type="button" onClick={onSample} className={cn(btn, "bg-primary text-primary-foreground hover:-translate-y-0.5")}>
+                Try it with sample data
+              </button>
+            )}
+            <Link href="/faq" className={cn(btn, "border-2 border-foreground text-foreground hover:bg-foreground/5")}>
+              Read the FAQ
             </Link>
-          ) : (
-            <button type="button" onClick={onSample} className={cn(btn, "bg-primary text-primary-foreground hover:-translate-y-0.5")}>
-              Try It With Sample Data
-            </button>
-          )}
-          <Link href="/faq" className={cn(btn, "border-2 border-foreground text-foreground hover:bg-foreground/5")}>
-            Read The FAQ
-          </Link>
+          </div>
         </div>
       </section>
     </div>

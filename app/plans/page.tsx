@@ -97,7 +97,7 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
     <>
       <div className="space-y-2">
         <h1 className={timeline ? "sr-only" : "text-4xl font-bold tracking-tight sm:text-5xl"}>
-          {timeline ? "Guard" : "Your plans"}
+          {timeline ? "Plans" : "Your plans"}
         </h1>
         <div className="flex flex-wrap items-center gap-2">
           {state.sample && <Badge variant="secondary">Sample data</Badge>}

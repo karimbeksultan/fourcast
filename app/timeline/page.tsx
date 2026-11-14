@@ -35,7 +35,7 @@ export default function TimelinePage() {
     return (
       <section className="max-w-xl space-y-4 py-8">
         <h1 className="text-3xl font-bold tracking-tight">Your 6-week forecast</h1>
-        <p className="text-lg text-muted-foreground">Add your money and at least one plan, and the forecast shows up here.</p>
+        <p className="text-lg text-pretty text-muted-foreground">Add your money and at least one plan, and the forecast shows up here.</p>
         <Link href="/plans" className={cn(buttonVariants(), "h-12 px-6 text-base")}>
           Add my plans
         </Link>
@@ -57,8 +57,8 @@ export default function TimelinePage() {
           {formatUSD(t.owed)} left to pay, {t.debitsInWindow} payments in the next 6 weeks.
         </p>
         {risks.length > 0 && (
-          <Link href="/plans" className="inline-block font-semibold text-short underline underline-offset-4">
-            {risks.length === 1 ? "1 payment" : `${risks.length} payments`} may not go through. See what to do on Guard.
+          <Link href="/tonight" className="inline-block font-semibold text-short underline underline-offset-4">
+            {risks.length === 1 ? "1 payment" : `${risks.length} payments`} may not go through. See what to do on Tonight.
           </Link>
         )}
       </header>

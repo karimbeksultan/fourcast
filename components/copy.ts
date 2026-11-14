@@ -11,7 +11,16 @@ export const STATUS_TITLE: Record<Status, string> = {
 export function lowestLine(t: Timeline): string {
   const beforePayday = t.paydays.includes(addDays(t.lowest.date, 1));
   const amount = t.lowest.balance < 0 ? `${formatUSD(-t.lowest.balance)} short` : formatUSD(t.lowest.balance);
-  return `Lowest point: ${amount} on ${formatShort(t.lowest.date)}${beforePayday ? ", the day before payday." : "."}`;
+  const paydaySameDay = t.paydays.includes(t.lowest.date);
+  const tail =
+    t.lowest.when === "morning"
+      ? paydaySameDay
+        ? ", in the morning before your paycheck lands."
+        : ", in the morning after autopay."
+      : beforePayday
+        ? ", the day before payday."
+        : ".";
+  return `Lowest point: ${amount} on ${formatShort(t.lowest.date)}${tail}`;
 }
 
 export const LENDER_MARK: Record<Lender, string> = {

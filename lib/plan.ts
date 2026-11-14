@@ -149,6 +149,11 @@ function simulate(
   return days;
 }
 
+/** The lowest the account gets that day: the morning (after autopay, before the paycheck) or the end of the day. */
+export function dayLow(day: TimelineDay): Cents {
+  return Math.min(day.morning, day.balance);
+}
+
 function statusOf(lowest: Cents): Status {
   if (lowest < 0) return "short";
   if (lowest < TIGHT_BELOW) return "tight";
@@ -160,7 +165,8 @@ function statusOf(lowest: Cents): Status {
 export function buildTimeline(state: AppState, today: ISODate): Timeline {
   const days = simulate(state, today, WINDOW_DAYS);
   let low = 0;
-  for (let i = 1; i < days.length; i++) if (days[i].balance < days[low].balance) low = i;
+  // One model everywhere (Guard, Tonight, Forecast): a day counts at its lowest, which is often the morning.
+  for (let i = 1; i < days.length; i++) if (dayLow(days[i]) < dayLow(days[low])) low = i;
 
   const pull = new Map<string, Cents>();
   for (let i = 0; i <= low; i++) {
@@ -175,8 +181,13 @@ export function buildTimeline(state: AppState, today: ISODate): Timeline {
   return {
     today,
     days,
-    status: statusOf(days[low].balance),
-    lowest: { date: days[low].date, balance: days[low].balance, topPlanId },
+    status: statusOf(dayLow(days[low])),
+    lowest: {
+      date: days[low].date,
+      balance: dayLow(days[low]),
+      topPlanId,
+      when: days[low].morning < days[low].balance ? "morning" : "evening",
+    },
     paydays: paydaysBetween(state.money, today, end),
     owed: state.plans.reduce((sum, p) => sum + p.installment * planDebits(p, today).length, 0),
     debitsInWindow: days.reduce((n, d) => n + d.events.filter((e) => e.kind === "debit").length, 0),

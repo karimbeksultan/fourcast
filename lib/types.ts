@@ -104,11 +104,14 @@ export type Timeline = {
   /** 42 days, starting today. */
   days: TimelineDay[];
   status: Status;
+  /** The lowest point in the window, counting each day at its lowest (morning or end of day). */
   lowest: {
     date: ISODate;
     balance: Cents;
     /** The plan that takes the most between today and the lowest point (for "why"). */
     topPlanId: string | null;
+    /** "morning": the low comes after autopay, before the paycheck; "evening": at the end of the day. */
+    when: "morning" | "evening";
   };
   /** Paydays inside the 42 days. */
   paydays: ISODate[];
