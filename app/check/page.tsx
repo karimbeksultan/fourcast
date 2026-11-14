@@ -2,7 +2,7 @@
 
 import { Lock } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toCents } from "@/components/copy";
 import { cellsFromVerdict, ForecastGrid, ForecastLegend } from "@/components/forecast-grid";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppState } from "@/hooks/use-app-state";
+import { useQueryParam } from "@/hooks/use-query-param";
 import { useToday } from "@/hooks/use-today";
 import { addDays, formatShort, formatUSD } from "@/lib/dates";
 import { buildTimeline, checkPurchase } from "@/lib/plan";
@@ -22,6 +23,28 @@ export default function CheckPage() {
   const [price, setPrice] = useState<string | null>(null);
   const [purchase, setPurchase] = useState<Purchase | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [stripeNote, setStripeNote] = useState<string | null>(null);
+  const sessionId = useQueryParam("session_id");
+  const handled = useRef(false);
+
+  // Back from Stripe test checkout: /check?session_id=cs_test_… → ask the server, then turn Plus on.
+  useEffect(() => {
+    if (!sessionId || !state || !today || handled.current) return;
+    handled.current = true;
+    window.history.replaceState(null, "", "/check");
+    fetch(`/api/checkout/confirm?session_id=${encodeURIComponent(sessionId)}`)
+      .then((r) => r.json() as Promise<{ ok?: boolean }>)
+      .then((d) => {
+        if (d.ok) {
+          const trialEnds = buildTimeline(state, today).paydays[1] ?? addDays(today, 28);
+          save({ ...state, plus: { since: today, trialEnds, via: "stripe_test" } });
+          setStripeNote("Plus is on. Your test payment went through.");
+        } else {
+          setStripeNote("The test checkout didn't finish. Start the trial again when you're ready.");
+        }
+      })
+      .catch(() => setStripeNote("Couldn't confirm the test checkout. Start the trial again when you're ready."));
+  }, [sessionId, state, today, save]);
 
   if (state === undefined || !today) {
     return (
@@ -37,7 +60,7 @@ export default function CheckPage() {
       <section className="max-w-xl space-y-4 py-8">
         <h1 className="text-3xl font-bold tracking-tight">Check a buy</h1>
         <p className="text-lg text-muted-foreground">Add your money first, so we can tell whether a new plan fits.</p>
-        <Link href="/" className={cn(buttonVariants(), "h-12 px-6 text-base")}>
+        <Link href="/plans" className={cn(buttonVariants(), "h-12 px-6 text-base")}>
           Add my money
         </Link>
       </section>
@@ -60,6 +83,11 @@ export default function CheckPage() {
       <header className="space-y-1">
         <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">Check a buy</h1>
         <p className="text-muted-foreground">Pay in 4: the first payment today, then one every 2 weeks.</p>
+        {stripeNote && (
+          <p className="rounded-md bg-ok-soft px-3 py-2 font-medium" role="status">
+            {stripeNote}
+          </p>
+        )}
       </header>
 
       <form
@@ -197,7 +225,29 @@ function PlusAnswer({ verdict, timeline, state, today }: { verdict: Verdict; tim
 function Plus({ state, timeline, today, save }: { state: AppState; timeline: Timeline; today: ISODate; save: (s: AppState) => void }) {
   const [step, setStep] = useState<"offer" | "checkout">("offer");
   const [plan, setPlan] = useState<"year" | "month">("year");
+  const [opening, setOpening] = useState(false);
   const trialEnds = timeline.paydays[1] ?? addDays(today, 28);
+
+  // Stripe test mode when the server has a key; otherwise the demo checkout below.
+  const startTrial = async () => {
+    setOpening(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trialEnds }),
+      });
+      const data = (await res.json()) as { url?: string };
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+        return;
+      }
+    } catch {
+      // fall through to the demo checkout
+    }
+    setOpening(false);
+    setStep("checkout");
+  };
 
   if (state.plus) {
     return (
@@ -234,9 +284,12 @@ function Plus({ state, timeline, today, save }: { state: AppState; timeline: Tim
           <p className="text-sm">
             Free for your next 2 paydays, until {formatShort(trialEnds)}. Cancel any time on this page.
           </p>
-          <Button className="h-12 w-full text-base" onClick={() => setStep("checkout")}>
-            Start free trial
+          <Button className="h-12 w-full text-base" onClick={startTrial} disabled={opening}>
+            {opening ? "Opening checkout…" : "Start free trial"}
           </Button>
+          <p className="text-xs text-muted-foreground">
+            Payments run in Stripe test mode. Use card 4242 4242 4242 4242, any future date and any CVC. No real money moves.
+          </p>
         </>
       ) : (
         <form

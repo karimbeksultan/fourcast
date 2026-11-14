@@ -46,7 +46,7 @@ export default function TimelinePage() {
       <section className="max-w-xl space-y-4 py-8">
         <h1 className="text-3xl font-bold tracking-tight">Your 6-week forecast</h1>
         <p className="text-lg text-muted-foreground">Add your money and at least one plan, and the forecast shows up here.</p>
-        <Link href="/" className={cn(buttonVariants(), "h-12 px-6 text-base")}>
+        <Link href="/plans" className={cn(buttonVariants(), "h-12 px-6 text-base")}>
           Add my plans
         </Link>
       </section>
