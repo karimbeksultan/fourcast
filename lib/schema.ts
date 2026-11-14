@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LENDERS } from "./types";
+import { DISPUTE_ISSUES, LENDERS } from "./types";
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD");
 const cents = z.number().int().min(0);
@@ -40,6 +40,27 @@ export const AppStateSchema = z.object({
   sample: z.boolean(),
   // New fields are optional, so data saved before v2 still loads (schema version stays 1).
   limits: z.partialRecord(z.enum(LENDERS), cents).optional(),
+});
+
+export const DISPUTE_DETAILS_MAX = 600;
+
+/** What /api/dispute accepts. Longer details are refused earlier with "too_large". */
+export const DisputeRequestSchema = z.object({
+  lender: z.enum(LENDERS),
+  merchant: z.string().max(80),
+  installment: cents.min(1).max(10_000_000),
+  paymentsLeft: z.number().int().min(1).max(12),
+  nextDue: isoDate,
+  issue: z.enum(DISPUTE_ISSUES),
+  returnedOn: isoDate.optional(),
+  details: z.string().max(DISPUTE_DETAILS_MAX).optional(),
+  today: isoDate,
+});
+
+/** What the AI must return when it drafts a dispute letter. */
+export const DisputeLetterSchema = z.object({
+  subject: z.string().min(5).max(140),
+  body: z.string().min(80).max(3_000),
 });
 
 /** What the AI must return when it reads a confirmation (dollars, not cents). */

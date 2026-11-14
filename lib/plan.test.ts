@@ -2,10 +2,11 @@
 // every number below comes out of lib/plan.ts, nothing is hardcoded in the UI.
 import { describe, expect, it } from "vitest";
 import { addDays, toISODate } from "./dates";
+import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
 import { buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, paydaySync, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
-import { AppStateSchema } from "./schema";
+import { AppStateSchema, DisputeRequestSchema } from "./schema";
 import type { AppState, Money } from "./types";
 
 const TODAY = "2026-11-15";
@@ -195,6 +196,42 @@ describe("Guard: the morning model", () => {
     const s = state(money({ balance: 0, nextPayday: "2026-12-31" }), [{ ...plan("r", 5_000), status: "returned", returnedOn: TODAY }]);
     expect(debitRisks(s, TODAY)).toMatchObject([{ planId: "r", level: "fails", disputed: true }]);
     expect(AppStateSchema.safeParse({ ...s, limits: { Afterpay: 100_000 } }).success).toBe(true);
+  });
+});
+
+describe("dispute letter (works without AI keys)", () => {
+  const request = {
+    lender: "Afterpay" as const,
+    merchant: "Nike",
+    installment: 5_000,
+    paymentsLeft: 1,
+    nextDue: "2026-11-17",
+    issue: "refund_not_applied" as const,
+    returnedOn: "2026-11-10",
+    today: TODAY,
+  };
+
+  it("the template states only the plan's facts and leaves name and order number to the person", () => {
+    const { subject, body } = templateLetter(request);
+    expect(subject).toBe("Afterpay: Refund not applied to my Nike order");
+    expect(body).toContain("I returned this order on Nov 10, 2026");
+    expect(body).toContain("1 payment of $50.00 is still scheduled, the next one on Nov 17, 2026");
+    expect(body).toContain("[Order number]");
+    expect(body).toContain("[Your name]");
+    expect(body).toContain("https://www.consumerfinance.gov/complaint/");
+    expect(keepsFacts({ subject, body }, request)).toBe(true);
+  });
+
+  it("an AI draft with an invented amount or a dropped placeholder is not used", () => {
+    const { subject, body } = templateLetter(request);
+    expect(keepsFacts({ subject, body: body.replace("$50.00 is", "$500.00 is") }, request)).toBe(false);
+    expect(keepsFacts({ subject, body: body.replace("[Your name]", "Jasmine") }, request)).toBe(false);
+  });
+
+  it("the request is checked: known issue, short details", () => {
+    expect(DisputeRequestSchema.safeParse(request).success).toBe(true);
+    expect(DisputeRequestSchema.safeParse({ ...request, issue: "lost_card" }).success).toBe(false);
+    expect(DisputeRequestSchema.safeParse({ ...request, details: "x".repeat(601) }).success).toBe(false);
   });
 });
 

@@ -141,6 +141,28 @@ export type Verdict = {
 
 export type PlanSync = { onPayday: number; total: number };
 
+export const DISPUTE_ISSUES = ["refund_not_applied", "charged_after_cancel", "double_charge", "other"] as const;
+export type DisputeIssue = (typeof DISPUTE_ISSUES)[number];
+
+/** POST /api/dispute. Only facts of the plan: no names, order numbers or e-mails (FAQ Q26). */
+export type DisputeRequest = {
+  lender: Lender;
+  merchant: string;
+  installment: Cents;
+  paymentsLeft: number;
+  nextDue: ISODate;
+  issue: DisputeIssue;
+  returnedOn?: ISODate;
+  /** A couple of lines in the user's words, at most 600 characters. */
+  details?: string;
+  today: ISODate;
+};
+export type DisputeLetter = { subject: string; body: string };
+export type DisputeError = "bad_request" | "timeout" | "too_large";
+export type DisputeResponse =
+  | { letter: DisputeLetter; source: "ai" | "template" }
+  | { error: string; code: DisputeError };
+
 export type ReadPlanRequest = { text?: string; imageBase64?: string; today?: ISODate };
 export type ReadPlanError = "no_keys" | "unreadable" | "timeout" | "too_large";
 export type ReadPlanResponse =
