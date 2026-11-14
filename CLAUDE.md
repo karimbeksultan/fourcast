@@ -26,4 +26,4 @@
 - `lib/llm.ts`, `lib/read-plan.ts` — AI: бюджет 10 с, Gemma → Gemini Flash → OpenRouter
 - `app/api/read-plan`, `app/api/health` — единственный сервер
 - `app/page.tsx` — пока демо-страница каркаса, A3 заменяет её экраном `/`
-- `scripts/deploy.sh` — релизы, откат, проверка `/api/health`
+- Деплой — Vercel (push в `main` = прод); `scripts/smoke.mjs` (`npm run smoke -- <url>`) — проверка после деплоя
