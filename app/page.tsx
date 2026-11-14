@@ -1,71 +1,189 @@
 "use client";
 
-// Scaffold page: proves the contract works end to end on sample data.
-// A3 (Ayat) replaces it with the real "/" screen from DESIGN.md.
-import { useMemo } from "react";
+import Link from "next/link";
+import { useState } from "react";
+import { AddPlan } from "@/components/add-plan";
+import { CheckIn } from "@/components/check-in";
+import { FREQUENCY_LABEL, lowestLine, STATUS_TITLE } from "@/components/copy";
+import { MoneyForm } from "@/components/money-form";
+import { PlanCard } from "@/components/plan-card";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAppState } from "@/hooks/use-app-state";
+import { useQueryParam } from "@/hooks/use-query-param";
 import { useToday } from "@/hooks/use-today";
 import { formatShort, formatUSD } from "@/lib/dates";
-import { buildTimeline, checkPurchase } from "@/lib/plan";
-import { getSampleKlarnaPlan, getSampleState } from "@/lib/sample";
+import { buildTimeline } from "@/lib/plan";
+import { getSampleState } from "@/lib/sample";
+import { clearState, emptyState } from "@/lib/storage";
+import type { AppState, ISODate } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
+  const [state, save] = useAppState();
   const today = useToday();
-  const result = useMemo(() => {
-    if (!today) return null;
-    const sample = getSampleState(today);
-    const state = { ...sample, plans: [...sample.plans, getSampleKlarnaPlan(today)] };
-    return {
-      timeline: buildTimeline(state, today),
-      verdict: checkPurchase(state, { price: 24_000, payments: 4 }, today),
-    };
-  }, [today]);
+
+  if (state === undefined || !today) return <HomeSkeleton />;
+  if (state === null) return <Welcome onSample={() => save(getSampleState(today))} onStart={() => save(emptyState())} />;
+  return <Overview state={state} today={today} save={save} />;
+}
+
+function HomeSkeleton() {
+  return (
+    <div className="space-y-4" aria-busy="true" aria-label="Loading your plans">
+      <Skeleton className="h-12 w-2/3" />
+      <Skeleton className="h-6 w-1/2" />
+      <Skeleton className="h-24 w-full" />
+      <Skeleton className="h-24 w-full" />
+    </div>
+  );
+}
+
+function Welcome({ onSample, onStart }: { onSample: () => void; onStart: () => void }) {
+  return (
+    <section className="flex max-w-2xl flex-col gap-6 py-6 sm:py-16">
+      <h1 className="text-4xl font-bold tracking-tight text-balance sm:text-6xl">See every Pay in 4 before it lands.</h1>
+      <p className="max-w-xl text-lg text-muted-foreground sm:text-xl">
+        Put your Klarna, Afterpay and Affirm payments on one 6-week forecast from your paycheck, and check any new one before you
+        buy.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <Button className="h-12 px-6 text-base" onClick={onSample}>
+          Try it with sample data
+        </Button>
+        <Button variant="outline" className="h-12 px-6 text-base" onClick={onStart}>
+          Start with my numbers
+        </Button>
+      </div>
+      <p className="text-sm text-muted-foreground">No sign-up. Your data stays in this browser.</p>
+    </section>
+  );
+}
+
+function Overview({ state, today, save }: { state: AppState; today: ISODate; save: (s: AppState) => void }) {
+  const due = useQueryParam("due");
+  const [checkInOpen, setCheckInOpen] = useState(true);
+  const [editMoney, setEditMoney] = useState(false);
+  const timeline = state.money ? buildTimeline(state, today) : null;
+  const showCheckIn = checkInOpen && due && /^\d{4}-\d{2}-\d{2}$/.test(due) && state.money;
 
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 py-10">
-      <div className="flex items-center gap-2">
-        <h1 className="text-2xl font-semibold">Fourcast</h1>
-        <Badge variant="secondary">Sample data</Badge>
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-semibold">Your plans</h1>
+          {state.sample && <Badge variant="secondary">Sample data</Badge>}
+        </div>
+        <Button variant="ghost" className="h-10 text-muted-foreground" onClick={() => clearState()}>
+          {state.sample ? "Clear sample data" : "Start over"}
+        </Button>
       </div>
-      <p className="text-muted-foreground">See every Pay in 4 before it lands.</p>
 
-      {!result ? (
-        <p className="text-muted-foreground">Loading your next 6 weeks…</p>
-      ) : (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                {result.timeline.status === "ok" ? "You're fine." : result.timeline.status === "tight" ? "It's tight." : "You'll be short."}
-              </CardTitle>
-              <CardDescription>
-                Lowest point: {formatUSD(result.timeline.lowest.balance)} on {formatShort(result.timeline.lowest.date)}.{" "}
-                {formatUSD(result.timeline.owed)} owed, {result.timeline.debitsInWindow} payments in 6 weeks.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>{result.verdict.verdict === "fits" ? "It fits." : "Not right now."}</CardTitle>
-              <CardDescription>$240 in 4 payments, bought today.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm">
-              {result.verdict.deepest && (
-                <p>
-                  You&apos;d be {formatUSD(result.verdict.deepest.amount)} short on {formatShort(result.verdict.deepest.date)}.
-                </p>
-              )}
-              {result.verdict.bestDay && <p>It fits if you buy on or after {formatShort(result.verdict.bestDay)}.</p>}
-              {result.verdict.paydaySync && (
-                <p>Buy {formatShort(result.verdict.paydaySync.buyOn)}: all 4 payments land on paydays.</p>
-              )}
-            </CardContent>
-          </Card>
-        </>
+      {showCheckIn && (
+        <CheckIn
+          due={due}
+          state={state}
+          today={today}
+          onSave={save}
+          onClose={() => {
+            setCheckInOpen(false);
+            window.history.replaceState(null, "", "/");
+          }}
+        />
       )}
 
-      <p className="mt-auto text-xs text-muted-foreground">Not financial advice. Your data stays in your browser.</p>
-    </main>
+      {timeline && (
+        <Link
+          href="/timeline"
+          className={cn(
+            "block rounded-2xl border-l-4 bg-card p-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-5",
+            timeline.status === "ok" ? "border-ok" : timeline.status === "tight" ? "border-tight" : "border-short",
+          )}
+        >
+          <p className="text-3xl font-bold tracking-tight sm:text-4xl">{STATUS_TITLE[timeline.status]}</p>
+          <p className="tabular mt-1 text-lg">{lowestLine(timeline)}</p>
+          <p className="mt-2 text-sm font-medium text-primary underline-offset-4 hover:underline">See your 6-week forecast</p>
+        </Link>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+        <div className="space-y-4">
+          {state.plans.length > 0 ? (
+            <section aria-labelledby="plans" className="space-y-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 id="plans" className="text-lg font-semibold">
+                  {state.plans.length} {state.plans.length === 1 ? "plan" : "plans"}
+                </h2>
+                {timeline && <p className="tabular text-sm text-muted-foreground">{formatUSD(timeline.owed)} left to pay</p>}
+              </div>
+              <ul className="space-y-2">
+                {state.plans.map((p) => (
+                  <PlanCard
+                    key={p.id}
+                    plan={p}
+                    state={state}
+                    today={today}
+                    onRemove={() => save({ ...state, plans: state.plans.filter((x) => x.id !== p.id) })}
+                  />
+                ))}
+              </ul>
+            </section>
+          ) : (
+            <p className="rounded-2xl border border-dashed p-4 text-muted-foreground">
+              No plans yet. Add your first Klarna, Afterpay or Affirm plan below.
+            </p>
+          )}
+          <AddPlan today={today} sample={state.sample} onAdd={(plan) => save({ ...state, plans: [...state.plans, plan] })} />
+        </div>
+
+        <section aria-labelledby="money" className="h-fit space-y-3 rounded-2xl border bg-card p-4">
+          <div className="flex items-center justify-between gap-3">
+            <h2 id="money" className="text-lg font-semibold">
+              Your money
+            </h2>
+            {state.money && !editMoney && (
+              <Button variant="outline" className="h-9" onClick={() => setEditMoney(true)}>
+                Edit
+              </Button>
+            )}
+          </div>
+          {state.money && !editMoney ? (
+            <dl className="tabular grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+              <dt className="text-muted-foreground">In checking</dt>
+              <dd>{formatUSD(state.money.balance)}</dd>
+              <dt className="text-muted-foreground">Paycheck</dt>
+              <dd>
+                {formatUSD(state.money.paycheck)}, {FREQUENCY_LABEL[state.money.frequency].toLowerCase()}
+              </dd>
+              <dt className="text-muted-foreground">Next payday</dt>
+              <dd>{formatShort(state.money.nextPayday)}</dd>
+              <dt className="text-muted-foreground">Rent</dt>
+              <dd>{state.money.rent > 0 ? `${formatUSD(state.money.rent)} on day ${state.money.rentDay}` : "None"}</dd>
+              <dt className="text-muted-foreground">Everyday</dt>
+              <dd>{formatUSD(state.money.weeklySpend)} a week</dd>
+            </dl>
+          ) : (
+            <>
+              {!state.money && <p className="text-sm text-muted-foreground">Add your money to see the forecast.</p>}
+              <MoneyForm
+                initial={state.money}
+                today={today}
+                onSave={(money) => {
+                  save({ ...state, money });
+                  setEditMoney(false);
+                }}
+              />
+            </>
+          )}
+        </section>
+      </div>
+
+      {timeline && state.plans.length > 0 && (
+        <Link href="/check" className={cn(buttonVariants({ variant: "outline" }), "h-12 self-start px-6 text-base")}>
+          Check a new buy
+        </Link>
+      )}
+    </>
   );
 }

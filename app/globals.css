@@ -39,6 +39,14 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-payday: var(--payday);
+  --color-payday-soft: var(--payday-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-tight: var(--tight);
+  --color-tight-soft: var(--tight-soft);
+  --color-short: var(--short);
+  --color-short-soft: var(--short-soft);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -49,38 +57,49 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  /* Fourcast palette — see DESIGN.md. Light only (dark theme is out of scope). */
+  --background: #f4f6fb;
+  --foreground: #1c1f3b;
+  --card: #ffffff;
+  --card-foreground: #1c1f3b;
+  --popover: #ffffff;
+  --popover-foreground: #1c1f3b;
+  --primary: #5b42dc;
+  --primary-foreground: #ffffff;
+  --secondary: #eceef6;
+  --secondary-foreground: #1c1f3b;
+  --muted: #eceef6;
+  --muted-foreground: #5e6382;
+  --accent: #ece8fc;
+  --accent-foreground: #3b2a9e;
+  --destructive: #c2373a;
+  --border: #dde1ee;
+  --input: #cfd4e6;
+  --ring: #5b42dc;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+
+  --payday: #5b42dc;
+  --payday-soft: #ece8fc;
+  --ok: #17845e;
+  --ok-soft: #ddf3ea;
+  --tight: #9a6200;
+  --tight-soft: #fdf0d2;
+  --short: #c2373a;
+  --short-soft: #fbe3e3;
+
+  --chart-1: #5b42dc;
+  --chart-2: #17845e;
+  --chart-3: #9a6200;
+  --chart-4: #c2373a;
+  --chart-5: #5e6382;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1c1f3b;
+  --sidebar-primary: #5b42dc;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ece8fc;
+  --sidebar-accent-foreground: #1c1f3b;
+  --sidebar-border: #dde1ee;
+  --sidebar-ring: #5b42dc;
 }
 
 .dark {
@@ -126,5 +145,31 @@
   }
   html {
     @apply font-sans;
+  }
+}
+@layer base {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes fill-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.forecast-row {
+  animation: fill-in 260ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forecast-row {
+    animation: none;
   }
 }
