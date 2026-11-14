@@ -23,7 +23,7 @@
 - `lib/storage.ts` — localStorage со схемой (`lib/schema.ts`, zod)
 - `lib/ics.ts` — календарь: напоминание накануне и ссылка `/?due=`
 - `lib/image.ts` — ужать скриншот до 1280 px в браузере
-- `lib/llm.ts`, `lib/read-plan.ts` — AI: бюджет 10 с, Gemma → Gemini Flash → OpenRouter
+- `lib/llm.ts`, `lib/read-plan.ts` — AI: бюджет 10 с, Gemini Flash-Lite (`gemini-flash-lite-latest`) → `gemini-3.1-flash-lite` → OpenRouter
 - `app/api/read-plan`, `app/api/health` — единственный сервер
 - `app/page.tsx` — пока демо-страница каркаса, A3 заменяет её экраном `/`
 - Деплой — Vercel (push в `main` = прод); `scripts/smoke.mjs` (`npm run smoke -- <url>`) — проверка после деплоя

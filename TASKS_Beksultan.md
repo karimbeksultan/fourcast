@@ -5,6 +5,8 @@
 ## Уже сделано за тебя (коммит 34d5bb0, 19:10)
 Каркас (B1 без сервера), контракт (B2), логика с Payday Sync и `demo_inputs.md` (B3), тесты и CI (B3t), `lib/llm.ts` и `/api/read-plan` (B4 без проверки ключом), `lib/storage.ts` и `lib/ics.ts` (B5 без деплоя), `/api/health`, `deploy.sh`, `CLAUDE.md`, README. Сначала `git pull`, свой каркас не пушь.
 
+**AI проверен (~20:30) на ключе Аята:** `gemini-flash-lite-latest` читает текст и картинку Klarna за 1–2 с, всё верно. Gemma 4 31B не укладывается в 10 с (всегда «думает» 24–30 с). Модели в `.env.example` уже заменены — в Vercel вставь эти же значения.
+
 **Тебе сейчас:**
 1. Деплой — **Vercel вместо своего сервера** (решение 14.11, `deploy.sh` удалён): импорт репозитория в Vercel, push в `main` = прод, ветки = превью. Ключи — в Vercel → Settings → Environment Variables. После каждого деплоя `npm run smoke -- <url>`, откат — Instant Rollback.
 2. Ключ Google AI Studio → `.env` локально и в Vercel. Проверить: текст `getSampleKlarnaText(today)` и скриншот Klarna превращаются в план за 10 с; поправить промпт в `lib/read-plan.ts`, если нужно.

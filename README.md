@@ -22,8 +22,8 @@ Hosted on Vercel through its GitHub integration: every push to `main` is a produ
 
 ## How it works
 - **The math is plain code.** `lib/plan.ts` builds the timeline, checks a purchase and finds Payday Sync. No AI, deterministic, tested in `lib/plan.test.ts`.
-- **AI does one thing:** read a pasted confirmation or screenshot into a plan (`/api/read-plan`). Gemma 4 31B and Gemini Flash via Google AI Studio's OpenAI-compatible API share one 10-second budget; OpenRouter is optional.
+- **AI does one thing:** read a pasted confirmation or screenshot into a plan (`/api/read-plan`). Gemini Flash-Lite via Google AI Studio's OpenAI-compatible API reads text and screenshots in 1–2 seconds; a second Flash-Lite model joins after 4 seconds, all inside one 10-second budget. OpenRouter is optional.
 - **Storage:** `localStorage` with a versioned zod schema. No database, no accounts.
 
 ## Key dependencies
-Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, zod, Vitest. AI: Google AI Studio (Gemma 4 31B, Gemini Flash), optional OpenRouter. Hosting: Vercel.
+Next.js 16, React 19, TypeScript, Tailwind CSS 4, shadcn/ui, zod, Vitest. AI: Google AI Studio (Gemini Flash-Lite), optional OpenRouter. Hosting: Vercel.
