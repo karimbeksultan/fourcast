@@ -10,15 +10,24 @@ function escapeText(text: string): string {
   return text.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/([,;])/g, "\\$1");
 }
 
-/** RFC 5545: lines over 75 octets continue on the next line after a space. */
+/** RFC 5545: a line longer than 75 octets continues on the next line after one space. Counts UTF-8 bytes, never splits a character. */
+const utf8 = new TextEncoder();
+
 function fold(line: string): string[] {
   const out: string[] = [];
-  let rest = line;
-  while (rest.length > 75) {
-    out.push(rest.slice(0, 75));
-    rest = " " + rest.slice(75);
+  let current = "";
+  let bytes = 0;
+  for (const char of line) {
+    const size = utf8.encode(char).length;
+    if (bytes + size > 75) {
+      out.push(current);
+      current = " ";
+      bytes = 1;
+    }
+    current += char;
+    bytes += size;
   }
-  out.push(rest);
+  out.push(current);
   return out;
 }
 
@@ -34,7 +43,7 @@ export function buildIcs(state: AppState, today: ISODate, baseUrl: string): stri
   ];
   const stamp = `${compact(today)}T000000Z`;
 
-  const event = (uid: string, date: ISODate, summary: string, description: string, url: string, alarm: boolean) => {
+  const event = (uid: string, date: ISODate, summary: string, description: string, url: string, alarm: string | null) => {
     lines.push(
       "BEGIN:VEVENT",
       `UID:${uid}@fourcast`,
@@ -52,7 +61,7 @@ export function buildIcs(state: AppState, today: ISODate, baseUrl: string): stri
         "BEGIN:VALARM",
         "ACTION:DISPLAY",
         "TRIGGER;RELATED=START:-PT4H",
-        `DESCRIPTION:${escapeText(summary)}`,
+        `DESCRIPTION:${escapeText(alarm)}`,
         "END:VALARM",
       );
     }
@@ -68,16 +77,16 @@ export function buildIcs(state: AppState, today: ISODate, baseUrl: string): stri
         `${plan.id}-${date}`,
         date,
         `${plan.lender} takes ${amount}${where}`,
-        `Tomorrow ${plan.lender} takes ${amount}. What's in checking? Check in: ${url}`,
+        `${plan.lender} takes ${amount} today. The night before, check in with what's in checking: ${url}`,
         url,
-        true,
+        `Tomorrow ${plan.lender} takes ${amount}. What's in checking? ${url}`,
       );
     }
   }
 
   for (const date of paydaysBetween(state.money, today, addDays(today, WINDOW_DAYS - 1))) {
     const url = `${base}/timeline`;
-    event(`payday-${date}`, date, "Payday: see what's really yours", `Your next 6 weeks: ${url}`, url, false);
+    event(`payday-${date}`, date, "Payday: see what's really yours", `Your next 6 weeks: ${url}`, url, null);
   }
 
   lines.push("END:VCALENDAR");
