@@ -15,7 +15,6 @@ import type {
   ISODate,
   Money,
   Plan,
-  PlanSync,
   Purchase,
   Shortfall,
   Status,
@@ -56,8 +55,18 @@ export function paydaysBetween(money: Money | null, from: ISODate, to: ISODate):
   }
 
   const day = parts(anchor).day;
+  // Twice a month: the 15th and the last day (anchor on the 15th or the 28th–31st), the 1st and the 15th,
+  // otherwise 15 days apart. A day past the end of a short month moves to its last day (31 → Feb 28).
   const days =
-    money.frequency === "monthly" ? [day] : day <= 15 ? [day, day + 15] : [day - 15, day];
+    money.frequency === "monthly"
+      ? [day]
+      : day === 15 || day >= 28
+        ? [15, 31]
+        : day === 1
+          ? [1, 15]
+          : day < 15
+            ? [day, day + 15]
+            : [day - 15, day];
   let { year, month } = parts(lower);
   while (clampedDate(year, month, 1) <= to) {
     for (const d of days) {
@@ -194,6 +203,18 @@ export function buildTimeline(state: AppState, today: ISODate): Timeline {
   };
 }
 
+/**
+ * Evening check-in: the person types what is in checking now, at the end of today.
+ * Money.balance is the start of today, so today's rent, plan debits and spending are added back
+ * (and today's paycheck taken out): the end of today then equals what they typed. Sets balanceOn = today.
+ */
+export function applyCheckIn(state: AppState, eveningBalance: Cents, today: ISODate): AppState {
+  if (!state.money) return state;
+  const endOfToday = simulate(state, today, 1)[0].balance;
+  const balance = eveningBalance + (state.money.balance - endOfToday);
+  return { ...state, money: { ...state.money, balance, balanceOn: today } };
+}
+
 export function checkPurchase(state: AppState, purchase: Purchase, today: ISODate): Verdict {
   const amounts = splitPayments(purchase.price, purchase.payments);
   const interval = PAY_IN_4_INTERVAL;
@@ -209,24 +230,51 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
     return paid;
   };
 
+  // Plan debits run in the morning, before the paycheck (Guard). Bought on day `s`, the purchase must not
+  // make a debit on day `d` fail, or fail deeper than it already would. Returns how short that morning gets.
+  const morningHit = (s: number, d: number): Cents | null => {
+    const day = base[d];
+    if (!day.events.some((e) => e.kind === "debit")) return null;
+    const withBuy = day.morning - paidBy(s, d);
+    return withBuy < Math.min(0, day.morning) ? -withBuy : null;
+  };
+
   const fitsByDay: Verdict["fitsByDay"] = [];
   for (let s = 0; s < WINDOW_DAYS; s++) {
     let lowest = Infinity;
-    // Same day model as Forecast and Guard: a day counts at its lowest (often the morning, after autopay).
-    for (let d = s; d < length; d++) lowest = Math.min(lowest, dayLow(base[d]) - paidBy(s, d));
-    fitsByDay.push({ date: base[s].date, fits: lowest >= 0, lowest });
+    let mornings = true;
+    for (let d = s; d < length; d++) {
+      lowest = Math.min(lowest, base[d].balance - paidBy(s, d));
+      if (mornings && morningHit(s, d) !== null) mornings = false;
+    }
+    fitsByDay.push({ date: base[s].date, fits: lowest >= 0 && mornings, lowest });
+  }
+
+  let morningRisk: Verdict["morningRisk"] = null;
+  for (let d = 0; d < length && !morningRisk; d++) {
+    const shortBy = morningHit(0, d);
+    if (shortBy === null) continue;
+    // The last debit that morning is the one that sees the least in checking.
+    const debit = base[d].events.filter((e) => e.kind === "debit").at(-1)!;
+    morningRisk = { date: base[d].date, lender: debit.lender, merchant: debit.merchant, shortBy };
+  }
+
+  // Without the purchase: the first day in the window that is already short (a debit fails that morning,
+  // or the day ends below $0). Then no price fits until that is fixed on Guard.
+  let alreadyShort: Verdict["alreadyShort"] = null;
+  for (let d = 0; d < WINDOW_DAYS && !alreadyShort; d++) {
+    const day = base[d];
+    if (day.morning < 0 && day.events.some((e) => e.kind === "debit")) {
+      alreadyShort = { date: day.date, amount: -day.morning, reason: "morning" };
+    } else if (day.balance < 0) {
+      alreadyShort = { date: day.date, amount: -day.balance, reason: "end_of_day" };
+    }
   }
 
   let firstShort: Shortfall | null = null;
   let deepest: Shortfall | null = null;
-  // Short even without this buy: the verdict must not blame the purchase for it.
-  let alreadyShort: Shortfall | null = null;
-  for (let d = 0; d < WINDOW_DAYS && !alreadyShort; d++) {
-    if (dayLow(base[d]) < 0) alreadyShort = { date: base[d].date, amount: -dayLow(base[d]) };
-  }
-
   for (let d = 0; d < length; d++) {
-    const balance = dayLow(base[d]) - paidBy(0, d);
+    const balance = base[d].balance - paidBy(0, d);
     if (balance >= 0) continue;
     if (!firstShort) firstShort = { date: base[d].date, amount: -balance };
     if (!deepest || -balance > deepest.amount) deepest = { date: base[d].date, amount: -balance };
@@ -239,7 +287,10 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
   let paydaySync: Verdict["paydaySync"] = null;
   const money = state.money;
   if (money && (money.frequency === "weekly" || money.frequency === "biweekly")) {
-    const dayAfter = new Set(paydaysBetween(money, addDays(today, -1), addDays(today, WINDOW_DAYS - 2)).map((d) => addDays(d, 1)));
+    // nextPayday may already point past yesterday's payday, so the one before it counts too (buy today).
+    const before = addDays(money.nextPayday, money.frequency === "weekly" ? -7 : -14);
+    const paydays = [before, ...paydaysBetween(money, addDays(today, -1), addDays(today, WINDOW_DAYS - 2))];
+    const dayAfter = new Set(paydays.map((d) => addDays(d, 1)));
     const hit = fitsByDay.find((f) => f.fits && dayAfter.has(f.date));
     if (hit) paydaySync = { buyOn: hit.date, debits: scheduleFrom(hit.date).map((p) => p.date) };
   }
@@ -249,10 +300,11 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
     schedule: scheduleFrom(today),
     firstShort,
     deepest,
-    alreadyShort,
     bestDay: fitsByDay.find((f) => f.fits)?.date ?? null,
     fitsByDay,
     paydaySync,
+    morningRisk,
+    alreadyShort,
   };
 }
 
@@ -297,12 +349,4 @@ export function debitRisks(state: AppState, today: ISODate): DebitRisk[] {
 
   const rank = { fails: 0, tight: 1 } as const;
   return risks.sort((a, b) => rank[a.level] - rank[b.level] || a.date.localeCompare(b.date));
-}
-
-/** How many of a plan's remaining debits land on a payday (badge on the plan card). */
-export function paydaySync(state: AppState, plan: Plan, today: ISODate): PlanSync {
-  const debits = planDebits(plan, today);
-  if (debits.length === 0) return { onPayday: 0, total: 0 };
-  const paydays = new Set(paydaysBetween(state.money, today, debits[debits.length - 1]));
-  return { onPayday: debits.filter((d) => paydays.has(d)).length, total: debits.length };
 }

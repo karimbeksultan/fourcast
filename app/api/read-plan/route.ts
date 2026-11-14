@@ -7,12 +7,18 @@ import type { ReadPlanError, ReadPlanRequest } from "@/lib/types";
 const MAX_IMAGE_CHARS = 2_000_000;
 const MAX_TEXT_CHARS = 10_000;
 
+// The AI budget is 10 s, stretched to 40 s on the last-resort model (lib/llm.ts); give the function room
+// so Vercel never cuts it off first and the UI always gets our JSON error, not a platform 504.
+export const maxDuration = 60;
+
 const fail = (code: ReadPlanError, error: string, status: number) => Response.json({ error, code }, { status });
 
 export async function POST(request: Request) {
   let body: ReadPlanRequest;
   try {
-    body = (await request.json()) as ReadPlanRequest;
+    const raw: unknown = await request.json();
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("not an object");
+    body = raw as ReadPlanRequest;
   } catch {
     return fail("unreadable", "Send JSON: { text } or { imageBase64 }.", 400);
   }

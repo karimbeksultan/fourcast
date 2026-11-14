@@ -1,5 +1,5 @@
 // Smoke check after every deploy: npm run smoke -- https://your-app.vercel.app
-// Pages answer 200, /api/health says ok, /api/read-plan and /api/dispute refuse an empty body.
+// Pages answer 200, /api/health says ok, /api/read-plan refuses an empty or null body, /api/dispute an empty one.
 // No AI call is made, so it costs no model quota.
 const base = (process.argv[2] || process.env.SMOKE_URL || "").replace(/\/+$/, "");
 if (!base) {
@@ -40,19 +40,21 @@ await check("GET /api/health", async () => {
     .join(", ");
 });
 
-await check("POST /api/read-plan with an empty body", async () => {
-  const res = await fetch(`${base}/api/read-plan`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: "{}",
-    signal: AbortSignal.timeout(TIMEOUT_MS),
+for (const raw of ["{}", "null"]) {
+  await check(`POST /api/read-plan with ${raw}`, async () => {
+    const res = await fetch(`${base}/api/read-plan`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: raw,
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    const body = await res.json().catch(() => null);
+    if (res.status !== 400 || body?.code !== "unreadable") {
+      throw new Error(`expected 400 unreadable, got ${res.status} ${JSON.stringify(body)}`);
+    }
+    return "400 unreadable";
   });
-  const body = await res.json().catch(() => null);
-  if (res.status !== 400 || body?.code !== "unreadable") {
-    throw new Error(`expected 400 unreadable, got ${res.status} ${JSON.stringify(body)}`);
-  }
-  return "400 unreadable";
-});
+}
 
 await check("POST /api/dispute with an empty body", async () => {
   const res = await fetch(`${base}/api/dispute`, {

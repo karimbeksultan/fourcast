@@ -5,6 +5,10 @@ import type { DisputeError } from "@/lib/types";
 // POST { lender, merchant, installment, paymentsLeft, nextDue, issue, returnedOn?, details?, today }
 // → { letter: { subject, body }, source: "ai" | "template" }. Without AI keys the template answers,
 // so the feature always works. Nothing is stored; no names, order numbers or e-mails are asked for.
+// The AI budget is 10 s, stretched to 40 s on the last-resort model (lib/llm.ts); give the function room
+// so Vercel never cuts it off first and the UI always gets our JSON error, not a platform 504.
+export const maxDuration = 60;
+
 const fail = (code: DisputeError, error: string, status: number) => Response.json({ error, code }, { status });
 
 export async function POST(request: Request) {

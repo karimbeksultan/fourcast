@@ -154,8 +154,8 @@ POST { lender, merchant, installment, paymentsLeft, nextDue, issue, returnedOn?,
 - **Подвал (как было):** `Not financial advice. Your data stays in your browser.`
 
 ## 10. Демо-сценарий v2 (≤ 2 минут, открыто 15.11)
-1. Главная → `Try It With Sample Data` → **Guard:** `1 payment at risk` — Zip $40, Fri Dec 4, утром не хватит $12.50, зарплата придёт позже. Действие: `Move $25 into checking tonight`.
-2. Добавить Klarna по тексту (AI, ~2 с) → Guard пересчитался.
+1. Главная → `Try It With Sample Data` → **Guard:** `Your limits are safe` (три плана; Zip оставляет $147.50 утром Fri Dec 4).
+2. Добавить Klarna по тексту (AI, ~2 с) → **Guard:** `1 payment at risk` — Zip $40, Fri Dec 4, утром не хватит $12.50, зарплата придёт позже. Действие: `Move $25 into checking tonight`. (Риск появляется только после Klarna: «план у другого кредитора сломал утро Zip».)
 3. `Forecast`: сетка, на Dec 4 «!», история дня: `Before your paycheck: −$12.50`.
 4. `Before you buy`: $240 → `Not right now` → пейвол → Stripe в тестовом режиме (карта 4242) → `Not today. Buy Sat, Dec 5: every payment lands the morning after payday.`
 5. План Afterpay → `I returned this` → `Write my dispute` → письмо + CFPB.
