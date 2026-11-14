@@ -235,6 +235,9 @@ describe("dispute letter (works without AI keys)", () => {
     expect(DisputeRequestSchema.safeParse(request).success).toBe(true);
     expect(DisputeRequestSchema.safeParse({ ...request, issue: "lost_card" }).success).toBe(false);
     expect(DisputeRequestSchema.safeParse({ ...request, details: "x".repeat(601) }).success).toBe(false);
+    // null from the UI means "not given", as for a double charge with no return date.
+    const parsed = DisputeRequestSchema.safeParse({ ...request, issue: "double_charge", returnedOn: null, details: null });
+    expect(parsed.success && parsed.data.returnedOn === undefined && parsed.data.details === undefined).toBe(true);
   });
 });
 

@@ -52,8 +52,9 @@ export const DisputeRequestSchema = z.object({
   paymentsLeft: z.number().int().min(1).max(12),
   nextDue: isoDate,
   issue: z.enum(DISPUTE_ISSUES),
-  returnedOn: isoDate.optional(),
-  details: z.string().max(DISPUTE_DETAILS_MAX).optional(),
+  // The UI may send null for "not given"; treat it like a missing field.
+  returnedOn: isoDate.nullish().transform((v) => v ?? undefined),
+  details: z.string().max(DISPUTE_DETAILS_MAX).nullish().transform((v) => v ?? undefined),
   today: isoDate,
 });
 
