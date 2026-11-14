@@ -5,6 +5,7 @@ import { addDays, toISODate } from "./dates";
 import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
 import { buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaySync, splitPayments, spendOn } from "./plan";
+import { getConceptSample, nextRisk, owedByLender } from "./concept";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
 import { AppStateSchema, DisputeRequestSchema } from "./schema";
 import type { AppState, Money } from "./types";
@@ -78,19 +79,25 @@ describe("demo story (opened on Nov 15, 2026)", () => {
     expect(dec4.balance).toBeGreaterThan(0);
   });
 
-  it("$240 in 4 today: not now, $92.50 short on Dec 3, fits from Fri Dec 4, Payday Sync on Sat Dec 5", () => {
+  it("$240 in 4 today: not now, $92.50 short on Dec 3, worst $132.50 on the morning of Dec 4, fits from Sat Dec 5 (Payday Sync)", () => {
     const v = checkPurchase(withKlarna(), { price: 24_000, payments: 4 }, TODAY);
     expect(v.verdict).toBe("not_now");
     expect(v.firstShort).toEqual({ date: "2026-12-03", amount: 9_250 });
-    expect(v.deepest).toEqual({ date: "2026-12-03", amount: 9_250 });
-    expect(v.bestDay).toBe("2026-12-04");
+    expect(v.deepest).toEqual({ date: "2026-12-04", amount: 13_250 });
+    // Without the buy, the Zip morning on Dec 4 is already $12.50 short (Guard's answer).
+    expect(v.alreadyShort).toEqual({ date: "2026-12-04", amount: 1_250 });
+    expect(v.bestDay).toBe("2026-12-05");
     expect(v.paydaySync).toEqual({
       buyOn: "2026-12-05",
       debits: ["2026-12-05", "2026-12-19", "2027-01-02", "2027-01-16"],
     });
     expect(v.fitsByDay).toHaveLength(42);
-    expect(v.fitsByDay.filter((f) => f.fits)[0].date).toBe("2026-12-04");
+    expect(v.fitsByDay.filter((f) => f.fits)[0].date).toBe("2026-12-05");
     expect(v.schedule.map((p) => p.amount)).toEqual([6_000, 6_000, 6_000, 6_000]);
+  });
+
+  it("three sample plans alone are never short, so a purchase check has nothing to blame on them", () => {
+    expect(checkPurchase(getSampleState(TODAY), { price: 24_000, payments: 4 }, TODAY).alreadyShort).toBeNull();
   });
 
   it("sample plans hit the day before payday, not on it", () => {
@@ -257,5 +264,18 @@ describe("calendar file", () => {
     expect(moveAmount(1_250)).toBe(2_500);
     expect(ics).toContain("https://fourcast.example/?due=2026-12-03");
     expect(ics.split("\r\n").every((line) => line.length <= 75)).toBe(true);
+  });
+});
+
+describe("Tonight sample: every screen gives the same answer", () => {
+  it("one payment at risk (Zip, $12.50 short on the morning of Dec 4) and one total owed", () => {
+    const s = getConceptSample(TODAY);
+    const risks = debitRisks(s, TODAY).filter((r) => !r.disputed);
+    expect(risks.map((r) => [r.lender, r.date, r.shortBy])).toEqual([["Zip", "2026-12-04", 1_250]]);
+    expect(nextRisk(s, TODAY)?.planId).toBe("sample-zip");
+    expect(buildTimeline(s, TODAY).lowest).toMatchObject({ date: "2026-12-04", balance: -1_250 });
+    const owed = owedByLender(s, TODAY).reduce((sum, r) => sum + r.owed, 0);
+    expect(owed).toBe(buildTimeline(s, TODAY).owed);
+    expect(AppStateSchema.safeParse(s).success).toBe(true);
   });
 });

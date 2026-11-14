@@ -50,7 +50,8 @@ export function PlanCard({
           <div className="flex flex-wrap gap-1.5">
             {returnedOn && (
               <span className="inline-block rounded-md bg-tight-soft px-1.5 py-0.5 text-xs font-medium text-tight">
-                Returned {formatShort(returnedOn)} · may still be taken
+                Returned {formatShort(returnedOn)}
+                {plan.refundStage === "store_refunded" ? ", store refunded" : ""}, may still be taken
               </span>
             )}
           </div>

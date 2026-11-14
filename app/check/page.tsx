@@ -3,7 +3,7 @@
 import { Lock } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { toCents } from "@/components/copy";
+import { toCents, verdictLine } from "@/components/copy";
 import { PlusOffer } from "@/components/plus-offer";
 import { cellsFromVerdict, ForecastGrid, ForecastLegend } from "@/components/forecast-grid";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -162,10 +162,10 @@ function VerdictCard({ verdict, plus }: { verdict: Verdict; plus: boolean }) {
   const answer = plus && !fits ? (sync?.buyOn ?? verdict.bestDay) : null;
   const title = fits ? "It fits." : answer ? `Not today. Buy ${formatShort(answer)}.` : "Not right now.";
   const line = fits
-    ? "Buying today keeps you above $0 for the next 6 weeks."
+    ? verdictLine(verdict)
     : answer && sync
       ? "Then every payment lands the morning after payday."
-      : "Buying today would take you below $0.";
+      : verdictLine(verdict);
   return (
     <section
       className={cn("rounded-md p-4 sm:p-6 lg:col-start-1", fits ? "bg-ok-soft" : answer ? "bg-payday-soft" : "bg-short-soft")}

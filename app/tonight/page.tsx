@@ -1,6 +1,6 @@
 "use client";
 
-// Concept "Tonight" (CONCEPT.md): one screen that answers, in order, "do I need to do anything tonight?",
+// "Tonight" (CONCEPT.md): one screen that answers, in order, "do I need to do anything tonight?",
 // "what do my next mornings look like?", "where is my refund?" and "what do I owe?".
 import Link from "next/link";
 import { useState } from "react";
@@ -16,12 +16,9 @@ import {
   getConceptSample,
   loadAcks,
   saveAcks,
-  loadRefunds,
   nextRisk,
   owedByLender,
   returnViews,
-  saveRefunds,
-  type RefundRecord,
   type RefundStage,
 } from "@/lib/concept";
 import { buildTimeline, debitRisks } from "@/lib/plan";
@@ -36,10 +33,7 @@ export default function TonightPage() {
   if (state === null)
     return (
       <Start
-        onSample={() => {
-          saveRefunds({ "sample-nordstrom": { stage: "store_refunded", storeRefundedOn: today } });
-          save(getConceptSample(today));
-        }}
+        onSample={() => save(getConceptSample(today))}
       />
     );
   if (!state.money) return <NeedsMoney />;
@@ -51,17 +45,26 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
   // The last return marked credited, kept so "Undo" can put the plan back.
   const [closed, setClosed] = useState<{ plan: Plan; text: string } | null>(null);
   const [acks, setAcks] = useState<Record<string, true>>(loadAcks);
-  const [refunds, setRefunds] = useState<Record<string, RefundRecord>>(loadRefunds);
 
   const timeline = buildTimeline(state, today);
   const risk = nextRisk(state, today);
   const openRisks = debitRisks(state, today).filter((r) => !r.disputed).length;
-  const views = returnViews(state, refunds, today);
+  const views = returnViews(state, today);
 
   const setStage = (planId: string, stage: RefundStage) => {
-    const next = { ...refunds, [planId]: { ...refunds[planId], stage, ...(stage === "store_refunded" ? { storeRefundedOn: today } : {}) } };
-    setRefunds(next);
-    saveRefunds(next);
+    if (stage !== "credited") {
+      save({
+        ...state,
+        plans: state.plans.map((p) => {
+          if (p.id !== planId) return p;
+          if (stage === "store_refunded") return { ...p, refundStage: "store_refunded" as const };
+          const rest = { ...p };
+          delete rest.refundStage;
+          return rest;
+        }),
+      });
+      return;
+    }
     // Credited: the lender cancelled what was left, so the plan leaves the forecast (the schema needs 1+ payments left).
     if (stage === "credited") {
       const plan = state.plans.find((p) => p.id === planId);
@@ -78,17 +81,15 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
       {state.sample && (
         <p className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
           <span className="rounded-sm bg-muted px-2 py-0.5 font-semibold text-foreground">Sample data</span>
-          Concept screen. Your own numbers live on Plans.
           <button
             type="button"
             onClick={() => {
               clearState();
-              saveRefunds({});
               saveAcks({});
             }}
             className="font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            Start over
+            Clear sample data
           </button>
         </p>
       )}
@@ -119,9 +120,6 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
                 <button
                   type="button"
                   onClick={() => {
-                    const back = { ...refunds, [closed.plan.id]: { ...refunds[closed.plan.id], stage: "store_refunded" as const } };
-                    setRefunds(back);
-                    saveRefunds(back);
                     save({ ...state, plans: [...state.plans, closed.plan] });
                     setClosed(null);
                   }}

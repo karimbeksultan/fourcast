@@ -3,10 +3,10 @@
 // Secondary blocks: what's owed per lender (with "I sent it back"), and a one-line check before a new buy.
 import { PackageOpen } from "lucide-react";
 import { useState } from "react";
-import { LENDER_MARK, toCents } from "@/components/copy";
+import { LENDER_MARK, toCents, verdictLine } from "@/components/copy";
 import { formatShort, formatUSD } from "@/lib/dates";
 import type { LenderOwed } from "@/lib/concept";
-import { checkPurchase } from "@/lib/plan";
+import { checkPurchase, planDebits } from "@/lib/plan";
 import type { AppState, ISODate, Plan } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +24,9 @@ export function OwedSummary({
   const total = rows.reduce((s, r) => s + r.owed, 0);
   const last = rows.reduce<ISODate | null>((m, r) => (m === null || r.lastDue > m ? r.lastDue : m), null);
   const active = plans.filter((p) => p.status !== "returned");
+  const onReturns = plans
+    .filter((p) => p.status === "returned")
+    .reduce((sum, p) => sum + p.installment * planDebits(p, today).length, 0);
 
   return (
     <section aria-labelledby="owed-title" className="space-y-4 rounded-lg border bg-card p-4 sm:p-5">
@@ -35,6 +38,11 @@ export function OwedSummary({
           <span className="tabular text-2xl font-bold text-foreground">{formatUSD(total)}</span>
           {last && <> across {rows.length} lender{rows.length === 1 ? "" : "s"}, all paid by {formatShort(last)}</>}
         </p>
+        {onReturns > 0 && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            Includes <span className="tabular">{formatUSD(onReturns)}</span> still scheduled on returned orders.
+          </p>
+        )}
       </div>
 
       <ul className="divide-y">
@@ -108,13 +116,8 @@ export function QuickCheck({ state, today }: { state: AppState; today: ISODate }
       {verdict && (
         <div className={cn("rounded-md p-3", verdict.verdict === "fits" ? "bg-ok-soft" : "bg-short-soft")} aria-live="polite">
           <p className="font-semibold">{verdict.verdict === "fits" ? "It fits." : "Not right now."}</p>
-          <p className="text-sm">
-            {verdict.verdict === "fits"
-              ? "Buying today keeps every morning above $0 for the next 6 weeks."
-              : verdict.bestDay
-                ? `Buying today would take you below $0. It fits if you buy on or after ${formatShort(verdict.bestDay)}.`
-                : "Buying today would take you below $0, and it doesn't fit in the next 6 weeks."}
-          </p>
+          {/* Free answer only; the day it fits is a Plus answer on /check, same as everywhere else. */}
+          <p className="text-sm">{verdictLine(verdict)}</p>
         </div>
       )}
       <a href="/check" className="text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">

@@ -24,6 +24,7 @@ export const PlanSchema = z.object({
   intervalDays: z.number().int().min(1).max(31),
   status: z.enum(["active", "returned"]).optional(),
   returnedOn: isoDate.optional(),
+  refundStage: z.enum(["store_refunded"]).optional(),
 });
 
 export const PlusSchema = z.object({

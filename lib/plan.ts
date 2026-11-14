@@ -212,14 +212,21 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
   const fitsByDay: Verdict["fitsByDay"] = [];
   for (let s = 0; s < WINDOW_DAYS; s++) {
     let lowest = Infinity;
-    for (let d = s; d < length; d++) lowest = Math.min(lowest, base[d].balance - paidBy(s, d));
+    // Same day model as Forecast and Guard: a day counts at its lowest (often the morning, after autopay).
+    for (let d = s; d < length; d++) lowest = Math.min(lowest, dayLow(base[d]) - paidBy(s, d));
     fitsByDay.push({ date: base[s].date, fits: lowest >= 0, lowest });
   }
 
   let firstShort: Shortfall | null = null;
   let deepest: Shortfall | null = null;
+  // Short even without this buy: the verdict must not blame the purchase for it.
+  let alreadyShort: Shortfall | null = null;
+  for (let d = 0; d < WINDOW_DAYS && !alreadyShort; d++) {
+    if (dayLow(base[d]) < 0) alreadyShort = { date: base[d].date, amount: -dayLow(base[d]) };
+  }
+
   for (let d = 0; d < length; d++) {
-    const balance = base[d].balance - paidBy(0, d);
+    const balance = dayLow(base[d]) - paidBy(0, d);
     if (balance >= 0) continue;
     if (!firstShort) firstShort = { date: base[d].date, amount: -balance };
     if (!deepest || -balance > deepest.amount) deepest = { date: base[d].date, amount: -balance };
@@ -242,6 +249,7 @@ export function checkPurchase(state: AppState, purchase: Purchase, today: ISODat
     schedule: scheduleFrom(today),
     firstShort,
     deepest,
+    alreadyShort,
     bestDay: fitsByDay.find((f) => f.fits)?.date ?? null,
     fitsByDay,
     paydaySync,

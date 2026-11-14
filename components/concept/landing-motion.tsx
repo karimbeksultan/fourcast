@@ -3,8 +3,8 @@
 // Supporting motion for the landing: the headline that writes itself in, the marquee band, and three
 // colored panels whose small live pieces show the three answers. Every piece has a reduced-motion path.
 import { motion, useInView, useReducedMotion } from "motion/react";
-import { Check, CircleX, PackageCheck, Store, Wallet } from "lucide-react";
-import { useRef, type ReactNode } from "react";
+import { Check, CircleX, PackageCheck, Pause, Play, Store, Wallet } from "lucide-react";
+import { useRef, useState, type ReactNode } from "react";
 import { LogoMark } from "@/components/logo";
 import { Marquee } from "@/components/ui/marquee";
 import { formatShort, formatUSD } from "@/lib/dates";
@@ -59,6 +59,8 @@ export function Band({ text, tone = "ink" }: { text: string; tone?: "ink" | "sky
   const ref = useRef<HTMLDivElement>(null);
   // The loop only runs while the band is on screen.
   const onScreen = useInView(ref, { margin: "100px" });
+  // WCAG 2.2.2: moving text needs a pause control, not only pause-on-hover.
+  const [paused, setPaused] = useState(false);
   const item = (
     <span className="flex items-center gap-8 text-2xl font-bold tracking-tight whitespace-nowrap sm:text-3xl">
       {text}
@@ -69,11 +71,24 @@ export function Band({ text, tone = "ink" }: { text: string; tone?: "ink" | "sky
     <div
       ref={ref}
       className={cn(
-        "py-4",
+        "relative py-4",
         tone === "ink" ? "bg-foreground text-background" : "bg-payday-soft text-foreground",
-        !onScreen && "[&_.animate-marquee]:[animation-play-state:paused]",
+        (!onScreen || paused) && "[&_.animate-marquee]:[animation-play-state:paused]",
       )}
     >
+      {!reduce && (
+        <button
+          type="button"
+          onClick={() => setPaused(!paused)}
+          aria-label={paused ? "Play moving text" : "Pause moving text"}
+          className={cn(
+            "absolute top-1/2 right-3 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+            tone === "ink" ? "bg-foreground hover:bg-background/15" : "bg-payday-soft hover:bg-foreground/10",
+          )}
+        >
+          {paused ? <Play className="size-4" aria-hidden /> : <Pause className="size-4" aria-hidden />}
+        </button>
+      )}
       <p className="sr-only">{text}</p>
       {reduce ? (
         <div className="mx-auto flex max-w-6xl px-4" aria-hidden>

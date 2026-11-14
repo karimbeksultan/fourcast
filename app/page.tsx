@@ -6,7 +6,7 @@ import { Landing } from "@/components/landing";
 import { useAppState } from "@/hooks/use-app-state";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useToday } from "@/hooks/use-today";
-import { getConceptSample, saveRefunds } from "@/lib/concept";
+import { getConceptSample } from "@/lib/concept";
 import { emptyState } from "@/lib/storage";
 
 export default function WelcomePage() {
@@ -25,7 +25,6 @@ export default function WelcomePage() {
       hasData={Boolean(state)}
       onSample={() => {
         if (!today) return;
-        saveRefunds({ "sample-nordstrom": { stage: "store_refunded", storeRefundedOn: today } });
         save(getConceptSample(today));
         router.push("/tonight");
       }}

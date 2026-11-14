@@ -12,7 +12,7 @@ const sans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Fourcast — Never lose your limit to a payment that's 5 hours late",
+  title: "Fourcast: know tonight if tomorrow's payment will clear",
   description:
     "Fourcast finds the Klarna, Afterpay and Affirm payments that won't make it before your paycheck lands, and tells you what to do the night before.",
 };

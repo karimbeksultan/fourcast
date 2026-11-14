@@ -20,13 +20,13 @@ const btn =
 function Preview() {
   const today = useToday();
   if (!today) return <div className="aspect-[4/5] w-full rounded-lg bg-primary-foreground/10" aria-hidden />;
+  // The same sample "Try it with sample data" loads, so the story and the first app screen match.
   const state = getConceptSample(today);
-  const plain = { ...state, plans: state.plans.filter((p) => p.status !== "returned") };
-  const risk = nextRisk(plain, today);
-  if (!risk || !plain.money) return null;
+  const risk = nextRisk(state, today);
+  if (!risk || !state.money) return null;
   return (
     <figure className="space-y-2">
-      <MorningStory risk={risk} paycheck={plain.money.paycheck} />
+      <MorningStory risk={risk} paycheck={state.money.paycheck} />
       <figcaption className="text-sm text-primary-foreground">Sample data, counted live from today.</figcaption>
     </figure>
   );
@@ -37,8 +37,7 @@ function Answers() {
   const today = useToday();
   if (!today) return <div className="h-80 rounded-lg bg-muted" aria-hidden />;
   const state = getConceptSample(today);
-  const plain = { ...state, plans: state.plans.filter((p) => p.status !== "returned") };
-  return <AnswerPanels risk={nextRisk(plain, today)} days={buildTimeline(plain, today).days} />;
+  return <AnswerPanels risk={nextRisk(state, today)} days={buildTimeline(state, today).days} />;
 }
 
 export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSample: () => void; onStart: () => void }) {

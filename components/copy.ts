@@ -1,6 +1,6 @@
 // UI wording in one place (see DESIGN.md → Copy). Numbers always come from lib/plan.ts.
 import { addDays, formatShort, formatUSD } from "@/lib/dates";
-import type { Lender, PayFrequency, Status, Timeline } from "@/lib/types";
+import type { Lender, PayFrequency, Status, Timeline, Verdict } from "@/lib/types";
 
 export const STATUS_TITLE: Record<Status, string> = {
   ok: "You're covered.",
@@ -49,4 +49,19 @@ export function toCents(input: string): number | null {
 
 export function toDollars(cents: number): string {
   return (cents / 100).toFixed(2).replace(/\.00$/, "");
+}
+
+/**
+ * The free line under a purchase verdict. It never blames the buy for a shortfall that is already there:
+ * with a $1 buy and a short morning ahead, it says so instead of "would take you below $0".
+ */
+export function verdictLine(v: Verdict): string {
+  if (v.verdict === "fits") return "Buying today keeps you above $0 for the next 6 weeks.";
+  const already = v.alreadyShort;
+  if (already && (!v.firstShort || already.date <= v.firstShort.date)) {
+    return `You're already ${formatUSD(already.amount)} short on ${formatShort(already.date)} without this buy. Sort that out first.`;
+  }
+  const first = v.firstShort ? ` on ${formatShort(v.firstShort.date)}` : "";
+  const also = already ? `, and you're already short on ${formatShort(already.date)}` : "";
+  return `Buying today would take you below $0${first}${also}.`;
 }

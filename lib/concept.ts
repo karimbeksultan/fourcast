@@ -12,28 +12,29 @@ export function getConceptSample(today: ISODate): AppState {
     lender: "Afterpay",
     merchant: "Nordstrom",
     installment: 4_000,
-    paymentsLeft: 2,
-    nextDue: addDays(today, 3),
+    // One payment left, due after the Dec 4 payday, so the sample keeps the demo numbers (Zip $12.50 short,
+    // move $25) and the landing story matches the first app screen.
+    paymentsLeft: 1,
+    nextDue: addDays(today, 21),
     intervalDays: 14,
     status: "returned",
     returnedOn: addDays(today, -9),
+    refundStage: "store_refunded",
   };
   return { ...base, limits: { Zip: 60_000, Klarna: 75_000 }, plans: [...base.plans, getSampleKlarnaPlan(today), returned] };
 }
 
-/** The risk to act on first: the earliest one that isn't a disputed (returned) plan. */
+/** The risk to act on first: a payment that fails beats one that is only tight, then the earliest. Same order as Guard. */
 export function nextRisk(state: AppState, today: ISODate): DebitRisk | null {
-  const risks = debitRisks(state, today).filter((r) => !r.disputed);
-  return [...risks].sort((a, b) => a.date.localeCompare(b.date) || (a.level === "fails" ? -1 : 1))[0] ?? null;
+  return debitRisks(state, today).find((r) => !r.disputed) ?? null;
 }
 
 export type LenderOwed = { lender: Lender; plans: number; owed: Cents; lastDue: ISODate };
 
-/** What's still owed per lender, active plans only, biggest first. */
+/** What's still owed per lender, biggest first. Returned plans count until the lender credits them: their payments are still scheduled. */
 export function owedByLender(state: AppState, today: ISODate): LenderOwed[] {
   const map = new Map<Lender, LenderOwed>();
   for (const p of state.plans) {
-    if (p.status === "returned") continue;
     const debits = planDebits(p, today);
     if (debits.length === 0) continue;
     const row = map.get(p.lender) ?? { lender: p.lender, plans: 0, owed: 0, lastDue: debits[0] };
@@ -46,27 +47,8 @@ export function owedByLender(state: AppState, today: ISODate): LenderOwed[] {
 }
 
 // Returns tracker: where each returned order is between "sent back" and "the lender credited it".
+// The stage lives on the plan (Plan.refundStage), so Tonight and Plans read the same thing.
 export type RefundStage = "returned" | "store_refunded" | "credited";
-export type RefundRecord = { stage: RefundStage; storeRefundedOn?: ISODate };
-const REFUNDS_KEY = "fourcast:concept:refunds:v1";
-
-export function loadRefunds(): Record<string, RefundRecord> {
-  try {
-    const raw = window.localStorage.getItem(REFUNDS_KEY);
-    const parsed = raw ? JSON.parse(raw) : {};
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-export function saveRefunds(next: Record<string, RefundRecord>): void {
-  try {
-    window.localStorage.setItem(REFUNDS_KEY, JSON.stringify(next));
-  } catch {
-    // Private mode or full storage: the tracker still works for this visit.
-  }
-}
 
 export type ReturnView = {
   plan: Plan;
@@ -78,15 +60,16 @@ export type ReturnView = {
   suggestLetter: boolean;
 };
 
-export function returnViews(state: AppState, refunds: Record<string, RefundRecord>, today: ISODate): ReturnView[] {
+export function returnViews(state: AppState, today: ISODate): ReturnView[] {
   return state.plans
     .filter((p) => p.status === "returned")
     .map((plan) => {
-      const stage = refunds[plan.id]?.stage ?? "returned";
+      const stage: RefundStage = plan.refundStage ?? "returned";
       const daysWaiting = plan.returnedOn ? Math.max(0, diffDays(plan.returnedOn, today)) : 0;
       const stillScheduled = planDebits(plan, today).map((date) => ({ date, amount: plan.installment }));
       const soon = stillScheduled.some((d) => diffDays(today, d.date) <= 7);
-      return { plan, stage, daysWaiting, stillScheduled, suggestLetter: stage !== "credited" && (daysWaiting > 7 || soon) };
+      // Credited plans leave the list (the page removes them), so every plan here is still waiting.
+      return { plan, stage, daysWaiting, stillScheduled, suggestLetter: daysWaiting > 7 || soon };
     })
     .sort((a, b) => b.daysWaiting - a.daysWaiting);
 }

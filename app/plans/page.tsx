@@ -87,6 +87,7 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
         if (on) return { ...x, status: "returned" as const, returnedOn: on };
         const rest = { ...x };
         delete rest.returnedOn;
+        delete rest.refundStage;
         return { ...rest, status: "active" as const };
       }),
     });

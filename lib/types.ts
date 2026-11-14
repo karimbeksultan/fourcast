@@ -38,6 +38,8 @@ export type Plan = {
   /** "returned": the item went back but the lender may still take the payments (F3). Missing means active. */
   status?: "active" | "returned";
   returnedOn?: ISODate;
+  /** Returned plans only: the store has refunded; waiting for the lender to credit the plan. */
+  refundStage?: "store_refunded";
 };
 
 export type Plus = {
@@ -137,6 +139,8 @@ export type Verdict = {
   firstShort: Shortfall | null;
   /** Worst day if bought today. */
   deepest: Shortfall | null;
+  /** First day in the next 42 that is short without this purchase (then the buy isn't the cause). */
+  alreadyShort: Shortfall | null;
   /** First day in the next 42 when buying never takes the account below $0. */
   bestDay: ISODate | null;
   fitsByDay: { date: ISODate; fits: boolean; lowest: Cents }[];

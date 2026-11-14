@@ -4,7 +4,7 @@
 // 6 am takes checking below $0, the paycheck at 3 pm is too late, the limit is at risk), then with it (move money
 // the evening before, the debit clears). Numbers come from the sample through lib/plan.ts, counted from today.
 import { AnimatePresence, animate, motion, useInView, useReducedMotion } from "motion/react";
-import { BellRing, CircleCheck, CircleX, Sunrise, Wallet } from "lucide-react";
+import { BellRing, CircleCheck, CircleX, Pause, Play, Sunrise, Wallet } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { addDays, formatShort, formatUSD } from "@/lib/dates";
 import { moveAmount } from "@/lib/plan";
@@ -77,12 +77,14 @@ export function MorningStory({ risk, paycheck }: { risk: DebitRisk; paycheck: nu
   const { without, withIt } = buildSteps(risk, paycheck);
   // 0–2: without Fourcast, 3–5: with it. Reduced motion lands on the outcome and stays there.
   const [i, setI] = useState(reduce ? 5 : 0);
+  // WCAG 2.2.2: a loop that runs longer than 5 seconds needs a way to stop it.
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (reduce || !visible) return;
+    if (reduce || !visible || paused) return;
     const t = window.setTimeout(() => setI((n) => (n + 1) % 6), i === 2 || i === 5 ? 3200 : 1900);
     return () => window.clearTimeout(t);
-  }, [i, reduce, visible]);
+  }, [i, reduce, visible, paused]);
 
   const withFourcast = i >= 3;
   const steps = withFourcast ? withIt : without;
@@ -96,10 +98,22 @@ export function MorningStory({ risk, paycheck }: { risk: DebitRisk; paycheck: nu
           {withFourcast ? "With Fourcast" : "Without Fourcast"}
           <span className="font-normal text-muted-foreground">, sample data</span>
         </p>
-        <div className="flex gap-1.5" aria-hidden>
-          {[0, 1].map((k) => (
-            <span key={k} className={cn("h-1.5 w-6 rounded-full transition-colors duration-500", (k === 1) === withFourcast ? "bg-primary" : "bg-muted")} />
-          ))}
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1.5" aria-hidden>
+            {[0, 1].map((k) => (
+              <span key={k} className={cn("h-1.5 w-6 rounded-full transition-colors duration-500", (k === 1) === withFourcast ? "bg-primary" : "bg-muted")} />
+            ))}
+          </div>
+          {!reduce && (
+            <button
+              type="button"
+              onClick={() => setPaused(!paused)}
+              aria-label={paused ? "Play the story" : "Pause the story"}
+              className="flex size-8 items-center justify-center rounded-md border outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              {paused ? <Play className="size-4" aria-hidden /> : <Pause className="size-4" aria-hidden />}
+            </button>
+          )}
         </div>
       </div>
 
@@ -140,7 +154,8 @@ export function MorningStory({ risk, paycheck }: { risk: DebitRisk; paycheck: nu
             </div>
           </motion.div>
         </AnimatePresence>
-        <p className={cn("tabular mt-3 text-4xl font-bold tracking-tight sm:text-5xl", step.balance < 0 && "text-short")} aria-live="polite">
+        {/* No live region: the loop would announce a balance every two seconds. The figure text is enough. */}
+        <p className={cn("tabular mt-3 text-4xl font-bold tracking-tight sm:text-5xl", step.balance < 0 && "text-short")}>
           <Counter cents={step.balance} reduce={reduce} />
         </p>
         <p className="text-sm text-muted-foreground">in checking</p>
