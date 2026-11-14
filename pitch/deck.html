@@ -1,0 +1,330 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Fourcast pitch deck</title><style>
+* { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+@page { size: 1920px 1080px; margin: 0; }
+@font-face { font-family: 'Geologica'; src: url(assets/geologica.woff2); font-weight: 100 900; }
+body { font: 32px/1.2 sans-serif; }
+body > section { width: 1920px !important; height: 1080px !important; overflow: hidden !important; box-sizing: border-box !important; position: relative; isolation: isolate; break-after: page; }
+aside { display: none !important; }
+h1 { font-size: 96px; font-weight: 600 } h2 { font-size: 64px; font-weight: 600 } h3 { font-size: 44px; font-weight: 600 }
+p, li, h1, h2, h3, td, th { overflow-wrap: break-word; text-wrap: pretty }
+table { width: 100%; border-collapse: separate; border-spacing: 0; border: solid #0003; border-width: 2px 0 0 2px }
+th, td { padding: .35em .6em; text-align: left; border: solid #0003; border-width: 0 2px 2px 0 }
+
+/* Fourcast pitch deck. Palette and type come from the product: paper, ink, dollar green, payday blue. */
+body { font-family: 'Geologica', Arial, sans-serif; color: #0F1F1A; }
+
+.slide { background: #F5F7F4; color: #0F1F1A; padding: 128px 128px 160px; display: flex; flex-direction: column; gap: 44px; }
+.dark { background: #0F1F1A; color: #F5F7F4; }
+.brand { background: #0B6E4F; color: #F5F7F4; }
+.cover { flex-direction: row; align-items: center; gap: 96px; padding: 128px; }
+
+.title { font-size: 64px; font-weight: 700; line-height: 1.1; letter-spacing: -1px; }
+.hero { font-size: 104px; font-weight: 700; line-height: 1.02; letter-spacing: -3px; }
+.lead { font-size: 34px; font-weight: 400; line-height: 1.4; }
+.body { font-size: 30px; font-weight: 400; line-height: 1.4; }
+.strong { font-size: 30px; font-weight: 700; line-height: 1.3; }
+.note { font-size: 24px; font-weight: 400; line-height: 1.4; color: #4F5F58; }
+.note-light { font-size: 24px; font-weight: 400; line-height: 1.4; color: #C9D6CF; }
+.muted { color: #4F5F58; }
+
+.row { display: flex; flex-direction: row; gap: 48px; }
+.col { display: flex; flex-direction: column; gap: 24px; }
+.grow { flex: 1; }
+.center { align-items: center; }
+.end { justify-content: flex-end; }
+.between { justify-content: space-between; }
+
+.card { background: #FFFFFF; border: 2px solid #D9E0DB; border-radius: 16px; padding: 32px 36px; display: flex; flex-direction: column; gap: 14px; }
+.card-plus { background: #FFFFFF; border: 4px solid #0B6E4F; border-radius: 16px; padding: 32px 36px; display: flex; flex-direction: column; gap: 14px; }
+.card-dark { background: #1B2E27; border: 2px solid #33473F; border-radius: 16px; padding: 32px 36px; display: flex; flex-direction: column; gap: 14px; }
+.quote { font-size: 32px; font-weight: 600; line-height: 1.3; }
+
+.stat { display: flex; flex-direction: row; gap: 36px; align-items: center; border-top: 4px solid #0F1F1A; padding: 22px 0 0 0; }
+.stat-num { font-size: 96px; font-weight: 700; line-height: 1; letter-spacing: -3px; width: 300px; }
+.stat-num-short { font-size: 96px; font-weight: 700; line-height: 1; letter-spacing: -3px; width: 300px; color: #C2410C; }
+.stat-text { font-size: 30px; line-height: 1.35; flex: 1; }
+
+.shot { border: 2px solid #D9E0DB; border-radius: 14px; background: #FFFFFF; object-fit: contain; }
+.shot-green { border-radius: 14px; background: #0B6E4F; object-fit: contain; }
+.phone { border: 8px solid #0F1F1A; border-radius: 44px; background: #F5F7F4; object-fit: cover; }
+.fig { display: flex; flex-direction: column; gap: 12px; }
+
+.tbl { font-size: 26px; line-height: 1.3; color: #0F1F1A; }
+.tbl-lg { font-size: 30px; line-height: 1.3; color: #0F1F1A; }
+.tbl-us { background: #DFF2E8; }
+.callout { background: #0F1F1A; color: #F5F7F4; border-radius: 16px; padding: 36px 40px; display: flex; flex-direction: column; gap: 14px; }
+.url { font-size: 64px; font-weight: 700; line-height: 1.1; letter-spacing: -1px; }
+.list { font-size: 30px; line-height: 1.4; }
+.list-tight { font-size: 26px; line-height: 1.4; }
+
+.pill { font-size: 24px; font-weight: 600; line-height: 1.2; background: #E3EDFC; color: #1E4FA8; border-radius: 10px; padding: 10px 16px; display: inline-block; }
+.price { font-size: 56px; font-weight: 700; line-height: 1.05; letter-spacing: -1px; }
+.mark { background: #2E6FE0; color: #F5F7F4; border-radius: 12px; padding: 0 16px; }
+
+.foot { position: absolute; left: 128px; bottom: 64px; width: 1664px; display: flex; flex-direction: row; justify-content: space-between; gap: 48px; }
+.foot-text { font-size: 24px; line-height: 1.2; color: #4F5F58; }
+.foot-light { font-size: 24px; line-height: 1.2; color: #C9D6CF; }
+</style></head><body>
+<section id="cover" class="slide brand cover" data-transition="fade">
+<div class="col grow" style="gap:40px">
+<div class="row center" style="gap:24px">
+<svg aria-label="Fourcast logo" width="88" height="88" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#F5F7F4"/><path d="M16 6.5 6.5 19h20M16 6.5v19" fill="none" stroke="#0B6E4F" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 17.4a4 4 0 0 1 8 0z" fill="#2E6FE0"/></svg>
+<p style="font-size:64px;font-weight:700;letter-spacing:-2px;line-height:1">fourcast</p>
+</div>
+<h1 class="hero">Know tonight if tomorrow’s payment will clear</h1>
+<p class="lead">A web app for Americans aged 25–45 who pay off Pay in 4 plans at several lenders at once.</p>
+<div class="col" style="gap:6px">
+<p class="strong">Track: Money</p>
+<p class="note-light">Business Cup 2.0, AIESEC NU × Zimran. Team Fourcast: Ayat and Beksultan.</p>
+<p class="note-light">Live: fourcast-zimran.vercel.app</p>
+<p class="note-light">Code: github.com/karimbeksultan/fourcast</p>
+</div>
+</div>
+<img class="phone" src="assets/tonight-phone.png" alt="Fourcast on a phone: Zip won’t clear on Fri, Dec 4, with the action to move $25 the evening before" style="width:342px;height:740px">
+<aside>Fourcast, track Money. One sentence: it tells you the evening before that a pay-later payment won’t clear in the morning, and what to do about it.</aside>
+</section>
+
+<section id="problem" class="slide" data-transition="fade">
+<h2 class="title">Autopay at 6 am. Paycheck at 3 pm.</h2>
+<div class="row grow">
+<div class="col" style="width:780px">
+<div class="card">
+<p class="quote">“they try to take a payment off your card at 6 in the morning”</p>
+<p class="note">Afterpay user, US App Store review, 27 Apr 2026. Their paycheck lands at 3–4 pm the same day.</p>
+</div>
+<div class="card">
+<p class="quote">“Missed a $7 payment by 5 hours… my spending power went from 1000 to 200.”</p>
+<p class="note">Afterpay user, US App Store review, 2026</p>
+</div>
+<p class="body">Our user is a working American, 25–45, paid every two weeks, with Pay in 4 plans at two or more lenders. This is a composite from reviews, not an interview.</p>
+</div>
+<div class="col grow">
+<div class="stat"><p class="stat-num">26%</p><p class="stat-text">of US pay-later users paid late in the past year</p></div>
+<div class="stat"><p class="stat-num">31%</p><p class="stat-text">of users aged 30–44 paid late</p></div>
+<div class="stat"><p class="stat-num-short">11%</p><p class="stat-text">had a pay-later payment set off a bank overdraft or NSF fee</p></div>
+</div>
+</div>
+<div class="foot"><p class="foot-text">Federal Reserve, Economic Well-Being of U.S. Households in 2025 (about 13,000 adults); App Store reviews</p><p class="foot-text">2</p></div>
+<aside>The pain is not “too many plans”. It is one payment that bounces for a few hours: a late fee, a bank overdraft, a cut spending limit. The Fed measured it: 26% paid late, 11% got an overdraft or NSF fee from a pay-later payment.</aside>
+</section>
+
+<section id="gap" class="slide" data-transition="fade">
+<h2 class="title">Each lender’s app sees only its own plans</h2>
+<p class="lead">A third of pay-later borrowers hold loans at several lenders at once. Nobody puts those payments next to the paycheck and says which one won’t make it.</p>
+<table class="tbl-lg">
+<tr><th style="width:31%;text-align:left">Who</th><th style="width:25%;text-align:left">Sees the payment dates</th><th style="width:17%;text-align:left">Sees the paycheck</th><th style="width:27%;text-align:left">Warns the evening before</th></tr>
+<tr><td>Lender apps</td><td>Its own plans only</td><td>No</td><td>No</td></tr>
+<tr><td>Bank app</td><td>No</td><td>Yes</td><td>Only once the balance is low</td></tr>
+<tr><td>Budget apps (Rocket Money, Monarch)</td><td>Past debits only</td><td>Yes</td><td>No</td></tr>
+<tr><td>Pay-later trackers (Finny, PayStreak)</td><td>Yes, typed in</td><td>We didn’t find it</td><td>We didn’t find it</td></tr>
+<tr class="tbl-us"><td>Fourcast</td><td>All lenders, typed in or read by AI</td><td>Yes</td><td>Yes, with the amount to move</td></tr>
+</table>
+<div class="foot"><p class="foot-text">CFPB, Jan 2025 (33% across lenders, 2022 data); public product pages and reviews, Nov 2026</p><p class="foot-text">3</p></div>
+<aside>Lenders see the schedule but not the paycheck. The bank sees the paycheck but not the schedule. Trackers list plans; we did not find one that checks the morning against the paycheck, and we say “did not find”, not “nobody has it”.</aside>
+</section>
+
+<section id="product" class="slide" data-transition="fade">
+<h2 class="title">Tonight: one sentence, one thing to do</h2>
+<div class="row grow">
+<img class="shot" src="assets/tonight.png" alt="The Tonight screen: Zip won’t clear on Fri, Dec 4, $12.50 short before the paycheck, move $25 the evening before; below it three weeks of morning balances and what is owed per lender" style="width:1056px;height:660px">
+<div class="col grow" style="gap:32px">
+<div class="col" style="gap:8px">
+<p class="strong">It names the payment</p>
+<p class="note">“Zip won’t clear on Fri, Dec 4”: $12.50 short, hours before the paycheck, with the $600 limit at stake.</p>
+</div>
+<div class="col" style="gap:8px">
+<p class="strong">It gives one action</p>
+<p class="note">Move $25 the evening before, or pay by hand after the paycheck lands.</p>
+</div>
+<div class="col" style="gap:8px">
+<p class="strong">It shows why</p>
+<p class="note">Three weeks of morning balances: after autopay, before the paycheck.</p>
+</div>
+<div class="col" style="gap:8px">
+<p class="strong">No sign-up, no bank link</p>
+<p class="note">Plans are saved only in the browser.</p>
+</div>
+</div>
+</div>
+<div class="foot"><p class="foot-text">Live screenshot of fourcast-zimran.vercel.app/tonight on the built-in sample data</p><p class="foot-text">4</p></div>
+<aside>This is the home screen. Press “Try it with sample data” on the site and you land here. Every number is computed from the sample through the same code as real input.</aside>
+</section>
+
+<section id="works" class="slide" data-transition="fade">
+<h2 class="title">Real on any input: code does the math</h2>
+<div class="row">
+<div class="fig" style="width:522px">
+<img class="shot" src="assets/read-plan.png" alt="Add a plan: the pasted Klarna text was read into Klarna, Target, $80.00 × 3 left, next Thu, Nov 19, with an Add plan button" style="width:522px;height:340px">
+<p class="strong">1. AI reads the plan</p>
+<p class="note">Paste a confirmation or a screenshot. AI pulls out lender, amount, payments left and next date; you confirm. Typing it in always works.</p>
+</div>
+<div class="fig" style="width:522px">
+<img class="shot-green" src="assets/story-fail.png" alt="Without Fourcast: Friday 6 am, Zip autopay takes $40.00, checking is at minus $12.50, payment failed" style="width:522px;height:340px">
+<p class="strong">2. Code checks every morning</p>
+<p class="note">A 42-day simulation checks every payment against the morning it’s taken, before the paycheck.</p>
+</div>
+<div class="fig" style="width:522px">
+<img class="shot-green" src="assets/story-clear.png" alt="With Fourcast: after moving $25 the evening before, the same Zip payment clears" style="width:522px;height:340px">
+<p class="strong">3. One action the evening before</p>
+<p class="note">Move $25 in, and the same payment clears. The limit stays.</p>
+</div>
+</div>
+<div class="row" style="gap:16px">
+<p class="pill">36 golden tests on the numbers</p>
+<p class="pill">Sample data runs through the same code</p>
+<p class="pill">No sign-up, no bank link</p>
+</div>
+<div class="foot"><p class="foot-text">Live screenshots. The math is plain TypeScript in lib/plan.ts; AI only reads input and drafts letters</p><p class="foot-text">5</p></div>
+<aside>The jury can type their own numbers. The calculation is plain code with 36 tests. AI has two small jobs, each with a fallback: reading a plan from text or a screenshot, and drafting a dispute letter.</aside>
+</section>
+
+<section id="refunds" class="slide" data-transition="fade">
+<h2 class="title">Returns and payment history, in one place</h2>
+<div class="row grow">
+<div class="col" style="width:720px">
+<div class="fig">
+<img class="shot" src="assets/returns.png" alt="Returns tracker: Nordstrom with Afterpay, waiting 9 days; sent back and store refunded are done, lender credited is not; $40 is still scheduled" style="width:720px;height:264px">
+<p class="note">Returns: where the refund is stuck</p>
+</div>
+<div class="fig">
+<img class="shot" src="assets/plan-history.png" alt="A Klarna plan card: 1 of 4 paid, $80 of $320, with the payment history open" style="width:520px;height:273px">
+<p class="note">Each plan: paid, due and coming up</p>
+</div>
+</div>
+<div class="fig grow">
+<img class="shot" src="assets/letter.png" alt="A dispute letter drafted by AI: refund not applied to my Nordstrom order, with blanks for the order number and name and the CFPB complaint link" style="width:800px;height:598px">
+<p class="note">Dispute letter, drafted live by AI from the plan</p>
+</div>
+</div>
+<div class="foot"><p class="foot-text">CFPB complaint database, Nov 2026: 447 of Klarna’s 3,261 complaints are unresolved purchase disputes</p><p class="foot-text">6</p></div>
+<aside>The second pain nobody serves: you returned the item, the lender keeps charging. Fourcast follows the refund in three steps and writes the letter when it stalls. Each plan also shows what is paid and what is coming.</aside>
+</section>
+
+<section id="sell" class="slide" data-transition="fade">
+<h2 class="title">What we sell, and why people come back</h2>
+<div class="row grow">
+<div class="col" style="width:800px">
+<div class="card">
+<p class="strong">Free</p>
+<ul class="list-tight">
+<li>Tonight, all plans, the 6-week forecast</li>
+<li>Returns tracker and dispute letters</li>
+<li>A yes or not-yet before a new buy</li>
+</ul>
+</div>
+<div class="card-plus">
+<p class="price">Plus, $29.99 a year</p>
+<p class="note">or $4.99 a month; free until the second payday</p>
+<ul class="list-tight">
+<li>A reminder at 8 pm the evening before a risky payment, with a one-number check-in</li>
+<li>Payday Sync: the day to buy so every payment lands after payday</li>
+<li>The exact day a new buy would run you short</li>
+</ul>
+</div>
+</div>
+<div class="col grow">
+<img class="shot" src="assets/paywall.png" alt="The paywall in the product: Get a heads-up the night before, $29.99 a year or $4.99 a month, Start free trial, Stripe test mode" style="width:816px;height:278px">
+<p class="strong">Why they come back</p>
+<ul class="list-tight">
+<li>The evening before a risky payment: the 8 pm reminder opens the check-in</li>
+<li>Every payday: a new three-week picture</li>
+<li>After each payment: the plan moves to “2 of 4 paid”</li>
+<li>All year: users take about 6 loans a year per lender</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="foot-text">Checkout runs in Stripe test mode (card 4242…). Loans per lender: CFPB, Dec 2025 (2023 data)</p><p class="foot-text">7</p></div>
+<aside>Seeing the risk is free. The reminder the evening before is what people pay for. One overdraft costs about as much as a year of Plus. The yearly price fits a product people open before each payment, not every day.</aside>
+</section>
+
+<section id="money" class="slide" data-transition="fade">
+<h2 class="title">Why it makes money</h2>
+<div class="row grow">
+<div class="col" style="width:880px">
+<table class="tbl">
+<tr><th style="width:34%;text-align:left">Unit economics</th><th style="width:66%;text-align:left">Number and source</th></tr>
+<tr><td>Price</td><td>$29.99 a year, about $27 after fees</td></tr>
+<tr><td>Trial to paid</td><td>35–42% for trials of 10–32 days (RevenueCat 2026)</td></tr>
+<tr><td>Still paying after a year</td><td>28% of yearly plans (RevenueCat 2026)</td></tr>
+<tr><td>LTV</td><td>About $37</td></tr>
+<tr class="tbl-us"><td>CAC ceiling</td><td>$27: the yearly plan pays back on day one</td></tr>
+<tr><td>Paid ads</td><td>$4.13 an install × 2.1% to paid ≈ $200 a payer. They don’t pay back.</td></tr>
+</table>
+</div>
+<div class="col grow">
+<p class="strong">Growth: search at the moment of pain</p>
+<div class="col" style="gap:10px;align-items:flex-start">
+<p class="pill">“why did klarna lower my limit”</p>
+<p class="pill">“klarna payment failed but money in bank”</p>
+<p class="pill">“afterpay refund not showing up”</p>
+</div>
+<p class="note">Google US autocomplete, Nov 2026. Volumes aren’t measured yet.</p>
+<p class="strong">Market</p>
+<ul class="list-tight">
+<li>17.6M Americans hold plans at several lenders (our estimate from CFPB data)</li>
+<li>At the 2% benchmark: about 350,000 payers, about $15M ARR</li>
+<li>$100M ARR needs 2.4M payers: the ambitious case, every autopay that lands before payday</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="foot-text">RevenueCat State of Subscription Apps 2026; Adjust 2026; CFPB. Assumes about $42 a year per payer</p><p class="foot-text">8</p></div>
+<aside>LTV is about 37 dollars, so we cannot buy installs at 200 dollars a payer. Growth has to be organic: people already type our problem into Google. The base case is 15 million ARR on the 2% benchmark; 100 million is the ambitious case and we label it so.</aside>
+</section>
+
+<section id="proof" class="slide" data-transition="fade">
+<h2 class="title">What’s proven, and what isn’t yet</h2>
+<div class="row">
+<div class="card grow">
+<p class="strong">Proven</p>
+<ul class="list-tight">
+<li>Works end to end in production, on any numbers, with no sign-up</li>
+<li>The pain is measured: 26% paid late, 11% hit an overdraft or NSF fee (Federal Reserve)</li>
+<li>128 sourced complaints: 51 App Store reviews read by hand, 77 from the CFPB database</li>
+<li>People already search for it (Google autocomplete)</li>
+</ul>
+</div>
+<div class="card grow">
+<p class="strong">Not yet</p>
+<ul class="list-tight">
+<li>No interviews or survey answers from US users</li>
+<li>No paying users: checkout is in Stripe test mode</li>
+<li>Search volumes aren’t measured</li>
+<li>Lenders don’t publish the debit time, so we assume the careful case: the morning</li>
+</ul>
+</div>
+</div>
+<div class="callout">
+<p class="strong">The hardest question: why would someone short on cash pay?</p>
+<p class="body">One overdraft costs $26.77 on average, about a year of Plus. Cushion, a pay-later tracker that raised over $20M, closed in 2024 without reaching scale; Fourcast needs no bank link and costs almost nothing to run.</p>
+</div>
+<div class="foot"><p class="foot-text">Bankrate checking account survey, 2025; American Banker and Banking Dive on Cushion, Feb 2025</p><p class="foot-text">9</p></div>
+<aside>We say plainly what we have and what we don’t. The evidence is the Fed survey and 128 sourced complaints. We have no interviews and no paying users yet.</aside>
+</section>
+
+<section id="new" class="slide dark">
+<h2 class="title">What’s new, and what’s next</h2>
+<div class="row">
+<div class="card-dark grow">
+<p class="strong">The morning model</p>
+<p class="note-light">Every payment is checked against the morning it’s taken, before the paycheck, across all lenders.</p>
+</div>
+<div class="card-dark grow">
+<p class="strong">Payday Sync</p>
+<p class="note-light">The day to buy so that every payment lands the morning after a payday.</p>
+</div>
+<div class="card-dark grow">
+<p class="strong">Refunds followed to the end</p>
+<p class="note-light">Sent back, store refunded, lender credited, and a ready dispute letter when it stalls.</p>
+</div>
+</div>
+<p class="body">Next: reminders by push or SMS, a field for when the paycheck lands, an optional bank link.</p>
+<div class="col grow end" style="gap:10px">
+<p class="url">fourcast-zimran.vercel.app</p>
+<p class="lead">Open it and press “Try it with sample data”. No sign-up.</p>
+<p class="lead">Code: github.com/karimbeksultan/fourcast</p>
+</div>
+<div class="foot"><p class="foot-light">Fourcast, track Money. Not financial advice.</p><p class="foot-light">10</p></div>
+<aside>Trackers list plans. Fourcast answers one question every evening: will tomorrow’s payment clear, and what do I do if not.</aside>
+</section>
+
+</body></html>
