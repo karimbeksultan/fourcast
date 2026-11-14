@@ -2,7 +2,7 @@
 
 // Site structure taken from zimran.io (sticky header, page links in the middle, one action on the right),
 // with two kinds of tabs: what a buyer reads before paying, and the app itself.
-import { CalendarDays, ListChecks, Menu, ShoppingBag, X } from "lucide-react";
+import { CalendarDays, Menu, ShieldCheck, ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -15,9 +15,9 @@ const SITE = [
 ];
 
 export const APP_TABS = [
-  { href: "/plans", label: "My plans", icon: ListChecks },
+  { href: "/plans", label: "Guard", icon: ShieldCheck },
   { href: "/timeline", label: "Forecast", icon: CalendarDays },
-  { href: "/check", label: "Check a buy", icon: ShoppingBag },
+  { href: "/check", label: "Before you buy", icon: ShoppingBag },
 ];
 
 const focus = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -63,7 +63,7 @@ export function AppNav() {
                 focus,
               )}
             >
-              {inApp ? "My plans" : "Open my forecast"}
+              {inApp ? "Guard" : "Open my Guard"}
             </Link>
             <button
               type="button"

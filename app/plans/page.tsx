@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AddPlan } from "@/components/add-plan";
+import { GuardSummary, RiskCard } from "@/components/guard";
+import { debitRisks } from "@/components/guard-shim";
 import { LowestLine } from "@/components/money";
 import { CheckIn } from "@/components/check-in";
-import { FREQUENCY_LABEL, STATUS_TITLE } from "@/components/copy";
+import { FREQUENCY_LABEL } from "@/components/copy";
 import { MoneyForm } from "@/components/money-form";
 import { PlanCard } from "@/components/plan-card";
 import { Badge } from "@/components/ui/badge";
@@ -66,12 +68,15 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
   const [checkInOpen, setCheckInOpen] = useState(true);
   const [editMoney, setEditMoney] = useState(false);
   const timeline = state.money ? buildTimeline(state, today) : null;
+  const risks = state.money ? debitRisks(state, today) : [];
   const showCheckIn = checkInOpen && due && /^\d{4}-\d{2}-\d{2}$/.test(due) && state.money;
 
   return (
     <>
       <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Your plans</h1>
+        <h1 className={timeline ? "sr-only" : "text-4xl font-bold tracking-tight sm:text-5xl"}>
+          {timeline ? "Guard" : "Your plans"}
+        </h1>
         <div className="flex flex-wrap items-center gap-2">
           {state.sample && <Badge variant="secondary">Sample data</Badge>}
           <Button variant="outline" size="sm" className="h-8" onClick={() => clearState()}>
@@ -94,17 +99,23 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
       )}
 
       {timeline && (
-        <Link
-          href="/timeline"
-          className={cn(
-            "block rounded-md p-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-6",
-            timeline.status === "ok" ? "bg-ok-soft" : timeline.status === "tight" ? "bg-tight-soft" : "bg-short-soft",
+        <section aria-label="Payments at risk" className="space-y-3">
+          <GuardSummary risks={risks} />
+          {risks.length > 0 && (
+            <ul className="grid gap-3 md:grid-cols-2">
+              {risks.map((r) => (
+                <RiskCard key={`${r.planId}-${r.date}`} risk={r} today={today} />
+              ))}
+            </ul>
           )}
-        >
-          <p className="text-4xl font-bold tracking-tight sm:text-5xl">{STATUS_TITLE[timeline.status]}</p>
-          <LowestLine timeline={timeline} className="mt-1 text-lg" />
-          <p className="mt-2 text-sm font-medium text-primary underline-offset-4 hover:underline">See your 6-week forecast</p>
-        </Link>
+          <Link
+            href="/timeline"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-card px-4 py-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <LowestLine timeline={timeline} className="text-sm sm:text-base" />
+            <span className="text-sm font-semibold text-primary">See your 6-week forecast</span>
+          </Link>
+        </section>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
