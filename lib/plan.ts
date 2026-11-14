@@ -14,7 +14,9 @@ import type {
   DebitRisk,
   ISODate,
   Money,
+  PaymentRow,
   Plan,
+  PlanHistory,
   Purchase,
   Shortfall,
   Status,
@@ -98,6 +100,30 @@ export function planDebits(plan: Plan, from: ISODate): ISODate[] {
     if (date >= from) out.push(date);
   }
   return out;
+}
+
+/**
+ * Every payment of a plan, oldest first: the ones paid before it was added, the ones whose date has passed
+ * (taken by autopay unless marked missed), today's and the upcoming ones. Built only from what was typed in.
+ */
+export function planHistory(plan: Plan, today: ISODate): PlanHistory {
+  const guess = plan.intervalDays === PAY_IN_4_INTERVAL ? 4 : plan.paymentsLeft;
+  const missed = new Set(plan.missed ?? []);
+  const payments: PaymentRow[] = [];
+  // Payments before the plan was added can only be in the past: a date that would fall after today is
+  // not invented (then the plan simply had fewer payments than the guess).
+  for (let j = Math.max(plan.totalPayments ?? guess, plan.paymentsLeft) - plan.paymentsLeft; j >= 1; j--) {
+    const date = addDays(plan.nextDue, -j * plan.intervalDays);
+    if (date < today) payments.push({ date, amount: plan.installment, status: "before" });
+  }
+  const total = payments.length + plan.paymentsLeft;
+  for (let k = 0; k < plan.paymentsLeft; k++) {
+    const date = addDays(plan.nextDue, k * plan.intervalDays);
+    const status = date > today ? "upcoming" : date === today ? "today" : missed.has(date) ? "missed" : "taken";
+    payments.push({ date, amount: plan.installment, status });
+  }
+  const paid = payments.filter((p) => p.status === "before" || p.status === "taken").length;
+  return { payments, total, paid, paidAmount: paid * plan.installment, totalAmount: total * plan.installment };
 }
 
 /** Splits a price into payments; the leftover cents go to the first one ($100 / 3 → 33.34, 33.33, 33.33). */

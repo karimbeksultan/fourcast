@@ -56,3 +56,6 @@ If AI is off, the same plan is entered by hand in four fields.
 
 ## Edge cases (in the tests)
 Paycheck and payment on the same day (end of day fine, morning fails) · two payments on one morning taken in order · tight below $50 · rent before a plan payment the same morning · a returned plan's payments marked disputed · rent on the 31st in February · a purchase followed past day 42 · $100 split in 3 · weekly spending adds up exactly · time zones and DST · Payday Sync is off for monthly pay · a purchase that deepens a failing morning debit does not fit (Afterpay $25 → $40 short) · already short without the purchase, even $1 does not fit · semimonthly paydays on the 15th and the last day (Jan 15, Jan 31, Feb 15, Feb 28; a debit on Jan 31 with $0 fails that morning) · evening check-in on Dec 3 with $27.50 keeps Zip $12.50 short (today's debits are not taken twice).
+
+## Payment history (planHistory)
+No bank link: the past is inferred from each plan. Pay in 4 (every 2 weeks) counts 4 payments unless `totalPayments` is set (read from "payment 2 of 4" in a screenshot). Payments before the plan was added are shown only if their date is before today. A passed due date counts as taken by autopay unless marked "Didn't go through". Sample Klarna (3 left, next Nov 19): 1 of 4 paid, $80 of $320.

@@ -5,7 +5,7 @@ import { getConceptSample, nextRisk, owedByLender } from "./concept";
 import { addDays, toISODate } from "./dates";
 import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
-import { applyCheckIn, buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, splitPayments, spendOn } from "./plan";
+import { applyCheckIn, buildTimeline, planHistory, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
 import { AppStateSchema, DisputeRequestSchema, MAX_CENTS } from "./schema";
 import { loadState, saveState } from "./storage";
@@ -380,5 +380,45 @@ describe("calendar file", () => {
     expect(moveAmount(1_250)).toBe(2_500);
     expect(ics).toContain("https://fourcast.example/?due=2026-12-03");
     expect(ics.split("\r\n").every((line) => line.length <= 75)).toBe(true);
+  });
+});
+
+describe("payment history (no bank link: inferred from the plan)", () => {
+  const plan = { id: "h", lender: "Klarna" as const, merchant: "Target", installment: 8_000, paymentsLeft: 3, nextDue: "2026-11-19", intervalDays: 14 };
+
+  it("Pay in 4 with 3 left: 1 paid before it was added, then upcoming", () => {
+    const h = planHistory(plan, TODAY);
+    expect(h.payments.map((p) => [p.date, p.status])).toEqual([
+      ["2026-11-05", "before"],
+      ["2026-11-19", "upcoming"],
+      ["2026-12-03", "upcoming"],
+      ["2026-12-17", "upcoming"],
+    ]);
+    expect(h).toMatchObject({ total: 4, paid: 1, paidAmount: 8_000, totalAmount: 32_000 });
+  });
+
+  it("dates that passed count as taken unless marked missed; today is its own state", () => {
+    const h = planHistory({ ...plan, missed: ["2026-11-19"] }, "2026-12-03");
+    expect(h.payments.map((p) => p.status)).toEqual(["before", "missed", "today", "upcoming"]);
+    expect(h.paid).toBe(1);
+    expect(planHistory(plan, "2026-12-04").paid).toBe(3);
+  });
+
+  it("totalPayments wins over the Pay in 4 guess, and never drops below what is left", () => {
+    expect(planHistory({ ...plan, totalPayments: 6 }, TODAY).total).toBe(6);
+    expect(planHistory({ ...plan, totalPayments: 2 }, TODAY).total).toBe(3);
+    expect(planHistory({ ...plan, intervalDays: 30, paymentsLeft: 5 }, TODAY).total).toBe(5);
+  });
+
+  it("never invents a past payment dated after today", () => {
+    // 1 left, due in 19 days: the "previous" Pay in 4 dates would be Nov 20 (future), Nov 6 and Oct 23.
+    const h = planHistory({ ...plan, paymentsLeft: 1, nextDue: "2026-12-04" }, TODAY);
+    expect(h.payments.map((p) => [p.date, p.status])).toEqual([
+      ["2026-10-23", "before"],
+      ["2026-11-06", "before"],
+      ["2026-12-04", "upcoming"],
+    ]);
+    expect(h.total).toBe(3);
+    expect(h.payments.every((p) => p.status !== "before" || p.date < TODAY)).toBe(true);
   });
 });

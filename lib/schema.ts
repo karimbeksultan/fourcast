@@ -29,6 +29,8 @@ export const PlanSchema = z.object({
   status: z.enum(["active", "returned"]).optional(),
   returnedOn: isoDate.optional(),
   refundStage: z.enum(["store_refunded"]).optional(),
+  totalPayments: z.number().int().min(1).max(24).optional(),
+  missed: z.array(isoDate).max(24).optional(),
 });
 
 export const PlusSchema = z.object({
@@ -78,5 +80,7 @@ export const PlanDraftSchema = z.object({
   installment: z.number().positive().max(100_000),
   paymentsLeft: z.number().int().min(1).max(12),
   nextDue: isoDate,
+  // Optional: models often say null when the confirmation doesn't show it.
+  totalPayments: z.number().int().min(1).max(24).nullish(),
 });
 export type PlanDraft = z.infer<typeof PlanDraftSchema>;

@@ -13,6 +13,7 @@ function prompt(today: ISODate): string {
     ' "merchant": store name or "",',
     ' "installment": amount of each remaining payment in US dollars (number),',
     ' "paymentsLeft": number of payments not yet made (integer),',
+    ' "totalPayments": payments in the whole plan, e.g. 4 for "payment 2 of 4" (integer, or null if not shown),',
     ' "nextDue": date of the next payment as YYYY-MM-DD}',
     'If this is not a pay-later plan, reply {"error":"unreadable"}.',
   ].join("\n");
@@ -43,5 +44,6 @@ export async function readPlan(input: { text?: string; imageBase64?: string }, t
     paymentsLeft: draft.paymentsLeft,
     nextDue: draft.nextDue,
     intervalDays: 14,
+    ...(draft.totalPayments && draft.totalPayments >= draft.paymentsLeft ? { totalPayments: draft.totalPayments } : {}),
   };
 }

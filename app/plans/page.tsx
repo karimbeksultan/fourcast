@@ -10,6 +10,7 @@ import { FREQUENCY_LABEL } from "@/components/copy";
 import { LimitsForm } from "@/components/limits-form";
 import { MoneyForm } from "@/components/money-form";
 import { PlusOffer } from "@/components/plus-offer";
+import { PaymentsList } from "@/components/payments-list";
 import { PlanCard } from "@/components/plan-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -233,6 +234,16 @@ function Overview({
                     returnedOn={returns[p.id] ?? null}
                     onReturned={(on) => setReturned(p.id, on)}
                     onUndoReturn={() => setReturned(p.id, null)}
+                    onMissed={(date, missed) =>
+                      save({
+                        ...state,
+                        plans: state.plans.map((x) =>
+                          x.id !== p.id
+                            ? x
+                            : { ...x, missed: missed ? [...new Set([...(x.missed ?? []), date])] : (x.missed ?? []).filter((d) => d !== date) },
+                        ),
+                      })
+                    }
                     onRemove={() =>
                       save({
                         ...state,
@@ -331,6 +342,8 @@ function Overview({
           )}
         </section>
       </div>
+
+      <PaymentsList plans={state.plans} today={today} />
 
       {timeline && !state.plus && (
         <PlusOffer

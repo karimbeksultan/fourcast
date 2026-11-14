@@ -42,6 +42,10 @@ export type Plan = {
   returnedOn?: ISODate;
   /** Returned plans only: the store has refunded; waiting for the lender to credit the plan. */
   refundStage?: "store_refunded";
+  /** Payments in the whole plan (4 for Pay in 4). Missing: 4 for every-2-weeks plans, else paymentsLeft. */
+  totalPayments?: number;
+  /** Past due dates the person marked as "didn't go through". Every other past date counts as taken. */
+  missed?: ISODate[];
 };
 
 export type Plus = {
@@ -179,3 +183,18 @@ export type ReadPlanError = "no_keys" | "unreadable" | "timeout" | "too_large";
 export type ReadPlanResponse =
   | { plan: Plan }
   | { error: string; code: ReadPlanError };
+
+/**
+ * One payment of a plan, past or future. Fourcast has no bank link, so the past is inferred from the plan:
+ * "before" = paid before the plan was added, "taken" = its date passed (autopay), "missed" = marked as failed.
+ */
+export type PaymentRow = { date: ISODate; amount: Cents; status: "before" | "taken" | "missed" | "today" | "upcoming" };
+
+export type PlanHistory = {
+  payments: PaymentRow[];
+  total: number;
+  /** Payments counted as paid: before + taken (missed ones are not). */
+  paid: number;
+  paidAmount: Cents;
+  totalAmount: Cents;
+};
