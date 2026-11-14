@@ -16,14 +16,14 @@
 
 ## Карта кода
 - `lib/types.ts` — контракт фронт ↔ бэк
-- `lib/plan.ts` — лента, статус, проверка покупки, `fitsByDay`, лучший день, Payday Sync
+- `lib/plan.ts` — лента, статус, проверка покупки, `fitsByDay`, лучший день, Payday Sync (день после зарплаты), **Guard: модель утра, `debitRisks`, `moveAmount`**
 - `lib/plan.test.ts` — золотые числа демо и крайние случаи
 - `lib/dates.ts` — даты без часовых поясов, `formatUSD`, `formatShort`
 - `lib/sample.ts` — образец данных и текст Klarna для демо (от сегодняшней даты)
 - `lib/storage.ts` — localStorage со схемой (`lib/schema.ts`, zod)
-- `lib/ics.ts` — календарь: напоминание накануне и ссылка `/?due=`
+- `lib/ics.ts` — календарь: напоминание накануне про утро («before your paycheck lands», что сделать) и ссылка `/?due=`
 - `lib/image.ts` — ужать скриншот до 1280 px в браузере
 - `lib/llm.ts`, `lib/read-plan.ts` — AI: в каждом слоте список моделей, на 429/404/5xx — следующая; бюджет 10 с, на последней (Gemma 4 31B) — 40 с
-- `app/api/read-plan`, `app/api/health`, `app/api/checkout` (+ `/confirm`) — единственный сервер; `lib/stripe.ts` — Stripe только с `sk_test_`
+- `app/api/read-plan`, `app/api/dispute`, `app/api/health`, `app/api/checkout` (+ `/confirm`) — единственный сервер; `lib/dispute.ts` — письмо о споре (шаблон всегда, AI только если сохранил факты); `lib/stripe.ts` — Stripe только с `sk_test_`
 - `app/page.tsx` — пока демо-страница каркаса, A3 заменяет её экраном `/`
 - Деплой — Vercel (push в `main` = прод); `scripts/smoke.mjs` (`npm run smoke -- <url>`) — проверка после деплоя
