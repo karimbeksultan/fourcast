@@ -56,8 +56,18 @@ export function paydaysBetween(money: Money | null, from: ISODate, to: ISODate):
   }
 
   const day = parts(anchor).day;
+  // Twice a month: the 15th and the last day (anchor on the 15th or the 28th–31st), the 1st and the 15th,
+  // otherwise 15 days apart. A day past the end of a short month moves to its last day (31 → Feb 28).
   const days =
-    money.frequency === "monthly" ? [day] : day <= 15 ? [day, day + 15] : [day - 15, day];
+    money.frequency === "monthly"
+      ? [day]
+      : day === 15 || day >= 28
+        ? [15, 31]
+        : day === 1
+          ? [1, 15]
+          : day < 15
+            ? [day, day + 15]
+            : [day - 15, day];
   let { year, month } = parts(lower);
   while (clampedDate(year, month, 1) <= to) {
     for (const d of days) {

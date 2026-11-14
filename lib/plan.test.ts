@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { addDays, toISODate } from "./dates";
 import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
-import { applyCheckIn, buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaySync, splitPayments, spendOn } from "./plan";
+import { applyCheckIn, buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, paydaySync, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
 import { AppStateSchema, DisputeRequestSchema } from "./schema";
 import type { AppState, Money } from "./types";
@@ -171,6 +171,18 @@ describe("edge cases", () => {
   it("semimonthly pay lands on the 15th and the last day", () => {
     const t = buildTimeline(state(money({ frequency: "semimonthly", nextPayday: "2026-11-15", paycheck: 100 })), TODAY);
     expect(t.paydays).toEqual(["2026-11-15", "2026-11-30", "2026-12-15"]);
+  });
+
+  it("semimonthly from the 15th or the end of a month: the 15th and the last day, never the 30th of a 31-day month", () => {
+    const pay = (nextPayday: string) => money({ frequency: "semimonthly", nextPayday });
+    expect(paydaysBetween(pay("2027-01-15"), "2027-01-01", "2027-02-28")).toEqual(["2027-01-15", "2027-01-31", "2027-02-15", "2027-02-28"]);
+    expect(paydaysBetween(pay("2027-02-28"), "2027-02-01", "2027-03-31")).toEqual(["2027-02-28", "2027-03-15", "2027-03-31"]);
+    expect(paydaysBetween(pay("2027-01-01"), "2027-01-01", "2027-01-31")).toEqual(["2027-01-01", "2027-01-15"]);
+    // $0 in checking, Afterpay $50 on Jan 31, the paycheck lands that afternoon: the morning fails.
+    const s = state(money({ frequency: "semimonthly", nextPayday: "2027-01-15", paycheck: 100_000 }), [
+      { id: "a", lender: "Afterpay", merchant: "", installment: 5_000, paymentsLeft: 1, nextDue: "2027-01-31", intervalDays: 14 },
+    ]);
+    expect(debitRisks(s, "2027-01-20")).toMatchObject([{ date: "2027-01-31", level: "fails", shortBy: 5_000, paydayLater: true }]);
   });
 });
 
