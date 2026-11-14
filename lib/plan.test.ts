@@ -111,8 +111,9 @@ describe("demo story (opened on Nov 15, 2026)", () => {
     expect(paydaySync(s, klarna, TODAY)).toEqual({ onPayday: 0, total: 3 });
   });
 
-  it("sample state passes the storage schema", () => {
+  it("sample state passes the storage schema and its balance is dated today", () => {
     expect(AppStateSchema.safeParse(withKlarna()).success).toBe(true);
+    expect(withKlarna().money?.balanceOn).toBe(TODAY);
   });
 });
 

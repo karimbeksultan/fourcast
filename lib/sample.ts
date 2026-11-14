@@ -17,6 +17,7 @@ export function getSampleState(today: ISODate): AppState {
       rent: 120_000,
       rentDay: parts(addDays(today, 16)).day,
       weeklySpend: 28_000,
+      balanceOn: today,
     },
     plans: [
       {
