@@ -20,7 +20,7 @@ export type Cell = {
 };
 
 const TONE_CLASS: Record<Tone, string> = {
-  ok: "bg-ok-soft",
+  ok: "border border-border bg-card",
   tight: "bg-tight-soft",
   short: "bg-short-soft",
   fit: "bg-ok-soft",
@@ -178,7 +178,7 @@ export function ForecastLegend({ mode = "balance" }: { mode?: "balance" | "fit" 
       </span>
       {mode === "balance" ? (
         <>
-          {item("bg-ok-soft", "Over $100")}
+          {item("border border-border bg-card", "Over $100")}
           {item("bg-tight-soft", "Under $100")}
           {item("bg-short-soft", "Below $0")}
         </>

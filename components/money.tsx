@@ -1,7 +1,7 @@
 "use client";
 
 import { NumberTicker } from "@/components/ui/number-ticker";
-import { addDays, formatShort } from "@/lib/dates";
+import { addDays, formatShort, formatUSD } from "@/lib/dates";
 import type { Timeline } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +25,7 @@ export function LowestLine({ timeline, className }: { timeline: Timeline; classN
   const beforePayday = timeline.paydays.includes(addDays(date, 1));
   return (
     <p className={cn("tabular", className)}>
-      Lowest point: <Money cents={balance} className={balance < 0 ? "text-short" : undefined} />
+      Lowest point: <span className={balance < 0 ? "text-short" : undefined}>{formatUSD(Math.abs(balance))}</span>
       {balance < 0 ? " short" : ""} on {formatShort(date)}
       {beforePayday ? ", the day before payday." : "."}
     </p>

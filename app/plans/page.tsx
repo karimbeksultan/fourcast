@@ -70,14 +70,14 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Your plans</h1>
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Your plans</h1>
+        <div className="flex flex-wrap items-center gap-2">
           {state.sample && <Badge variant="secondary">Sample data</Badge>}
+          <Button variant="outline" size="sm" className="h-8" onClick={() => clearState()}>
+            {state.sample ? "Clear sample data" : "Start over"}
+          </Button>
         </div>
-        <Button variant="ghost" className="h-10 text-muted-foreground" onClick={() => clearState()}>
-          {state.sample ? "Clear sample data" : "Start over"}
-        </Button>
       </div>
 
       {showCheckIn && (
@@ -97,8 +97,8 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
         <Link
           href="/timeline"
           className={cn(
-            "block rounded-md border-l-4 bg-card p-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-5",
-            timeline.status === "ok" ? "border-ok" : timeline.status === "tight" ? "border-tight" : "border-short",
+            "block rounded-md p-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-6",
+            timeline.status === "ok" ? "bg-ok-soft" : timeline.status === "tight" ? "bg-tight-soft" : "bg-short-soft",
           )}
         >
           <p className="text-4xl font-bold tracking-tight sm:text-5xl">{STATUS_TITLE[timeline.status]}</p>

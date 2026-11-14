@@ -123,29 +123,22 @@ export default function CheckPage() {
       </form>
 
       {verdict && purchase && (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="space-y-6">
-            <section className={cn("rounded-md border-l-4 bg-card p-4 sm:p-5", verdict.verdict === "fits" ? "border-ok" : "border-short")} aria-live="polite">
-              <p className={cn("text-4xl font-bold tracking-tight", verdict.verdict === "fits" ? "text-ok" : "text-short")}>
-                {verdict.verdict === "fits" ? "It fits." : "Not right now."}
-              </p>
-              <p className="mt-1 text-lg">
-                {verdict.verdict === "fits"
-                  ? "Buying today keeps you above $0 for the next 6 weeks."
-                  : "Buying today would take you below $0."}
-              </p>
-              <p className="tabular mt-2 text-sm text-muted-foreground">
-                {verdict.schedule.length} payments of {formatUSD(verdict.schedule[1]?.amount ?? verdict.schedule[0].amount)}:{" "}
-                {verdict.schedule.map((p, i) => (i === 0 ? "today" : formatShort(p.date))).join(", ")}
-              </p>
-            </section>
-
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+          <VerdictCard verdict={verdict} plus={Boolean(state.plus)} />
+          <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
+            <Plus state={state} timeline={timeline} today={today} save={save} />
+          </div>
+          <div className="lg:col-start-1">
             {state.plus ? (
               <PlusAnswer verdict={verdict} timeline={timeline} state={state} today={today} />
             ) : (
               <div className="relative">
-                <div className="pointer-events-none blur-[6px] select-none" aria-hidden>
-                  <ForecastGrid cells={cellsFromVerdict(verdict, timeline)} today={today} />
+                {/* Teaser only: every day looks the same, so the answer stays behind the paywall. */}
+                <div className="pointer-events-none blur-[5px] select-none" aria-hidden>
+                  <ForecastGrid
+                    cells={cellsFromVerdict(verdict, timeline).map((c) => ({ ...c, tone: "nofit" as const, marks: [], rent: false }))}
+                    today={today}
+                  />
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <p className="flex items-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-medium">
@@ -156,11 +149,36 @@ export default function CheckPage() {
               </div>
             )}
           </div>
-
-          <Plus state={state} timeline={timeline} today={today} save={save} />
         </div>
       )}
     </>
+  );
+}
+
+function VerdictCard({ verdict, plus }: { verdict: Verdict; plus: boolean }) {
+  const fits = verdict.verdict === "fits";
+  const sync = verdict.paydaySync;
+  const answer = plus && !fits ? (sync?.buyOn ?? verdict.bestDay) : null;
+  const title = fits ? "It fits." : answer ? `Not today. Buy ${formatShort(answer)}.` : "Not right now.";
+  const line = fits
+    ? "Buying today keeps you above $0 for the next 6 weeks."
+    : answer && sync
+      ? "Then all 4 payments land on paydays."
+      : "Buying today would take you below $0.";
+  return (
+    <section
+      className={cn("rounded-md p-4 sm:p-6 lg:col-start-1", fits ? "bg-ok-soft" : answer ? "bg-payday-soft" : "bg-short-soft")}
+      aria-live="polite"
+    >
+      <p className={cn("text-4xl font-bold tracking-tight sm:text-5xl", fits ? "text-ok" : answer ? "text-accent-foreground" : "text-short")}>
+        {title}
+      </p>
+      <p className="mt-2 text-lg">{line}</p>
+      <p className="tabular mt-2 text-sm text-muted-foreground">
+        {verdict.schedule.length} payments of {formatUSD(verdict.schedule[1]?.amount ?? verdict.schedule[0].amount)} if bought today:{" "}
+        {verdict.schedule.map((p, i) => (i === 0 ? "today" : formatShort(p.date))).join(", ")}
+      </p>
+    </section>
   );
 }
 
@@ -175,10 +193,22 @@ function PlusAnswer({ verdict, timeline, state, today }: { verdict: Verdict; tim
       <h2 id="answer" className="sr-only">
         When it fits
       </h2>
+      {verdict.paydaySync ? (
+        <div className="rounded-md bg-payday p-5 text-on-payday sm:p-6">
+          <p className="text-2xl font-bold tracking-tight sm:text-3xl">
+            Buy {formatShort(verdict.paydaySync.buyOn)}: all 4 payments land on paydays.
+          </p>
+          <p className="tabular mt-1 opacity-90">{verdict.paydaySync.debits.map((d) => formatShort(d)).join(", ")}</p>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          {syncOff ? "Payday Sync works with weekly or every-2-weeks pay." : "No payday in the next 6 weeks fits this buy."}
+        </p>
+      )}
       <div className="tabular space-y-1.5 text-lg">
         {verdict.firstShort && verdict.deepest && (
           <p>
-            You&apos;d be {formatUSD(verdict.deepest.amount)} short on {formatShort(verdict.deepest.date)}
+            Bought today, you&apos;d be {formatUSD(verdict.deepest.amount)} short on {formatShort(verdict.deepest.date)}
             {verdict.firstShort.date !== verdict.deepest.date && `, first short on ${formatShort(verdict.firstShort.date)}`}.
           </p>
         )}
@@ -194,22 +224,6 @@ function PlusAnswer({ verdict, timeline, state, today }: { verdict: Verdict; tim
           <p>It doesn&apos;t fit on any day in the next 6 weeks. Try a smaller price.</p>
         )}
       </div>
-
-      {verdict.paydaySync ? (
-        <div className="rounded-md bg-payday p-4 text-primary-foreground sm:p-5">
-          <p className="text-2xl font-bold tracking-tight">
-            Buy {formatShort(verdict.paydaySync.buyOn)}: all 4 payments land on paydays.
-          </p>
-          <p className="tabular mt-1 opacity-90">{verdict.paydaySync.debits.map((d) => formatShort(d)).join(", ")}</p>
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          {syncOff
-            ? "Payday Sync works with weekly or every-2-weeks pay."
-            : "No payday in the next 6 weeks fits this buy."}
-        </p>
-      )}
-
       <ForecastGrid
         cells={cellsFromVerdict(verdict, timeline)}
         today={today}
