@@ -61,7 +61,7 @@ export function AppNav() {
             <Link
               href={inApp ? "/plans" : "/tonight"}
               className={cn(
-                "inline-flex h-11 items-center rounded-md bg-primary px-4 text-base font-semibold text-primary-foreground hover:bg-primary/90",
+                "inline-flex h-11 items-center rounded-md bg-primary px-3 text-sm font-semibold whitespace-nowrap text-primary-foreground hover:bg-primary/90 sm:px-4 sm:text-base",
                 focus,
               )}
             >

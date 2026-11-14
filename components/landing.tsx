@@ -1,12 +1,13 @@
 "use client";
 
-// Welcome page, concept "Tonight" (CONCEPT.md). Calm, plain, exact (DESIGN.md): sentence case, one static
-// statement band instead of marquees, and the real Tonight screen as the proof instead of stat cards.
+// Welcome page, concept "Tonight" (CONCEPT.md). Plain, exact words (DESIGN.md) with motion that carries the story:
+// the same Friday morning played without and with Fourcast, a moving statement band, and three live answer panels.
 import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { TonightHero } from "@/components/concept/tonight-hero";
-import { LogoMark } from "@/components/logo";
+import { AnswerPanels, Band, RevealHeadline } from "@/components/concept/landing-motion";
+import { MorningStory } from "@/components/concept/morning-story";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { NumberTicker } from "@/components/ui/number-ticker";
 import { useToday } from "@/hooks/use-today";
 import { getConceptSample, nextRisk } from "@/lib/concept";
 import { buildTimeline } from "@/lib/plan";
@@ -15,38 +16,30 @@ import { cn } from "@/lib/utils";
 const btn =
   "inline-flex h-14 items-center justify-center rounded-md px-7 text-lg font-bold outline-none transition-transform focus-visible:ring-4 focus-visible:ring-ring/50 active:translate-y-px";
 
-/** The real Tonight answer on sample data (same calculation as the app), counted from today. */
+/** The focal moment: the sample's riskiest morning, played without and with Fourcast (same calculation as the app). */
 function Preview() {
   const today = useToday();
   if (!today) return <div className="aspect-[4/5] w-full rounded-lg bg-primary-foreground/10" aria-hidden />;
   const state = getConceptSample(today);
-  // Returns don't belong in the hero preview: show the morning story only.
   const plain = { ...state, plans: state.plans.filter((p) => p.status !== "returned") };
+  const risk = nextRisk(plain, today);
+  if (!risk || !plain.money) return null;
   return (
-    <figure className="space-y-3 text-foreground">
-      <TonightHero risk={nextRisk(plain, today)} timeline={buildTimeline(plain, today)} today={today} />
+    <figure className="space-y-2">
+      <MorningStory risk={risk} paycheck={plain.money.paycheck} />
       <figcaption className="text-sm text-primary-foreground">Sample data, counted live from today.</figcaption>
     </figure>
   );
 }
 
-const ANSWERS = [
-  {
-    q: "Will tomorrow's payments clear?",
-    a: "Every Klarna, Afterpay, Affirm and Zip payment is checked against the morning it's taken, before your paycheck lands. If one won't make it, you get one sentence and one thing to do that evening.",
-    eg: "Zip won't clear on Fri, Dec 4. Move $25 into checking on Thursday evening.",
-  },
-  {
-    q: "What do my next mornings look like?",
-    a: "Three weeks of balances after autopay, with paydays and every lender on one strip. Tap a day to see what came in and what went out.",
-    eg: "Fri, Dec 4: −$12.50 at 6 am, +$1,450 paycheck later that day.",
-  },
-  {
-    q: "Where is my refund?",
-    a: "Mark a return and Fourcast follows it: sent back, store refunded, lender credited. When it stalls, the dispute letter is ready.",
-    eg: "Nordstrom with Afterpay: waiting 9 days, $40 still scheduled for Wed.",
-  },
-];
+/** The three answer panels, fed by the same sample. */
+function Answers() {
+  const today = useToday();
+  if (!today) return <div className="h-80 rounded-lg bg-muted" aria-hidden />;
+  const state = getConceptSample(today);
+  const plain = { ...state, plans: state.plans.filter((p) => p.status !== "returned") };
+  return <AnswerPanels risk={nextRisk(plain, today)} days={buildTimeline(plain, today).days} />;
+}
 
 export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSample: () => void; onStart: () => void }) {
   return (
@@ -55,10 +48,11 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
       <section className="bg-primary text-primary-foreground">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-16 sm:pt-20 lg:grid-cols-[1fr_1.05fr] lg:pb-24">
           <BlurFade delay={0.05} inView>
-            <h1 className="text-[clamp(2.25rem,4.6vw,4rem)] leading-[1.05] font-bold tracking-tight text-balance">
-              Know tonight if tomorrow&apos;s payment{" "}
-              <span className="rounded-md bg-payday box-decoration-clone px-2.5 text-on-payday">will clear</span>
-            </h1>
+            <RevealHeadline
+              words={["Know", "tonight", "if", "tomorrow's", "payment"]}
+              highlight="will clear"
+              className="text-[clamp(2.5rem,5.4vw,4.75rem)] leading-[1.03] font-bold tracking-tight text-balance"
+            />
             <p className="mt-6 max-w-xl text-lg text-pretty sm:text-xl">
               Autopay runs in the morning. Your paycheck lands in the afternoon. Fourcast finds the Klarna, Afterpay and Affirm
               payments that won&apos;t make it and tells you what to do the evening before.
@@ -91,13 +85,7 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
         </div>
       </section>
 
-      {/* One static statement, no motion */}
-      <div className="bg-foreground text-background">
-        <p className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-5 text-2xl font-bold tracking-tight text-balance sm:text-3xl">
-          <LogoMark className="size-9" />
-          Debit at 6 am. Paycheck at 3 pm. Limit cut by 5 pm.
-        </p>
-      </div>
+      <Band text="Debit at 6 am. Paycheck at 3 pm. Limit cut by 5 pm." />
 
       {/* The problem, in a user's words, with independent numbers beside it */}
       <section className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:py-24 lg:grid-cols-[1.4fr_1fr]">
@@ -112,7 +100,9 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
         </figure>
         <dl className="grid content-end gap-6">
           <div className="border-t-2 border-foreground pt-3">
-            <dt className="tabular text-4xl font-bold tracking-tight">26%</dt>
+            <dt className="tabular text-5xl font-bold tracking-tight">
+              <NumberTicker value={26} className="tracking-tight text-current" />%
+            </dt>
             <dd className="mt-1 text-pretty">
               of US pay-later users paid late in the past year.{" "}
               <a
@@ -126,7 +116,9 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
             </dd>
           </div>
           <div className="border-t-2 border-foreground pt-3">
-            <dt className="tabular text-4xl font-bold tracking-tight">11%</dt>
+            <dt className="tabular text-5xl font-bold tracking-tight">
+              <NumberTicker value={11} className="tracking-tight text-current" />%
+            </dt>
             <dd className="mt-1 text-pretty">
               had a pay-later payment set off a bank overdraft or NSF fee.{" "}
               <span className="text-sm text-muted-foreground">Same survey</span>
@@ -140,20 +132,9 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
         <h2 id="answers" className="text-[clamp(2rem,4vw,3.25rem)] leading-[1.08] font-bold tracking-tight text-balance">
           Three questions, answered every evening
         </h2>
-        <ol className="mt-10 divide-y border-y">
-          {ANSWERS.map((x) => (
-            <li key={x.q} className="grid gap-3 py-8 md:grid-cols-[1fr_1.2fr] md:gap-10">
-              <h3 className="text-2xl leading-tight font-bold tracking-tight text-balance sm:text-3xl">{x.q}</h3>
-              <div className="space-y-3">
-                <p className="max-w-[60ch] text-lg text-pretty">{x.a}</p>
-                <p className="tabular inline-block rounded-md bg-muted px-3 py-2 text-sm font-medium text-pretty">
-                  <span className="text-muted-foreground">Example: </span>
-                  {x.eg}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
+        <div className="mt-10">
+          <Answers />
+        </div>
         <p className="mt-6 text-muted-foreground">
           Also there when you need it: a 6-week forecast, and a check before a new Pay in 4.
         </p>
@@ -183,6 +164,8 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
           </p>
         </div>
       </section>
+
+      <Band text="Klarna, Afterpay, Affirm, Zip, PayPal Pay in 4. One evening check for all of them." tone="sky" />
 
       {/* Pricing */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24" aria-labelledby="price">

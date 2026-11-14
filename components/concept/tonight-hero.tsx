@@ -66,7 +66,7 @@ export function TonightHero({
   return (
     <section
       aria-labelledby="tonight-title"
-      className={cn("rounded-lg p-5 sm:p-8", isDone ? "bg-ok-soft" : fails ? "bg-short-soft" : "bg-tight-soft")}
+      className={cn("rounded-lg p-5 transition-colors duration-500 sm:p-8", isDone ? "bg-ok-soft" : fails ? "bg-short-soft" : "bg-tight-soft")}
     >
       <p className="flex items-center gap-2 text-sm font-medium">
         <MoonStar className={cn("size-4", isDone ? "text-ok" : fails ? "text-short" : "text-tight")} aria-hidden /> Tonight,{" "}

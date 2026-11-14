@@ -1,6 +1,7 @@
 "use client";
 
 // 21 mornings in a row. Lenders debit in the morning and the paycheck lands later, so the morning is what matters.
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { LENDER_MARK } from "@/components/copy";
 import { formatShort, formatUSD, parts } from "@/lib/dates";
@@ -29,6 +30,7 @@ export function MorningStrip({ timeline, focus }: { timeline: Timeline; focus?: 
     const at = focus ? days.findIndex((d) => d.date === focus) : -1;
     return at >= 0 ? at : days.reduce((a, d, i) => (d.morning < days[a].morning ? i : a), 0);
   });
+  const reduce = useReducedMotion() ?? false;
   const strip = useRef<HTMLDivElement>(null);
   // On a phone the strip scrolls sideways: bring the opening day into view once.
   useEffect(() => {
@@ -69,11 +71,27 @@ export function MorningStrip({ timeline, focus }: { timeline: Timeline; focus?: 
                   )}
                 >
                   <span className="flex flex-col justify-end" style={{ height: UP }}>
-                    {d.morning >= 0 && <span className={cn("block w-4 rounded-t-sm sm:w-5", tone(d.morning))} style={{ height: h }} />}
+                    {d.morning >= 0 && (
+                      <motion.span
+                        className={cn("block w-4 rounded-t-sm sm:w-5", tone(d.morning))}
+                        style={{ height: h, originY: 1 }}
+                        initial={reduce ? false : { scaleY: 0 }}
+                        animate={{ scaleY: 1 }}
+                        transition={{ duration: 0.55, delay: i * 0.025, ease: [0.16, 1, 0.3, 1] }}
+                      />
+                    )}
                   </span>
                   <span className="h-px w-full bg-foreground/30" aria-hidden />
                   <span className="flex flex-col justify-start" style={{ height: DOWN }}>
-                    {d.morning < 0 && <span className="block w-4 rounded-b-sm bg-short sm:w-5" style={{ height: h }} />}
+                    {d.morning < 0 && (
+                      <motion.span
+                        className="block w-4 rounded-b-sm bg-short sm:w-5"
+                        style={{ height: h, originY: 0 }}
+                        initial={reduce ? false : { scaleY: 0 }}
+                        animate={{ scaleY: 1 }}
+                        transition={{ duration: 0.55, delay: 0.25 + i * 0.025, ease: [0.16, 1, 0.3, 1] }}
+                      />
+                    )}
                   </span>
                   <span className="mt-1 text-xs text-muted-foreground">{i === 0 ? "Today" : weekday(d.date)}</span>
                   <span className="tabular text-sm font-semibold">{parts(d.date).day}</span>
