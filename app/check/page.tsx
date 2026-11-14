@@ -13,7 +13,7 @@ import { useAppState } from "@/hooks/use-app-state";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useToday } from "@/hooks/use-today";
 import { addDays, formatShort, formatUSD } from "@/lib/dates";
-import { buildTimeline, checkPurchase } from "@/lib/plan";
+import { buildTimeline, checkPurchase, PAY_IN_4_INTERVAL, paydaysBetween } from "@/lib/plan";
 import type { AppState, ISODate, Purchase, Timeline, Verdict } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -126,7 +126,7 @@ export default function CheckPage() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
           <VerdictCard verdict={verdict} plus={Boolean(state.plus)} />
           <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
-            <Plus state={state} timeline={timeline} today={today} save={save} />
+            <Plus state={state} timeline={timeline} verdict={verdict} today={today} save={save} />
           </div>
           <div className="lg:col-start-1">
             {state.plus ? (
@@ -236,7 +236,19 @@ function PlusAnswer({ verdict, timeline, state, today }: { verdict: Verdict; tim
   );
 }
 
-function Plus({ state, timeline, today, save }: { state: AppState; timeline: Timeline; today: ISODate; save: (s: AppState) => void }) {
+function Plus({
+  state,
+  timeline,
+  verdict,
+  today,
+  save,
+}: {
+  state: AppState;
+  timeline: Timeline;
+  verdict: Verdict;
+  today: ISODate;
+  save: (s: AppState) => void;
+}) {
   const [step, setStep] = useState<"offer" | "checkout">("offer");
   const [plan, setPlan] = useState<"year" | "month">("year");
   const [opening, setOpening] = useState(false);
@@ -264,15 +276,42 @@ function Plus({ state, timeline, today, save }: { state: AppState; timeline: Tim
   };
 
   if (state.plus) {
+    // The 4 payments if bought on the recommended day: Payday Sync first, then the first day it fits.
+    const buyOn = verdict.paydaySync?.buyOn ?? verdict.bestDay ?? today;
+    const payments = verdict.schedule.map((p, k) => ({ date: addDays(buyOn, k * PAY_IN_4_INTERVAL), amount: p.amount }));
+    const paydays = new Set(paydaysBetween(state.money, buyOn, payments[payments.length - 1].date));
     return (
-      <aside className="h-fit space-y-2 rounded-md border bg-card p-4 text-sm">
-        <p className="font-semibold">Plus is on until {formatShort(state.plus.trialEnds)}.</p>
-        <p className="text-muted-foreground">
-          {state.plus.via === "demo" ? "Demo trial, no real payment." : "Test-mode payment."} Then $29.99 a year.
-        </p>
-        <Button variant="link" className="h-auto p-0 text-muted-foreground" onClick={() => save({ ...state, plus: null })}>
-          Cancel Plus
-        </Button>
+      <aside className="h-fit space-y-4 rounded-md border bg-card p-4 sm:p-5" aria-labelledby="payments">
+        <div>
+          <h2 id="payments" className="text-xl font-semibold">
+            Your 4 payments
+          </h2>
+          <p className="text-sm text-muted-foreground">If you buy {buyOn === today ? "today" : formatShort(buyOn)}</p>
+        </div>
+        <ol className="space-y-2">
+          {payments.map((p, i) => (
+            <li key={p.date} className="flex items-center justify-between gap-3 rounded-md bg-muted px-3 py-2.5">
+              <span>
+                <span className="text-muted-foreground">{i + 1}.</span> {formatShort(p.date)}
+              </span>
+              <span className="flex items-center gap-2">
+                {paydays.has(p.date) && (
+                  <span className="rounded bg-payday-soft px-1.5 py-0.5 text-xs font-medium text-accent-foreground">Payday</span>
+                )}
+                <span className="tabular font-semibold">{formatUSD(p.amount)}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+        <div className="space-y-1 border-t pt-3 text-sm">
+          <p className="font-semibold">Plus is on until {formatShort(state.plus.trialEnds)}.</p>
+          <p className="text-muted-foreground">
+            {state.plus.via === "demo" ? "Demo trial, no real payment." : "Test-mode payment."} Then $29.99 a year.
+          </p>
+          <Button variant="link" className="h-auto p-0 text-muted-foreground" onClick={() => save({ ...state, plus: null })}>
+            Cancel Plus
+          </Button>
+        </div>
       </aside>
     );
   }
