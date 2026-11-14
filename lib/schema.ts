@@ -1,11 +1,14 @@
 import { z } from "zod";
 import { DISPUTE_ISSUES, LENDERS } from "./types";
 
+/** $10M. Anything bigger is a typo; saving it would make the stored data fail this schema and be dropped. */
+export const MAX_CENTS = 1_000_000_000;
+
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD");
-const cents = z.number().int().min(0);
+const cents = z.number().int().min(0).max(MAX_CENTS);
 
 export const MoneySchema = z.object({
-  balance: z.number().int(),
+  balance: z.number().int().min(-MAX_CENTS).max(MAX_CENTS),
   paycheck: cents,
   frequency: z.enum(["weekly", "biweekly", "semimonthly", "monthly"]),
   nextPayday: isoDate,

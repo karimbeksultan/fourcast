@@ -63,14 +63,22 @@ export function subscribeState(onChange: () => void): () => void {
 
 const notify = () => listeners.forEach((l) => l());
 
-export function saveState(state: AppState): void {
-  if (typeof window === "undefined") return;
+/**
+ * Saves only what loadState() can read back: a state that fails the schema (say, a 14-digit amount)
+ * is not written, so it can never wipe the saved plans. false → nothing was saved; show an error.
+ */
+export function saveState(state: AppState): boolean {
+  if (typeof window === "undefined") return false;
+  const parsed = AppStateSchema.safeParse(state);
+  if (!parsed.success) return false;
+  let saved = true;
   try {
-    window.localStorage.setItem(KEY, JSON.stringify(state));
+    window.localStorage.setItem(KEY, JSON.stringify(parsed.data));
   } catch {
-    // private mode or full storage: the page still works for this visit
+    saved = false; // private mode or full storage
   }
   notify();
+  return saved;
 }
 
 export function clearState(): void {

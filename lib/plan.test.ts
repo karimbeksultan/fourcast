@@ -1,12 +1,13 @@
 // Golden cases. The jury types their own numbers and reads this file (FAQ Q96):
 // every number below comes out of lib/plan.ts, nothing is hardcoded in the UI.
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { addDays, toISODate } from "./dates";
 import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
 import { applyCheckIn, buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, paydaySync, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
-import { AppStateSchema, DisputeRequestSchema } from "./schema";
+import { AppStateSchema, DisputeRequestSchema, MAX_CENTS } from "./schema";
+import { loadState, saveState } from "./storage";
 import type { AppState, Money } from "./types";
 
 const TODAY = "2026-11-15";
@@ -261,6 +262,29 @@ describe("Before you buy: the morning model", () => {
   it("nothing short, nothing at risk: both stay null", () => {
     const v = checkPurchase(getSampleState(TODAY), { price: 24_000, payments: 4 }, TODAY);
     expect(v).toMatchObject({ verdict: "fits", morningRisk: null, alreadyShort: null });
+  });
+});
+
+describe("storage", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("a 14-digit amount is refused and never wipes the saved plans", () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal("window", {
+      localStorage: {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => void store.set(k, v),
+        removeItem: (k: string) => void store.delete(k),
+      },
+    });
+    const good = withKlarna();
+    const huge = { ...good, money: { ...good.money!, balance: 1e14 } };
+    expect(AppStateSchema.safeParse(huge).success).toBe(false);
+    expect(AppStateSchema.safeParse({ ...good, money: { ...good.money!, balance: MAX_CENTS } }).success).toBe(true);
+    expect(saveState(good)).toBe(true);
+    expect(saveState(huge)).toBe(false);
+    expect(loadState()?.plans).toHaveLength(4);
+    expect(loadState()?.money?.balance).toBe(92_250);
   });
 });
 
