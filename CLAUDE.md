@@ -25,5 +25,7 @@
 - `lib/image.ts` — ужать скриншот до 1280 px в браузере
 - `lib/llm.ts`, `lib/read-plan.ts` — AI: в каждом слоте список моделей, на 429/404/5xx — следующая; бюджет 10 с, на последней (Gemma 4 31B) — 40 с
 - `app/api/read-plan`, `app/api/dispute`, `app/api/health`, `app/api/checkout` (+ `/confirm`) — единственный сервер; `lib/dispute.ts` — письмо о споре (шаблон всегда, AI только если сохранил факты); `lib/stripe.ts` — Stripe только с `sk_test_`
-- `app/page.tsx` — пока демо-страница каркаса, A3 заменяет её экраном `/`
+- `components/app-shell.tsx` — рамка всех страниц: сайт (шапка) и приложение (боковое меню с 1024 px, вкладки, нижняя панель на телефоне, полоса «Sample data»)
+- `app/tonight/page.tsx`, `components/concept/*`, `lib/concept.ts` — экран Tonight, образец `getConceptSample`, возвраты; `components/payments-list.tsx` и `planHistory` — история платежей
+- `app/page.tsx` — лендинг (`components/landing.tsx`)
 - Деплой — Vercel (push в `main` = прод); `scripts/smoke.mjs` (`npm run smoke -- <url>`) — проверка после деплоя

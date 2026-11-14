@@ -36,6 +36,8 @@ No hex in components: use `bg-ok-soft`, `text-short`, `bg-payday` and the shadcn
 **Motion:** one moment only — when a verdict appears, the forecast cells fill in week by week (120 ms per row). Off with `prefers-reduced-motion`.
 
 ## Layout
+> **App frame (15.11):** `components/app-shell.tsx`. The app screens (Tonight, Plans, Forecast, Before you buy, dispute) sit in a workspace: from 1024 px a 224 px sidebar with the four screens, "Add a plan", the plan status (Free / Plus) and help links; 640–1023 px a header with tabs; phones a bottom bar. An ink bar on top says "Sample data" with "Clear sample data" whenever the sample is loaded, so no screen needs its own badge. Two-column page grids start at 1280 px. Page titles in the app are 30–36 px; only the Tonight answer and the Forecast status stay large. The site pages (`/`, `/pricing`, `/faq`) keep the sticky header.
+
 Mobile first (390 px): one column, 16 px gutters, bottom tab bar (Plans, Forecast, Check a buy).
 Desktop (1440 px): top bar with the same three links; content max 1080 px, two columns where it helps (forecast left, details right). Text is left aligned.
 
