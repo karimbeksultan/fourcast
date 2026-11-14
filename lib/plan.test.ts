@@ -66,8 +66,11 @@ describe("demo story (opened on Nov 15, 2026)", () => {
         shortBy: 1_250,
         paydayLater: true,
         disputed: false,
+        limit: null,
       },
     ]);
+    // What's at stake: the Zip limit the person typed in (F4), never calculated.
+    expect(debitRisks({ ...s, limits: { Zip: 100_000 } }, TODAY)[0].limit).toBe(100_000);
     // End of day is fine (the paycheck has landed); only the morning is short.
     const dec4 = buildTimeline(s, TODAY).days.find((d) => d.date === "2026-12-04")!;
     expect(dec4.morning).toBe(-1_250);

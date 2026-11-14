@@ -271,6 +271,7 @@ export function debitRisks(state: AppState, today: ISODate): DebitRisk[] {
         shortBy: morning < 0 ? -morning : 0,
         paydayLater,
         disputed: returned.has(e.planId),
+        limit: state.limits?.[e.lender] ?? null,
       });
     }
   });

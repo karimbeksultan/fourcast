@@ -93,6 +93,8 @@ export type DebitRisk = {
   paydayLater: boolean;
   /** The plan is marked returned, so this payment may be disputed. */
   disputed: boolean;
+  /** What's at stake: the limit the person typed in for this lender (F4), or null. Never calculated. */
+  limit: Cents | null;
 };
 
 export type Status = "ok" | "tight" | "short";
