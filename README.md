@@ -36,6 +36,7 @@ Vercel with its GitHub integration: every push to `main` is a production deploy.
 
 ## Evidence and decisions
 - [`research/reviews.md`](research/reviews.md): 2,000 recent US App Store reviews of Klarna, Afterpay, Affirm and Zip; the payment-side complaints were read by hand.
+- [`research/search-demand.md`](research/search-demand.md): people already search "why did klarna lower my limit" and "klarna payment failed but money in bank" (Google US autocomplete), the organic channel.
 - [`research/benchmarks.md`](research/benchmarks.md): RevenueCat, Adapty and Adjust 2026 numbers behind the price and the growth plan.
 - [`LIMIT_GUARD.md`](LIMIT_GUARD.md): the current spec. [`BRIEF.md`](BRIEF.md) → "Решения": the decision log (in Russian).
 
