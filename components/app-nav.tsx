@@ -25,7 +25,9 @@ const focus = "outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 export function AppNav() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
-  const inApp = APP_TABS.some((t) => path.startsWith(t.href));
+  // /dispute belongs to Guard
+  const active = (href: string) => path.startsWith(href) || (href === "/plans" && path.startsWith("/dispute"));
+  const inApp = APP_TABS.some((t) => active(t.href));
 
   return (
     <>
@@ -94,16 +96,16 @@ export function AppNav() {
                 <Link
                   key={t.href}
                   href={t.href}
-                  aria-current={path.startsWith(t.href) ? "page" : undefined}
+                  aria-current={active(t.href) ? "page" : undefined}
                   className={cn(
                     "relative flex h-12 items-center gap-2 px-3 text-base font-medium",
-                    path.startsWith(t.href) ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                    active(t.href) ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                     focus,
                   )}
                 >
                   <t.icon className="size-4" aria-hidden />
                   {t.label}
-                  {path.startsWith(t.href) && <span className="absolute inset-x-2 -bottom-px h-0.5 bg-primary" aria-hidden />}
+                  {active(t.href) && <span className="absolute inset-x-2 -bottom-px h-0.5 bg-primary" aria-hidden />}
                 </Link>
               ))}
             </div>
@@ -118,14 +120,14 @@ export function AppNav() {
               <Link
                 key={t.href}
                 href={t.href}
-                aria-current={path.startsWith(t.href) ? "page" : undefined}
+                aria-current={active(t.href) ? "page" : undefined}
                 className={cn(
                   "relative flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium focus-visible:bg-muted",
-                  path.startsWith(t.href) ? "text-primary" : "text-muted-foreground",
+                  active(t.href) ? "text-primary" : "text-muted-foreground",
                   "outline-none",
                 )}
               >
-                {path.startsWith(t.href) && <span className="absolute inset-x-6 top-0 h-1 rounded-b bg-primary" aria-hidden />}
+                {active(t.href) && <span className="absolute inset-x-6 top-0 h-1 rounded-b bg-primary" aria-hidden />}
                 <t.icon className="size-5" aria-hidden />
                 {t.label}
               </Link>

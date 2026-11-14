@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AddPlan } from "@/components/add-plan";
 import { GuardSummary, RiskCard } from "@/components/guard";
 import { debitRisks } from "@/components/guard-shim";
+import { markReturned, undoReturned, useReturns } from "@/components/returns";
 import { LowestLine } from "@/components/money";
 import { CheckIn } from "@/components/check-in";
 import { FREQUENCY_LABEL } from "@/components/copy";
@@ -17,7 +18,7 @@ import { useAppState } from "@/hooks/use-app-state";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useToday } from "@/hooks/use-today";
 import { formatShort, formatUSD } from "@/lib/dates";
-import { buildTimeline } from "@/lib/plan";
+import { buildTimeline, planDebits } from "@/lib/plan";
 import { getSampleState } from "@/lib/sample";
 import { clearState, emptyState } from "@/lib/storage";
 import type { AppState, ISODate } from "@/lib/types";
@@ -68,7 +69,9 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
   const [checkInOpen, setCheckInOpen] = useState(true);
   const [editMoney, setEditMoney] = useState(false);
   const timeline = state.money ? buildTimeline(state, today) : null;
-  const risks = state.money ? debitRisks(state, today) : [];
+  const returns = useReturns();
+  const risks = state.money ? debitRisks(state, today, returns) : [];
+  const disputed = state.plans.filter((p) => returns[p.id] && planDebits(p, today).length > 0);
   const showCheckIn = checkInOpen && due && /^\d{4}-\d{2}-\d{2}$/.test(due) && state.money;
 
   return (
@@ -101,6 +104,32 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
       {timeline && (
         <section aria-label="Payments at risk" className="space-y-3">
           <GuardSummary risks={risks} />
+          {disputed.length > 0 && (
+            <ul className="grid gap-3 md:grid-cols-2" aria-label="Returned, may still be taken">
+              {disputed.map((p) => {
+                const next = planDebits(p, today)[0];
+                return (
+                  <li key={p.id} className="rounded-md border-2 border-tight bg-card p-4">
+                    <p className="font-semibold">
+                      {p.lender}
+                      {p.merchant && <span className="font-normal text-muted-foreground">, {p.merchant}</span>}
+                      <span className="font-normal text-muted-foreground"> — returned {formatShort(returns[p.id])}</span>
+                    </p>
+                    <p className="mt-1 font-medium text-tight">
+                      Next <span className="tabular">{formatUSD(p.installment)}</span> on {formatShort(next)} may still be taken. Dispute it
+                      before then.
+                    </p>
+                    <a
+                      href={`/dispute?plan=${encodeURIComponent(p.id)}`}
+                      className="mt-3 inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50"
+                    >
+                      Write my dispute
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
           {risks.length > 0 && (
             <ul className="grid gap-3 md:grid-cols-2">
               {risks.map((r) => (
@@ -135,7 +164,13 @@ function Overview({ state, today, save }: { state: AppState; today: ISODate; sav
                     plan={p}
                     state={state}
                     today={today}
-                    onRemove={() => save({ ...state, plans: state.plans.filter((x) => x.id !== p.id) })}
+                    returnedOn={returns[p.id] ?? null}
+                    onReturned={(on) => markReturned(p.id, on)}
+                    onUndoReturn={() => undoReturned(p.id)}
+                    onRemove={() => {
+                      undoReturned(p.id);
+                      save({ ...state, plans: state.plans.filter((x) => x.id !== p.id) });
+                    }}
                   />
                 ))}
               </ul>

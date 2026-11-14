@@ -19,7 +19,7 @@ export type DebitRisk = {
 };
 
 /** Morning rule: lenders debit before the paycheck lands, so each debit is checked against what's left from yesterday. */
-export function debitRisks(state: AppState, today: ISODate): DebitRisk[] {
+export function debitRisks(state: AppState, today: ISODate, returned: Record<string, ISODate> = {}): DebitRisk[] {
   if (!state.money) return [];
   const days = buildTimeline(state, today).days;
   const out: DebitRisk[] = [];
@@ -41,7 +41,7 @@ export function debitRisks(state: AppState, today: ISODate): DebitRisk[] {
           morning,
           shortBy: morning < 0 ? -morning : 0,
           paydayLater,
-          disputed: false,
+          disputed: Boolean(returned[e.planId]),
         });
       }
     }
