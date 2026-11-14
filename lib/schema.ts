@@ -12,6 +12,7 @@ export const MoneySchema = z.object({
   rent: cents,
   rentDay: z.number().int().min(1).max(31),
   weeklySpend: cents,
+  balanceOn: isoDate.optional(),
 });
 
 export const PlanSchema = z.object({

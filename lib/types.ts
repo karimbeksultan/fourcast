@@ -20,6 +20,8 @@ export type Money = {
   rentDay: number;
   /** Everyday spending per week (groceries, gas). Spread evenly over the days. */
   weeklySpend: Cents;
+  /** The day `balance` was typed in (start of that day). Older than today → ask to update it. Missing in data saved before v2. */
+  balanceOn?: ISODate;
 };
 
 export const LENDERS = ["Klarna", "Afterpay", "Affirm", "Zip", "PayPal", "Other"] as const;

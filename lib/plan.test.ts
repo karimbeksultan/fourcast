@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { addDays, toISODate } from "./dates";
 import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
-import { buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaySync, splitPayments, spendOn } from "./plan";
+import { applyCheckIn, buildTimeline, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaySync, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
 import { AppStateSchema, DisputeRequestSchema } from "./schema";
 import type { AppState, Money } from "./types";
@@ -91,6 +91,18 @@ describe("demo story (opened on Nov 15, 2026)", () => {
     expect(v.fitsByDay).toHaveLength(42);
     expect(v.fitsByDay.filter((f) => f.fits)[0].date).toBe("2026-12-04");
     expect(v.schedule.map((p) => p.amount)).toEqual([6_000, 6_000, 6_000, 6_000]);
+  });
+
+  it("check-in on the evening of Dec 3 with $27.50: end of today is $27.50, Zip still $12.50 short (not counted twice)", () => {
+    const today = "2026-12-03";
+    const next = applyCheckIn(withKlarna(), 2_750, today);
+    expect(buildTimeline(next, today).days[0].balance).toBe(2_750);
+    expect(next.money?.balanceOn).toBe(today);
+    expect(debitRisks(next, today)).toMatchObject([
+      { date: "2026-12-04", lender: "Zip", level: "fails", shortBy: 1_250, paydayLater: true },
+    ]);
+    // Without money there is nothing to check in.
+    expect(applyCheckIn({ ...next, money: null }, 2_750, today).money).toBeNull();
   });
 
   it("sample plans hit the day before payday, not on it", () => {

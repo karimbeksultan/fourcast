@@ -194,6 +194,18 @@ export function buildTimeline(state: AppState, today: ISODate): Timeline {
   };
 }
 
+/**
+ * Evening check-in: the person types what is in checking now, at the end of today.
+ * Money.balance is the start of today, so today's rent, plan debits and spending are added back
+ * (and today's paycheck taken out): the end of today then equals what they typed. Sets balanceOn = today.
+ */
+export function applyCheckIn(state: AppState, eveningBalance: Cents, today: ISODate): AppState {
+  if (!state.money) return state;
+  const endOfToday = simulate(state, today, 1)[0].balance;
+  const balance = eveningBalance + (state.money.balance - endOfToday);
+  return { ...state, money: { ...state.money, balance, balanceOn: today } };
+}
+
 export function checkPurchase(state: AppState, purchase: Purchase, today: ISODate): Verdict {
   const amounts = splitPayments(purchase.price, purchase.payments);
   const interval = PAY_IN_4_INTERVAL;
