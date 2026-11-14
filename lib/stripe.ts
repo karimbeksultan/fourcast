@@ -2,6 +2,7 @@
 import Stripe from "stripe";
 
 export const PLUS_PRICE_CENTS = 2999; // $29.99 a year
+export const PLUS_MONTHLY_CENTS = 499; // $4.99 a month
 const MIN_TRIAL_SECONDS = 49 * 3600; // Stripe wants trial_end at least 48 hours ahead
 
 /** A Stripe client, or null when STRIPE_SECRET_KEY is missing or is not a test key (we never take real money). */
