@@ -36,6 +36,9 @@ export async function POST(request: Request) {
         },
       ],
       subscription_data: { trial_end: trialEndUnix(trialEnds) },
+      // US product: always $29.99 in English, never converted to the visitor's local currency or language.
+      adaptive_pricing: { enabled: false },
+      locale: "en",
       success_url: `${origin}/check?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/check`,
     });
