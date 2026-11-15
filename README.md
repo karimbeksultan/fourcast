@@ -1,7 +1,5 @@
 # Fourcast
 
-<p align="center"><img src="pitch/assets/lockup.png" alt="Zimran × AIESEC × LARP. Fourcast" width="640"></p>
-
 **Know tonight if tomorrow's pay-later payment will clear, and what to do if it won't.**
 
 [Live app](https://fourcast-zimran.vercel.app) · [Deck (PDF)](pitch/Fourcast-pitch-deck.pdf) · [Demo inputs](demo_inputs.md) · [Tests](lib/plan.test.ts)
