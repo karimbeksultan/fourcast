@@ -73,6 +73,12 @@ Your money [7 fields]                [Add due dates to my calendar]    Payday Sy
 - Plus, one wording everywhere (paywall, Pricing, FAQ): "A calendar reminder at 8 pm…", "How much short a new buy would run you, and the first day it fits", choice **$29.99 a year** (Save 50%) / **$4.99 a month** under "After the trial", "Cancel any time on Before you buy.", "Stripe test mode: card 4242 4242 4242 4242, no real money moves." Pricing, "How the trial works": Today / 8 pm before your first risky payment / Your second payday.
 - Check what we read (Add a plan): "$43.00 × 34 left, next Tue, Dec 1, every month, 2 of 36 paid" (frequency always; "X of Y paid" when the text gave the total).
 - Old balance (Tonight, Forecast; only when the balance was typed on an earlier day): "Your balance is from Thu, Nov 12. Update it so the answer here is right." Button **Update my balance**.
+- Page titles: "Tonight · Fourcast", "Plans · Fourcast", "Forecast · Fourcast", "Before you buy · Fourcast", "Write my dispute · Fourcast", "Pricing · Fourcast", "FAQ · Fourcast"; the landing keeps the full line.
+- Reminder opened where there are no plans (`/plans?due=…`, empty browser): "This reminder was made on another device. Fourcast keeps your plans in the browser where you added them." Then the usual two buttons.
+- Landing, story before JavaScript: "Without Fourcast, sample data" with three steps, "The evening before: Enough for today, not for the morning.", "6 am: Autopay takes the payment. It fails.", "3 pm: The paycheck lands. Too late." No amounts: they are counted from today in the browser.
+- Landing motion: one moving band ("Debit at 6 am. Paycheck at 3 pm. Limit cut by 5 pm."); the lenders line stands still.
+- Keyboard: "Skip to content" is the first Tab stop on every page.
+- Contrast: `--payday` #2c6bd7 and `--short` #b83e0b (were #2e6fe0 and #c2410c), so small text on them and on their soft tints is at least 4.5:1.
 - Check a buy, morning risk (under the verdict): "Klarna · Target on Thu, Dec 3 would be $52.50 short that morning."
 - Check a buy: "Or try" $100 / $240 / $500; "What the answer tells you"; "Enter a price up to $10,000."
 - Rate limit: "Too many tries in a minute. Wait a moment, or enter the plan by hand." Dispute: "…or use the standard letter." + **Use the standard letter**.
