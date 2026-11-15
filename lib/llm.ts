@@ -84,12 +84,22 @@ export class LlmError extends Error {
   }
 }
 
+/** Time limits for one askFirst call. A caller with a ready fallback (the dispute template) passes a short one. */
+export type AskOptions = { budgetMs?: number; lastResortMs?: number };
+
 /**
  * Asks the provider slots with staggered starts and returns the first accepted answer.
- * Inside a slot, a model that fails (quota, retired, overloaded, network) hands over to the next one.
+ * Inside a slot, a model that fails (quota, retired, overloaded, network) hands over to the next one;
+ * a slot whose models all failed starts the next slot at once instead of letting it wait for its turn.
  * `accept` returns the parsed value, or null if the answer is not usable.
  */
-export async function askFirst<T>(messages: ChatMessage[], accept: (text: string) => T | null): Promise<T> {
+export async function askFirst<T>(
+  messages: ChatMessage[],
+  accept: (text: string) => T | null,
+  options: AskOptions = {},
+): Promise<T> {
+  const budgetMs = options.budgetMs ?? BUDGET_MS;
+  const lastResortMs = Math.max(budgetMs, options.lastResortMs ?? LAST_RESORT_BUDGET_MS);
   const list = providers();
   if (list.length === 0) throw new LlmError("no_keys");
 
@@ -103,14 +113,23 @@ export async function askFirst<T>(messages: ChatMessage[], accept: (text: string
       let pending = list.length;
       let answeredBadly = false;
       let stretched = false;
+      const started = new Set<number>();
 
       const setDeadline = (budgetMs: number) => {
         clearTimeout(deadline);
         deadline = setTimeout(() => reject(new LlmError("timeout")), Math.max(0, startedAt + budgetMs - Date.now()));
       };
-      const slotFailed = () => {
+      const startSlot = (i: number) => {
+        if (started.has(i) || controller.signal.aborted) return;
+        started.add(i);
+        void runSlot(list[i]);
+      };
+      const slotFailed = (handOver: boolean) => {
         pending -= 1;
-        if (pending === 0) reject(new LlmError(answeredBadly ? "unreadable" : "timeout"));
+        if (pending === 0) return reject(new LlmError(answeredBadly ? "unreadable" : "timeout"));
+        // Every model of this slot failed (quota, network): the next slot needn't wait for its start time.
+        const next = list.findIndex((_, i) => !started.has(i));
+        if (handOver && next !== -1) startSlot(next);
       };
 
       const runSlot = async (p: Provider) => {
@@ -119,7 +138,7 @@ export async function askFirst<T>(messages: ChatMessage[], accept: (text: string
           const lastResort = p.models.length > 1 && model === p.models[p.models.length - 1];
           if (lastResort && !stretched) {
             stretched = true;
-            setDeadline(LAST_RESORT_BUDGET_MS);
+            setDeadline(lastResortMs);
           }
           let text: string;
           try {
@@ -131,21 +150,15 @@ export async function askFirst<T>(messages: ChatMessage[], accept: (text: string
           const value = accept(text);
           if (value === null) {
             answeredBadly = true; // the model read it and found no plan; another model would say the same
-            return slotFailed();
+            return slotFailed(false);
           }
           return resolve(value);
         }
-        slotFailed();
+        slotFailed(true);
       };
 
-      setDeadline(BUDGET_MS);
-      list.forEach((p, i) => {
-        timers.push(
-          setTimeout(() => {
-            if (!controller.signal.aborted) void runSlot(p);
-          }, START_AT_MS[i] ?? 0),
-        );
-      });
+      setDeadline(budgetMs);
+      list.forEach((_, i) => timers.push(setTimeout(() => startSlot(i), START_AT_MS[i] ?? 0)));
     });
   } finally {
     controller.abort();

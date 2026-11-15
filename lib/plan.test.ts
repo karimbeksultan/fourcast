@@ -5,7 +5,7 @@ import { getConceptSample, nextRisk, owedByLender } from "./concept";
 import { addDays, toISODate } from "./dates";
 import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
-import { extractJson } from "./llm";
+import { askFirst, extractJson, LlmError } from "./llm";
 import { planFromDraft } from "./read-plan";
 import { clientIp, createRateLimiter, RATE_LIMIT, rateLimitedResponse } from "./rate-limit";
 import { applyCheckIn, buildTimeline, planHistory, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, splitPayments, spendOn } from "./plan";
@@ -336,6 +336,42 @@ describe("storage", () => {
     expect(saveState(huge)).toBe(false);
     expect(loadState()?.plans).toHaveLength(4);
     expect(loadState()?.money?.balance).toBe(92_250);
+  });
+});
+
+describe("AI client fallbacks (fetch is faked, no network)", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+  const slot = (i: number, model: string) => {
+    vi.stubEnv(`LLM_${i}_BASE_URL`, `https://ai${i}.test/v1`);
+    vi.stubEnv(`LLM_${i}_API_KEY`, "test");
+    vi.stubEnv(`LLM_${i}_MODEL`, model);
+  };
+  const answer = (content: string) => new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status: 200 });
+
+  it("when the first slot's quota is gone (429), the second starts at once, not 4 s later", async () => {
+    slot(1, "quota-gone-model");
+    slot(2, "backup-model");
+    vi.stubGlobal("fetch", async (url: string) =>
+      url.startsWith("https://ai1.test") ? new Response("{}", { status: 429 }) : answer('{"ok": 1}'),
+    );
+    const t0 = Date.now();
+    await expect(askFirst([{ role: "user", content: "hi" }], (text) => extractJson(text))).resolves.toEqual({ ok: 1 });
+    expect(Date.now() - t0).toBeLessThan(2_000);
+  });
+
+  it("a short budget (the dispute letter has a template ready) gives up on a slow model in time", async () => {
+    slot(1, "slow-model");
+    vi.stubGlobal(
+      "fetch",
+      (_url: string, init: RequestInit) =>
+        new Promise((_, reject) => init.signal?.addEventListener("abort", () => reject(new Error("aborted")))),
+    );
+    const t0 = Date.now();
+    await expect(askFirst([{ role: "user", content: "hi" }], () => 1, { budgetMs: 100, lastResortMs: 100 })).rejects.toBeInstanceOf(LlmError);
+    expect(Date.now() - t0).toBeLessThan(1_000);
   });
 });
 
