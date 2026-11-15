@@ -8,6 +8,8 @@ import { DisputeLetterSchema } from "./schema";
 import type { DisputeLetter, DisputeRequest } from "./types";
 
 export const CFPB_URL = "https://www.consumerfinance.gov/complaint/";
+/** How long the dispute letter waits for the AI before the template answers. */
+export const DISPUTE_AI_MS = 8_000;
 
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
@@ -96,10 +98,15 @@ export async function writeDispute(r: DisputeRequest): Promise<{ letter: Dispute
   const template = templateLetter(r);
   if (providers().length === 0) return { letter: template, source: "template" };
   try {
-    const letter = await askFirst([{ role: "user", content: prompt(r, template) }], (text) => {
-      const parsed = DisputeLetterSchema.safeParse(extractJson(text));
-      return parsed.success && keepsFacts(parsed.data, r) ? parsed.data : null;
-    });
+    // The template is always ready, so the AI gets 8 s and never the slow last-resort stretch.
+    const letter = await askFirst(
+      [{ role: "user", content: prompt(r, template) }],
+      (text) => {
+        const parsed = DisputeLetterSchema.safeParse(extractJson(text));
+        return parsed.success && keepsFacts(parsed.data, r) ? parsed.data : null;
+      },
+      { budgetMs: DISPUTE_AI_MS, lastResortMs: DISPUTE_AI_MS },
+    );
     return { letter, source: "ai" };
   } catch (err) {
     if (!(err instanceof LlmError)) console.warn(`[dispute] ${err instanceof Error ? err.message : err}`);

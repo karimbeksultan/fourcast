@@ -1,9 +1,14 @@
+import { limitAiRoute } from "@/lib/rate-limit";
 import { PLUS_MONTHLY_CENTS, PLUS_PRICE_CENTS, stripeClient, trialEndUnix } from "@/lib/stripe";
 
 // POST { trialEnds: "YYYY-MM-DD", plan?: "year" | "month" } → { url } of a Stripe Checkout page in test mode:
 // Fourcast Plus at $29.99 a year (default) or $4.99 a month, free until trialEnds (the user's second payday).
 // No test key → 503 no_keys, and the UI keeps its demo checkout.
 export async function POST(request: Request) {
+  // 30 a minute per IP: every call creates a Stripe session.
+  const limited = limitAiRoute("checkout", request);
+  if (limited) return limited;
+
   const stripe = stripeClient();
   if (!stripe) return Response.json({ error: "Test payments are off.", code: "no_keys" }, { status: 503 });
 
