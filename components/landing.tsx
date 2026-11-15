@@ -17,7 +17,28 @@ const btn =
 /** The focal moment: the sample's riskiest morning, played without and with Fourcast (same calculation as the app). */
 function Preview() {
   const today = useToday();
-  if (!today) return <div className="aspect-[4/5] w-full rounded-lg bg-primary-foreground/10" aria-hidden />;
+  if (!today)
+    return (
+      <figure className="space-y-2">
+        <div className="rounded-lg bg-card p-4 text-foreground sm:p-6">
+          <p className="text-sm font-semibold">
+            Without Fourcast<span className="font-normal text-muted-foreground">, sample data</span>
+          </p>
+          <ol className="mt-5 grid grid-cols-3 gap-3 text-sm">
+            <li className="border-t-4 border-muted pt-2">
+              <span className="block font-semibold">The evening before</span>Enough for today, not for the morning.
+            </li>
+            <li className="border-t-4 border-short pt-2">
+              <span className="block font-semibold">6 am</span>Autopay takes the payment. It fails.
+            </li>
+            <li className="border-t-4 border-payday pt-2">
+              <span className="block font-semibold">3 pm</span>The paycheck lands. Too late.
+            </li>
+          </ol>
+        </div>
+        <figcaption className="text-sm text-primary-foreground">Sample data, counted live from today.</figcaption>
+      </figure>
+    );
   // The same sample "Try it with sample data" loads, so the story and the first app screen match.
   const state = getConceptSample(today);
   const risk = nextRisk(state, today);
@@ -163,7 +184,9 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
         </div>
       </section>
 
-      <Band text="Klarna, Afterpay, Affirm, Zip, PayPal Pay in 4. One evening check for all of them." tone="sky" />
+      <p className="bg-accent px-4 py-6 text-center text-xl font-bold tracking-tight text-pretty text-accent-foreground sm:text-2xl">
+        Klarna, Afterpay, Affirm, Zip, PayPal Pay in 4. One evening check for all of them.
+      </p>
 
       {/* Pricing */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24" aria-labelledby="price">

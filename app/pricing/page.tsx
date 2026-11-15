@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Pricing — Fourcast" };
+export const metadata: Metadata = { title: "Pricing" };
 
 const FREE = [
   "Unlimited Klarna, Afterpay, Affirm, Zip and PayPal plans",

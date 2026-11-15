@@ -27,11 +27,13 @@ import { cn } from "@/lib/utils";
 export default function PlansPage() {
   const [state, save] = useAppState();
   const today = useToday();
+  const due = useQueryParam("due");
 
   if (state === undefined || !today) return <HomeSkeleton />;
   if (state === null)
     return (
       <Welcome
+        fromReminder={Boolean(due)}
         onSample={() => save(getConceptSample(today))}
         onStart={() => save(emptyState())}
       />
@@ -51,14 +53,22 @@ function HomeSkeleton() {
 }
 
 function Welcome({
+  fromReminder = false,
   onSample,
   onStart,
 }: {
+  /** Opened from a calendar reminder (?due=), but this browser has no plans. */
+  fromReminder?: boolean;
   onSample: () => void;
   onStart: () => void;
 }) {
   return (
     <section className="max-w-2xl space-y-5 py-6 sm:py-12">
+      {fromReminder && (
+        <p className="rounded-lg bg-tight-soft px-4 py-3" role="status">
+          This reminder was made on another device. Fourcast keeps your plans in the browser where you added them.
+        </p>
+      )}
       <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
         Your plans live here
       </h1>

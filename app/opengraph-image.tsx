@@ -12,7 +12,7 @@ const PAPER = "#f5f7f4"; // --background
 const GREEN = "#0b6e4f"; // --primary
 const SUN = "#fcefd3"; // --tight-soft
 const SHORT_SOFT = "#fde4d8"; // --short-soft
-const SHORT = "#c2410c"; // --short
+const SHORT = "#b83e0b"; // --short
 const OK_SOFT = "#dff2e8"; // --ok-soft
 const MUTED = "#4f5f58"; // --muted-foreground
 

@@ -68,6 +68,15 @@ export function AppShell({ children }: { children: ReactNode }) {
       {open ? <X /> : <Menu />}
     </button>
   );
+  // First stop for the keyboard: jump past the navigation.
+  const skip = (
+    <a
+      href="#main"
+      className="sr-only rounded-md bg-card font-semibold focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-3 focus:ring-3 focus:ring-ring/50"
+    >
+      Skip to content
+    </a>
+  );
   const home = (
     <Link href="/" aria-label="Fourcast home" className={cn("flex h-11 items-center rounded-md", focus)} onClick={() => setOpen(false)}>
       <Logo />
@@ -77,6 +86,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!inApp) {
     return (
       <>
+        {skip}
         <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
             {home}
@@ -105,7 +115,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           {menu}
         </header>
-        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 pt-6 pb-8 sm:pt-10 sm:pb-12">{children}</main>
+        <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 pt-6 pb-8 sm:pt-10 sm:pb-12 outline-none">{children}</main>
         <footer className="mx-auto w-full max-w-6xl px-4 pb-6 text-xs text-pretty text-muted-foreground">{FOOTNOTE}</footer>
       </>
     );
@@ -113,6 +123,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex flex-1 flex-col" style={{ "--bar": sample ? "2.75rem" : "0rem" } as CSSProperties}>
+      {skip}
       {sample && <SampleBar />}
 
       <div className="flex flex-1">
@@ -188,7 +199,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </nav>
           </header>
 
-          <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-12 lg:px-8">{children}</main>
+          <main id="main" tabIndex={-1} className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-12 lg:px-8 outline-none">{children}</main>
           <footer className="mx-auto w-full max-w-6xl px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] text-xs text-pretty text-muted-foreground sm:px-6 sm:pb-6 lg:px-8">
             {FOOTNOTE}
           </footer>

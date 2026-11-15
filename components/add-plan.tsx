@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +49,11 @@ export function AddPlan({
   const [error, setError] = useState<string | null>(null);
   const [found, setFound] = useState<Plan | null>(null);
   const [saveError, setSaveError] = useState(false);
+  // After "Read plan" the button is gone: move focus to the result so the keyboard and screen readers land on it.
+  const result = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (found || error) result.current?.focus();
+  }, [found, error]);
   // interval: 14 days for Pay in 4; a plan read by AI keeps its own (30 for monthly) when it is fixed by hand.
   const [manual, setManual] = useState({ lender: "Klarna" as Lender, merchant: "", amount: "", left: "3", next: addDays(today, 7), interval: 14 });
   const [manualError, setManualError] = useState<string | null>(null);
@@ -192,7 +197,7 @@ export function AddPlan({
       )}
 
       {error && !reading && (
-        <div className="space-y-2 rounded-lg bg-short-soft p-3 text-sm" role="alert">
+        <div ref={result} tabIndex={-1} className="space-y-2 rounded-lg bg-short-soft p-3 text-sm outline-none" role="alert">
           <p>{error}</p>
           {mode !== "manual" && (
             <Button variant="outline" className="h-10" onClick={() => toManual()}>
@@ -203,7 +208,7 @@ export function AddPlan({
       )}
 
       {found && (
-        <div className="space-y-3 rounded-md border p-3">
+        <div ref={result} tabIndex={-1} className="space-y-3 rounded-md border p-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
           <p className="text-sm text-muted-foreground">Check what we read:</p>
           <p className="font-semibold">
             {found.lender}
@@ -264,7 +269,7 @@ export function AddPlan({
           <div className="space-y-1.5">
             <Label htmlFor="m-amount">Each payment</Label>
             <Input
-              id="m-amount"
+              id="m-amount" aria-invalid={Boolean(manualError)} aria-describedby={manualError ? "m-error" : undefined}
               className="h-11"
               inputMode="decimal"
               placeholder="$80.00"
@@ -275,7 +280,7 @@ export function AddPlan({
           <div className="space-y-1.5">
             <Label htmlFor="m-left">Payments left</Label>
             <Input
-              id="m-left"
+              id="m-left" aria-invalid={Boolean(manualError)} aria-describedby={manualError ? "m-error" : undefined}
               className="h-11"
               inputMode="numeric"
               value={manual.left}
@@ -284,10 +289,10 @@ export function AddPlan({
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="m-next">Next payment</Label>
-            <Input id="m-next" type="date" className="h-11" value={manual.next} onChange={(e) => setManual({ ...manual, next: e.target.value })} />
+            <Input id="m-next" aria-invalid={Boolean(manualError)} aria-describedby={manualError ? "m-error" : undefined} type="date" className="h-11" value={manual.next} onChange={(e) => setManual({ ...manual, next: e.target.value })} />
           </div>
           {manualError && (
-            <p className="text-sm text-short sm:col-span-2" role="alert">
+            <p id="m-error" className="text-sm text-short sm:col-span-2" role="alert">
               {manualError}
             </p>
           )}
