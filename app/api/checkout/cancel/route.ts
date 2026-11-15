@@ -5,7 +5,7 @@ import { stripeClient } from "@/lib/stripe";
 // started, right away, so "Cancel Plus" really cancels and no renewal is ever billed. Test mode only.
 // There are no accounts (FAQ Q135): the checkout session id that the browser kept is the only key.
 export async function POST(request: Request) {
-  const limited = limitAiRoute("checkout", request);
+  const limited = await limitAiRoute("checkout", request);
   if (limited) return limited;
 
   const stripe = stripeClient();

@@ -7,7 +7,7 @@ import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
 import { askFirst, extractJson, LlmError } from "./llm";
 import { planFromDraft } from "./read-plan";
-import { clientIp, createRateLimiter, RATE_LIMIT, rateLimitedResponse } from "./rate-limit";
+import { checkShared, clientIp, createRateLimiter, RATE_LIMIT, rateLimitedResponse } from "./rate-limit";
 import { applyCheckIn, buildTimeline, planDebits, planHistory, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
 import { AppStateSchema, DisputeRequestSchema, MAX_CENTS, PlanDraftSchema, PlanSchema } from "./schema";
@@ -469,6 +469,20 @@ describe("rate limit on the AI routes (in memory, per IP)", () => {
     expect(res.status).toBe(429);
     expect(res.headers.get("Retry-After")).toBe("12");
     expect(await res.json()).toMatchObject({ code: "rate_limited" });
+  });
+
+  it("with Upstash Redis the count is shared: the 31st in a minute is refused; Redis down falls back to memory", async () => {
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://redis.test");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "test");
+    let count = 0;
+    vi.stubGlobal("fetch", async () => new Response(JSON.stringify([{ result: ++count }, { result: 1 }]), { status: 200 }));
+    const now = 1_800_000_000_000; // on a minute boundary
+    for (let i = 0; i < 30; i++) expect(await checkShared("read-plan:1.1.1.1", now)).toEqual({ ok: true });
+    expect(await checkShared("read-plan:1.1.1.1", now + 15_000)).toEqual({ ok: false, retryAfter: 45 });
+    vi.stubGlobal("fetch", async () => new Response("down", { status: 500 }));
+    expect(await checkShared("read-plan:1.1.1.1", now)).toBeNull();
+    vi.unstubAllEnvs();
+    expect(await checkShared("read-plan:1.1.1.1", now)).toBeNull(); // not configured: memory decides
   });
 });
 
