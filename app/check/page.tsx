@@ -43,7 +43,9 @@ export default function CheckPage() {
       .then((d) => {
         if (d.ok) {
           const trialEnds = buildTimeline(state, today).paydays[1] ?? addDays(today, 28);
-          save({ ...state, plus: { since: today, trialEnds, via: "stripe_test" } });
+          // Keep the checkout session id: it is the only key to the test subscription, and "Cancel Plus" needs it.
+          const kept = /^cs_test_[A-Za-z0-9]+$/.test(sessionId) ? { sessionId } : {};
+          save({ ...state, plus: { since: today, trialEnds, via: "stripe_test", ...kept } });
           setStripeNote("Plus is on. Your test payment went through.");
         } else {
           setStripeNote("The test checkout didn't finish. Start the trial again when you're ready.");
@@ -303,6 +305,36 @@ function Plus({
   today: ISODate;
   save: (s: AppState) => void;
 }) {
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState(false);
+  // With a checkout session id, cancel the test subscription in Stripe first, then turn Plus off here.
+  // Plus stays on only when Stripe could not be reached, so the screen never says "cancelled" while a subscription lives.
+  const cancel = async () => {
+    const id = state.plus?.sessionId;
+    setCancelError(false);
+    if (id) {
+      setCancelling(true);
+      try {
+        const res = await fetch("/api/checkout/cancel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: id }),
+        });
+        // 404: no subscription behind this session; 503: no Stripe keys on the server. Nothing left to cancel.
+        if (!res.ok && res.status !== 404 && res.status !== 503) {
+          setCancelError(true);
+          return;
+        }
+      } catch {
+        setCancelError(true);
+        return;
+      } finally {
+        setCancelling(false);
+      }
+    }
+    save({ ...state, plus: null });
+  };
+
   if (state.plus) {
     // The 4 payments if bought on the recommended day: Payday Sync first, then the first day it fits.
     const buyOn = verdict.paydaySync?.buyOn ?? verdict.bestDay ?? today;
@@ -338,10 +370,19 @@ function Plus({
             {state.plus.via === "demo" ? "Demo trial, no real payment." : "Stripe test mode, no real money moves."} After the trial, the
             plan you picked starts.
           </p>
-          <Button variant="link" className="h-11 p-0 text-muted-foreground" onClick={() => save({ ...state, plus: null })}>
-            Cancel Plus
+          <Button variant="link" className="h-11 p-0 text-muted-foreground" disabled={cancelling} onClick={() => void cancel()}>
+            {cancelling ? "Cancelling…" : "Cancel Plus"}
           </Button>
-          <p className="text-xs text-muted-foreground">Turns Plus off in this browser. Test mode: no real subscription is billed.</p>
+          {cancelError && (
+            <p className="text-short" role="alert">
+              Couldn&apos;t reach Stripe to cancel. Plus is still on; try again in a moment.
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            {state.plus.sessionId
+              ? "Turns Plus off and cancels the test subscription in Stripe."
+              : "Turns Plus off in this browser. Test mode: no real subscription is billed."}
+          </p>
         </div>
       </aside>
     );
