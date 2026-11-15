@@ -113,7 +113,7 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
                     save({ ...state, plans: [...state.plans, closed.plan] });
                     setClosed(null);
                   }}
-                  className="font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="inline-flex min-h-11 items-center rounded-md border border-foreground/25 bg-card px-4 font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   Undo
                 </button>
@@ -127,7 +127,7 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
           <QuickCheck state={state} today={today} />
           <Link
             href="/plans"
-            className="block text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="flex min-h-11 items-center justify-center rounded-md border border-foreground/25 bg-card px-4 font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             Add a plan or change my money
           </Link>

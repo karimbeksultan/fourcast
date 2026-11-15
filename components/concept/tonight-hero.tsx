@@ -8,6 +8,10 @@ import { moveAmount } from "@/lib/plan";
 import type { DebitRisk, ISODate, Timeline } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+/** Secondary actions are outline buttons 44 px tall, so they are easy to hit on a phone. */
+const secondary =
+  "inline-flex min-h-11 items-center gap-2 rounded-md border border-foreground/25 bg-card px-4 py-2 leading-snug font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50";
+
 function evening(night: ISODate, today: ISODate): string {
   if (night <= today) return "tonight";
   if (night === addDays(today, 1)) return "tomorrow night";
@@ -71,19 +75,29 @@ export function TonightHero({
   return (
     <section
       aria-labelledby="tonight-title"
-      className={cn("rounded-lg p-5 transition-colors duration-500 sm:p-8", isDone ? "bg-ok-soft" : fails ? "bg-short-soft" : "bg-tight-soft")}
+      className={cn("rounded-lg p-5 transition-colors duration-500 sm:p-8", isDone ? "bg-secondary" : fails ? "bg-short-soft" : "bg-tight-soft")}
     >
       <p className="flex items-center gap-2 text-sm font-medium">
-        <MoonStar className={cn("size-4", isDone ? "text-ok" : fails ? "text-short" : "text-tight")} aria-hidden /> Tonight,{" "}
+        <MoonStar className={cn("size-4", isDone ? "text-muted-foreground" : fails ? "text-short" : "text-tight")} aria-hidden /> Tonight,{" "}
         {formatShort(today)}
       </p>
-      <h1 id="tonight-title" className="mt-3 max-w-3xl text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-        {isDone
-          ? `Done. ${risk.lender} on ${formatShort(risk.date)} is covered.`
-          : fails
-            ? `${risk.lender} won't clear on ${formatShort(risk.date)}.`
-            : `${risk.lender} clears on ${formatShort(risk.date)}, barely.`}
-      </h1>
+      {/* Announced when it changes. "Marked", not "covered": Fourcast only knows what the person told it. */}
+      <div role="status" aria-live="polite">
+        <h1 id="tonight-title" className="mt-3 max-w-3xl text-4xl font-bold tracking-tight text-balance sm:text-5xl">
+          {isDone
+            ? fails
+              ? "Marked as moved."
+              : "Marked as seen."
+            : fails
+              ? `${risk.lender} won't clear on ${formatShort(risk.date)}.`
+              : `${risk.lender} clears on ${formatShort(risk.date)}, barely.`}
+        </h1>
+        {isDone && (
+          <p className="mt-3 max-w-2xl text-lg">
+            Fourcast can&apos;t see your bank. Plans and Forecast keep counting your last typed balance until you update it.
+          </p>
+        )}
+      </div>
 
       {!isDone && (
         <>
@@ -124,27 +138,30 @@ export function TonightHero({
                 )}
               </p>
             </div>
-            <div className="flex gap-3">
-              <Hand className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
-              <p>
-                {risk.paydayLater
-                  ? `Or turn autopay off for this one and pay it in the ${risk.lender} app after your paycheck lands.`
-                  : `Or spend ${formatUSD(risk.shortBy)} less from checking before then.`}
-              </p>
-            </div>
+            {/* The second way out exists only when a paycheck lands later that day. */}
+            {risk.paydayLater && (
+              <div className="flex gap-3">
+                <Hand className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+                <p>Or turn autopay off for this one and pay it in the {risk.lender} app after your paycheck lands.</p>
+              </div>
+            )}
           </div>
         </>
       )}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
         {isDone ? (
-          <button
-            type="button"
-            onClick={() => setDone(false)}
-            className="text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            Undo
-          </button>
+          <>
+            <a
+              href={`/plans?due=${risk.date}`}
+              className="inline-flex h-11 items-center rounded-md bg-primary px-5 font-semibold text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              Update my balance
+            </a>
+            <button type="button" onClick={() => setDone(false)} className={secondary}>
+              Undo
+            </button>
+          </>
         ) : (
           <button
             type="button"
@@ -159,23 +176,19 @@ export function TonightHero({
           <button
             type="button"
             onClick={onRemind}
-            className="inline-flex h-11 items-center gap-2 rounded-md border border-foreground/25 bg-card px-4 font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+            className={secondary}
           >
             <BellRing className="size-4" aria-hidden />
             {plus ? "Add the 8 pm reminder" : `Remind me ${formatShort(night).split(",")[0]} at 8 pm`}
           </button>
         )}
-        <a
-          href={`/plans?due=${risk.date}`}
-          className="text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-        >
-          Update my balance first
-        </a>
+        {!isDone && (
+          <a href={`/plans?due=${risk.date}`} className={secondary}>
+            Update my balance first
+          </a>
+        )}
         {more > 0 && (
-          <a
-            href="/timeline"
-            className="text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
+          <a href="/timeline" className={secondary}>
             {more} more payment{more === 1 ? "" : "s"} at risk after this one
           </a>
         )}

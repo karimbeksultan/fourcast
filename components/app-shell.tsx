@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     </button>
   );
   const home = (
-    <Link href="/" aria-label="Fourcast home" className={cn("rounded-md", focus)} onClick={() => setOpen(false)}>
+    <Link href="/" aria-label="Fourcast home" className={cn("flex h-11 items-center rounded-md", focus)} onClick={() => setOpen(false)}>
       <Logo />
     </Link>
   );
@@ -112,7 +112,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col" style={{ "--bar": sample ? "2.5rem" : "0rem" } as CSSProperties}>
+    <div className="flex flex-1 flex-col" style={{ "--bar": sample ? "2.75rem" : "0rem" } as CSSProperties}>
       {sample && <SampleBar />}
 
       <div className="flex flex-1">
@@ -224,7 +224,7 @@ function SampleBar() {
   return (
     <aside
       aria-label="Sample data"
-      className="z-40 flex h-10 shrink-0 items-center justify-between gap-3 bg-foreground px-4 text-sm text-background sm:px-6 lg:sticky lg:top-0"
+      className="z-40 flex h-11 shrink-0 items-center justify-between gap-3 bg-foreground px-4 text-sm text-background sm:px-6 lg:sticky lg:top-0"
     >
       <p className="flex min-w-0 items-center gap-2">
         <FlaskConical className="size-4 shrink-0" aria-hidden />
@@ -237,7 +237,7 @@ function SampleBar() {
           clearState();
           saveAcks({});
         }}
-        className="rounded-sm font-semibold whitespace-nowrap underline underline-offset-4 outline-none hover:no-underline focus-visible:ring-3 focus-visible:ring-background/60"
+        className="inline-flex h-11 items-center rounded-sm font-semibold whitespace-nowrap underline underline-offset-4 outline-none hover:no-underline focus-visible:ring-3 focus-visible:ring-background/60"
       >
         Clear sample data
       </button>

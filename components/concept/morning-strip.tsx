@@ -52,8 +52,8 @@ export function MorningStrip({ timeline, focus }: { timeline: Timeline; focus?: 
         <p className="text-sm text-muted-foreground">Checking before the paycheck lands. Tap a day.</p>
       </div>
 
-      <div ref={strip} className="relative overflow-x-auto rounded-lg border bg-card p-3 sm:p-4">
-        <ol className="grid min-w-[620px] gap-1" style={{ gridTemplateColumns: `repeat(${DAYS}, minmax(0, 1fr))` }}>
+      <div ref={strip} className="relative overflow-x-auto rounded-lg border bg-card p-3 pb-5 sm:p-4 sm:pb-5">
+        <ol className="grid min-w-[1000px] gap-1 sm:min-w-[620px]" style={{ gridTemplateColumns: `repeat(${DAYS}, minmax(0, 1fr))` }}>
           {days.map((d, i) => {
             const pay = d.events.some((e) => e.kind === "paycheck");
             const debits = d.events.filter((e) => e.kind === "debit");
@@ -97,7 +97,7 @@ export function MorningStrip({ timeline, focus }: { timeline: Timeline; focus?: 
                   <span className={cn("tabular rounded-full px-1.5 text-sm font-semibold", i === 0 && "bg-foreground text-background")}>
                     {parts(d.date).day}
                   </span>
-                  <span className="mt-1 flex h-5 flex-wrap justify-center gap-0.5">
+                  <span className="mt-1 flex min-h-5 flex-wrap justify-center gap-0.5">
                     {pay && <span className="rounded-sm bg-payday px-1 text-[10px] font-semibold leading-5 text-on-payday">Pay</span>}
                     {debits.map((e) =>
                       e.kind === "debit" ? (

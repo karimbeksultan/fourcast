@@ -78,7 +78,7 @@ export function OwedSummary({
                 <button
                   type="button"
                   onClick={() => onReturned(p.id)}
-                  className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <PackageOpen className="size-3.5" aria-hidden /> I sent it back
                 </button>
@@ -120,7 +120,10 @@ export function QuickCheck({ state, today }: { state: AppState; today: ISODate }
           <p className="text-sm">{verdictLine(verdict)}</p>
         </div>
       )}
-      <a href="/check" className="text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50">
+      <a
+        href="/check"
+        className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline underline-offset-4 outline-none hover:no-underline focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
         Full check with Payday Sync
       </a>
     </section>

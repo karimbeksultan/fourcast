@@ -88,7 +88,7 @@ export function ReturnsTracker({
                     <button
                       type="button"
                       onClick={() => onStage(v.plan.id, "store_refunded")}
-                      className="inline-flex h-9 items-center rounded-md border px-3 text-sm font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+                      className="inline-flex h-11 items-center rounded-md border px-4 text-sm font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
                       The store refunded me
                     </button>
@@ -97,7 +97,7 @@ export function ReturnsTracker({
                     <button
                       type="button"
                       onClick={() => onStage(v.plan.id, "credited")}
-                      className="inline-flex h-9 items-center rounded-md border px-3 text-sm font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+                      className="inline-flex h-11 items-center rounded-md border px-4 text-sm font-semibold outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
                       {v.plan.lender} credited it
                     </button>
@@ -105,7 +105,7 @@ export function ReturnsTracker({
                   {v.suggestLetter && (
                     <Link
                       href={`/dispute?plan=${encodeURIComponent(v.plan.id)}`}
-                      className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50"
+                      className="inline-flex h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
                       <FileText className="size-4" aria-hidden />
                       Write the dispute letter
@@ -115,7 +115,7 @@ export function ReturnsTracker({
                     <button
                       type="button"
                       onClick={() => onStage(v.plan.id, ORDER[at - 1])}
-                      className="text-sm text-muted-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                      className="inline-flex min-h-11 items-center px-1 text-sm text-muted-foreground underline underline-offset-4 outline-none hover:no-underline focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
                       Undo
                     </button>

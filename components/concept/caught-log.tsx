@@ -95,7 +95,7 @@ export function CaughtLog({
               {v.suggestLetter ? (
                 <Link
                   href={`/dispute?plan=${v.plan.id}`}
-                  className="shrink-0 pl-6.5 text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 sm:pl-0"
+                  className="ml-6.5 inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-primary underline underline-offset-4 outline-none hover:no-underline focus-visible:ring-3 focus-visible:ring-ring/50 sm:ml-0"
                 >
                   Letter ready
                 </Link>
