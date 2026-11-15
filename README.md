@@ -42,7 +42,7 @@ The app screens share one frame (`components/app-shell.tsx`): a sidebar with the
 - **AI does two small jobs, always with a fallback.** It reads a pasted confirmation or a screenshot into a plan (`/api/read-plan`; without it you type four fields), and it can polish a dispute letter (`/api/dispute`; the template always works, and the AI draft is used only if it keeps every fact). Models: Gemini Flash-Lite via Google AI Studio; when one model's free quota runs out (429) the next takes over at once, and Gemma 4 31B is the slow last resort.
 - **No accounts, no bank link.** State lives in `localStorage` with a versioned zod schema. The server stores nothing; keys stay on the server. Two things leave the browser, only when you ask: the text or screenshot you want read into a plan, and your notes for a dispute letter, go to Google's Gemini models. The footer and the FAQ say so.
 - **Plus is a test-mode paywall, unlocked in this browser.** After Stripe Checkout (test mode only; live keys are refused), `/api/checkout/confirm` asks Stripe whether the subscription is live, and the browser then turns Plus on in `localStorage`.
-- **Guard rails:** the AI routes allow 30 requests a minute per IP (`lib/rate-limit.ts`, 429 with `Retry-After`), so nobody can burn the free model quota; every response carries basic security headers (`next.config.ts`).
+- **Guard rails:** the AI and checkout routes allow 30 requests a minute per IP (`lib/rate-limit.ts`, 429 with `Retry-After`), so nobody can burn the free model quota; the dispute letter waits at most 8 s for the AI, then the template answers; every response carries basic security headers (`next.config.ts`).
 
 ## Known limits
 - **The debit time is an assumption.** Lenders don't publish when autopay runs, so Fourcast assumes the worst case: in the morning, before the paycheck lands. If your paycheck arrives early (for example, early direct deposit), it is more cautious than it needs to be.
@@ -56,7 +56,7 @@ The app screens share one frame (`components/app-shell.tsx`): a sidebar with the
 ```bash
 npm install
 npm run dev      # http://localhost:3000
-npm test         # 45 golden tests: the demo numbers, the morning model, check-in, payment history, rate limit, edge cases
+npm test         # 47 golden tests: the demo numbers, the morning model, check-in, payment history, AI fallbacks, rate limit, edge cases
 npm run build
 ```
 Everything works without keys: reading screenshots falls back to manual entry, dispute letters use the template, and the paywall uses a demo checkout. To turn them on, copy `.env.example` to `.env` and add a free Google AI Studio key (`LLM_1_API_KEY`, `LLM_2_API_KEY`), optionally an OpenRouter key as a third provider (`LLM_3_API_KEY`), and a Stripe **test** key (`STRIPE_SECRET_KEY=sk_test_…`; live keys are refused).
