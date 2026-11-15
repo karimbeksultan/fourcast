@@ -47,6 +47,8 @@ export async function POST(request: Request) {
         },
       ],
       subscription_data: { trial_end: trialEndUnix(trialEnds) },
+      // The sandbox account has no public business name yet, so Checkout would show the sandbox's own name.
+      branding_settings: { display_name: "Fourcast" },
       // US product: always US dollars in English, never converted to the visitor's local currency or language.
       adaptive_pricing: { enabled: false },
       locale: "en",
