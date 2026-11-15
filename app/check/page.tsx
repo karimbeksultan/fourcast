@@ -108,6 +108,8 @@ export default function CheckPage() {
           <Label htmlFor="price">Price</Label>
           <Input
             id="price"
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "price-error" : undefined}
             className="h-12 text-lg"
             inputMode="decimal"
             placeholder="$240"
@@ -123,7 +125,7 @@ export default function CheckPage() {
           Check it
         </Button>
         {error && (
-          <p className="w-full text-sm text-short" role="alert">
+          <p id="price-error" className="w-full text-sm text-short" role="alert">
             {error}
           </p>
         )}

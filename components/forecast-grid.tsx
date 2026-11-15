@@ -30,7 +30,6 @@ const TONE_CLASS: Record<Tone, string> = {
 };
 
 const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
-const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function weekday(date: ISODate): number {
   const { year, month, day } = parts(date);
@@ -141,7 +140,7 @@ export function ForecastGrid({
                   role="gridcell"
                   type={onSelect ? "button" : undefined}
                   onClick={onSelect ? () => onSelect(cell.date) : undefined}
-                  aria-label={`${WEEKDAY_NAMES[weekday(cell.date)]}, ${cell.label}`}
+                  aria-label={cell.label}
                   aria-selected={onSelect ? selected === cell.date : undefined}
                   className={cn(
                     "relative flex min-h-12 flex-col justify-between overflow-hidden rounded-[4px] p-1 text-left outline-none sm:min-h-16 sm:p-1.5",

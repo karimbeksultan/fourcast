@@ -66,6 +66,8 @@ export function CheckIn({
             <Label htmlFor="checkin-balance">Balance in checking</Label>
             <Input
               id="checkin-balance"
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? "checkin-error" : undefined}
               className="h-11"
               inputMode="decimal"
               placeholder="$412.30"
@@ -78,7 +80,7 @@ export function CheckIn({
             Update
           </Button>
           {error && (
-            <p className="w-full text-sm text-short" role="alert">
+            <p id="checkin-error" className="w-full text-sm text-short" role="alert">
               {error}
             </p>
           )}
