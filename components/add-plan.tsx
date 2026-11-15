@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addDays, formatShort, formatUSD } from "@/lib/dates";
 import { shrinkImage } from "@/lib/image";
+import { planHistory } from "@/lib/plan";
 import { getSampleKlarnaText } from "@/lib/sample";
 import { MAX_CENTS } from "@/lib/schema";
 import { LENDERS, type ISODate, type Lender, type Plan, type ReadPlanResponse } from "@/lib/types";
@@ -25,6 +26,9 @@ const ERRORS: Record<string, string> = {
 
 /** The page could not save the plan (the schema refused it). Said once, with the manual path next to it. */
 const SAVE_ERROR = "We couldn't save this plan. Check the amount and the number of payments, or type it in.";
+
+/** How often the plan is paid, in words, so a monthly plan is not mistaken for Pay in 4. */
+const every = (days: number) => (days === 14 ? "every 2 weeks" : days === 30 ? "every month" : days === 7 ? "every week" : `every ${days} days`);
 
 const selectClass =
   "h-11 w-full rounded-lg border border-input bg-card px-2.5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -206,7 +210,8 @@ export function AddPlan({
             {found.merchant && <span className="font-normal text-muted-foreground">, {found.merchant}</span>}
           </p>
           <p className="tabular text-sm">
-            {formatUSD(found.installment)} × {found.paymentsLeft} left, next {formatShort(found.nextDue)}
+            {formatUSD(found.installment)} × {found.paymentsLeft} left, next {formatShort(found.nextDue)}, {every(found.intervalDays)}
+            {found.totalPayments ? `, ${planHistory(found, today).paid} of ${found.totalPayments} paid` : ""}
           </p>
           {saveError && (
             <p className="rounded-lg bg-short-soft p-3 text-sm" role="alert">
