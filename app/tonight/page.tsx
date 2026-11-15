@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { downloadIcs } from "@/components/ics-download";
 import { useState } from "react";
+import { CaughtLog } from "@/components/concept/caught-log";
 import { MorningStrip } from "@/components/concept/morning-strip";
 import { OwedSummary, QuickCheck } from "@/components/concept/owed-and-check";
 import { ReturnsTracker } from "@/components/concept/returns-tracker";
@@ -50,7 +51,8 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
 
   const timeline = buildTimeline(state, today);
   const risk = nextRisk(state, today);
-  const openRisks = debitRisks(state, today).filter((r) => !r.disputed).length;
+  const risks = debitRisks(state, today).filter((r) => !r.disputed);
+  const openRisks = risks.length;
   const views = returnViews(state, today);
 
   const setStage = (planId: string, stage: RefundStage) => {
@@ -131,6 +133,8 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
           </Link>
         </aside>
       </div>
+
+      <CaughtLog risks={risks} acks={acks} views={views} />
     </div>
   );
 }
