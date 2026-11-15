@@ -91,26 +91,26 @@
   --muted-foreground: #4f5f58;
   --accent: #e3edfc;
   --accent-foreground: #1e4fa8;
-  --destructive: #c2410c;
+  --destructive: #b83e0b;
   --border: #d9e0db;
   --input: #c5cfc9;
   --ring: #2e6fe0;
   --radius: 0.5rem;
 
-  --payday: #2e6fe0;
+  --payday: #2c6bd7;
   --payday-soft: #e3edfc;
   --on-payday: #f5f7f4;
   --ok: #0b6e4f;
   --ok-soft: #dff2e8;
   --tight: #9a5800;
   --tight-soft: #fcefd3;
-  --short: #c2410c;
+  --short: #b83e0b;
   --short-soft: #fde4d8;
 
   --chart-1: #0b6e4f;
-  --chart-2: #2e6fe0;
+  --chart-2: #2c6bd7;
   --chart-3: #9a5800;
-  --chart-4: #c2410c;
+  --chart-4: #b83e0b;
   --chart-5: #4f5f58;
   --sidebar: #ffffff;
   --sidebar-foreground: #0f1f1a;
