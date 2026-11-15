@@ -1,6 +1,6 @@
 # Fourcast — правила для AI-сессий
 
-Сначала прочитай `BRIEF.md` и свою строку в `TASKS.md` (Бексултан — ещё `TASKS_Beksultan.md`). Одна задача — одна сессия.
+Сначала прочитай `BRIEF.md` и свою строку в `TASKS.md` (у Бексултана ещё `notes/TASKS_Beksultan*.md`: личные заметки, папка `notes/` вне git). Одна задача — одна сессия.
 
 ## Правила
 - **Хозяева файлов** (подробно в `TASKS.md`): Аят — `app/**/page.tsx`, `app/layout.tsx`, `app/globals.css`, `components/**`, `DESIGN.md`; Бексултан — `lib/**`, `app/api/**`, `scripts/**`, конфиги, `README.md`. Чужие файлы не трогаем.
