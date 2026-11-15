@@ -115,7 +115,7 @@ body { font-family: 'Geologica', Arial, sans-serif; color: #0F1F1A; }
 <tr><th style="width:31%;text-align:left">Who</th><th style="width:25%;text-align:left">Sees the payment dates</th><th style="width:17%;text-align:left">Sees the paycheck</th><th style="width:27%;text-align:left">Warns the evening before</th></tr>
 <tr><td>Lender apps</td><td>Its own plans only</td><td>No</td><td>No</td></tr>
 <tr><td>Bank app</td><td>No</td><td>Yes</td><td>Only once the balance is low</td></tr>
-<tr><td>Budget apps (Rocket Money, Monarch)</td><td>Past debits only</td><td>Yes</td><td>No</td></tr>
+<tr><td>Budget apps (Rocket Money, Monarch)</td><td>Past debits only</td><td>Yes</td><td>Only once the balance is low</td></tr>
 <tr><td>Pay-later trackers (Finny, PayStreak)</td><td>Yes, typed in</td><td>We didn’t find it</td><td>We didn’t find it</td></tr>
 <tr class="tbl-us"><td>Fourcast</td><td>All lenders, typed in or read by AI</td><td>Yes</td><td>Yes, with the amount to move</td></tr>
 </table>
@@ -170,12 +170,12 @@ body { font-family: 'Geologica', Arial, sans-serif; color: #0F1F1A; }
 </div>
 </div>
 <div class="row" style="gap:16px">
-<p class="pill">36 golden tests on the numbers</p>
+<p class="pill">43 automated tests, golden numbers included</p>
 <p class="pill">Sample data runs through the same code</p>
 <p class="pill">No sign-up, no bank link</p>
 </div>
 <div class="foot"><p class="foot-text">Live screenshots. The math is plain TypeScript in lib/plan.ts; AI only reads input and drafts letters</p><p class="foot-text">5</p></div>
-<aside>The jury can type their own numbers. The calculation is plain code with 36 tests. AI has two small jobs, each with a fallback: reading a plan from text or a screenshot, and drafting a dispute letter.</aside>
+<aside>The jury can type their own numbers. The calculation is plain code with 43 tests. AI has two small jobs, each with a fallback: reading a plan from text or a screenshot, and drafting a dispute letter.</aside>
 </section>
 
 <section id="refunds" class="slide" data-transition="fade">
@@ -216,9 +216,9 @@ body { font-family: 'Geologica', Arial, sans-serif; color: #0F1F1A; }
 <p class="price">Plus, $29.99 a year</p>
 <p class="note">or $4.99 a month; free until the second payday</p>
 <ul class="list-tight">
-<li>A reminder at 8 pm the evening before a risky payment, with a one-number check-in</li>
+<li>A calendar reminder at 8 pm the evening before a risky payment, with a one-number check-in (push and SMS next)</li>
 <li>Payday Sync: the day to buy so every payment lands after payday</li>
-<li>The exact day a new buy would run you short</li>
+<li>How much short a new buy would run you, and the first day it fits</li>
 </ul>
 </div>
 </div>
@@ -226,7 +226,7 @@ body { font-family: 'Geologica', Arial, sans-serif; color: #0F1F1A; }
 <img class="shot" src="assets/paywall.png" alt="The paywall in the product: Get a heads-up the night before, $29.99 a year or $4.99 a month, Start free trial, Stripe test mode" style="width:816px;height:278px">
 <p class="strong">Why they come back</p>
 <ul class="list-tight">
-<li>The evening before a risky payment: the 8 pm reminder opens the check-in</li>
+<li>The evening before a risky payment: the 8 pm calendar reminder opens the check-in</li>
 <li>Every payday: a new three-week picture</li>
 <li>After each payment: the plan moves to “2 of 4 paid”</li>
 <li>All year: users take about 6 loans a year per lender</li>
@@ -234,7 +234,7 @@ body { font-family: 'Geologica', Arial, sans-serif; color: #0F1F1A; }
 </div>
 </div>
 <div class="foot"><p class="foot-text">Checkout runs in Stripe test mode (card 4242…). Loans per lender: CFPB, Dec 2025 (2023 data)</p><p class="foot-text">7</p></div>
-<aside>Seeing the risk is free. The reminder the evening before is what people pay for. One overdraft costs about as much as a year of Plus. The yearly price fits a product people open before each payment, not every day.</aside>
+<aside>Seeing the risk is free. The calendar reminder the evening before is what people pay for; push and SMS come next. One overdraft costs about as much as a year of Plus. The yearly price fits a product people open before each payment, not every day.</aside>
 </section>
 
 <section id="money" class="slide" data-transition="fade">
@@ -258,17 +258,17 @@ body { font-family: 'Geologica', Arial, sans-serif; color: #0F1F1A; }
 <p class="pill">“klarna payment failed but money in bank”</p>
 <p class="pill">“afterpay refund not showing up”</p>
 </div>
-<p class="note">Google US autocomplete, Nov 2026. Volumes aren’t measured yet.</p>
+<p class="note">Google US autocomplete, Nov 2026. Organic search: CAC must stay under $27, about $0.57 a visit at 2.1% to paid; volumes not measured yet.</p>
 <p class="strong">Market</p>
 <ul class="list-tight">
 <li>17.6M Americans hold plans at several lenders (our estimate from CFPB data)</li>
-<li>At the 2% benchmark: about 350,000 payers, about $15M ARR</li>
+<li>If 2% of the 17.6M paid: about 350,000 payers, about $15M ARR (assumption: 60% yearly, 40% monthly, about $42)</li>
 <li>$100M ARR needs 2.4M payers: the ambitious case, every autopay that lands before payday</li>
 </ul>
 </div>
 </div>
-<div class="foot"><p class="foot-text">RevenueCat State of Subscription Apps 2026; Adjust 2026; CFPB. Assumes about $42 a year per payer</p><p class="foot-text">8</p></div>
-<aside>LTV is about 37 dollars, so we cannot buy installs at 200 dollars a payer. Growth has to be organic: people already type our problem into Google. The base case is 15 million ARR on the 2% benchmark; 100 million is the ambitious case and we label it so.</aside>
+<div class="foot"><p class="foot-text">RevenueCat State of Subscription Apps 2026; Adjust 2026; CFPB. The 2% share and the $42 mix are our assumptions</p><p class="foot-text">8</p></div>
+<aside>LTV is about 37 dollars, so we cannot buy installs at 200 dollars a payer. Growth has to be organic: people already type our problem into Google. The base case is 15 million ARR if 2 percent of that group pays, which is our assumption; 100 million is the ambitious case and we label it so.</aside>
 </section>
 
 <section id="proof" class="slide" data-transition="fade">
