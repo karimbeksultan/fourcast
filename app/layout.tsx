@@ -18,7 +18,8 @@ const DESCRIPTION =
 // The link preview image comes from app/opengraph-image.tsx (Next adds og:image and twitter:image itself).
 export const metadata: Metadata = {
   metadataBase: new URL("https://fourcast-zimran.vercel.app"),
-  title: TITLE,
+  // Screens set a short name ("Tonight"); the template adds the product.
+  title: { default: TITLE, template: "%s · Fourcast" },
   description: DESCRIPTION,
   openGraph: { type: "website", siteName: "Fourcast", url: "/", title: TITLE, description: DESCRIPTION },
   twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },

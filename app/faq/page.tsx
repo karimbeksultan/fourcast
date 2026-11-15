@@ -2,7 +2,7 @@ import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "FAQ — Fourcast" };
+export const metadata: Metadata = { title: "FAQ" };
 
 const QA: [string, string][] = [
   [
