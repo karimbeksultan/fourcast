@@ -3,7 +3,7 @@
 import { CalendarCheck, CircleCheck, Lock, Sunrise } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { toCents, verdictLine } from "@/components/copy";
+import { morningRiskLine, toCents, verdictLine } from "@/components/copy";
 import { PlusOffer } from "@/components/plus-offer";
 import { cellsFromVerdict, ForecastGrid, ForecastLegend } from "@/components/forecast-grid";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -210,6 +210,7 @@ function VerdictCard({ verdict, plus }: { verdict: Verdict; plus: boolean }) {
   const sync = verdict.paydaySync;
   const answer = plus && !fits ? (sync?.buyOn ?? verdict.bestDay) : null;
   const title = fits ? "It fits." : answer ? `Not today. Buy ${formatShort(answer)}.` : "Not right now.";
+  const morning = morningRiskLine(verdict);
   const line = fits
     ? verdictLine(verdict)
     : answer && sync
@@ -224,6 +225,7 @@ function VerdictCard({ verdict, plus }: { verdict: Verdict; plus: boolean }) {
         {title}
       </p>
       <p className="mt-2 text-lg">{line}</p>
+      {morning && <p className="tabular mt-1 font-medium">{morning}</p>}
       <p className="tabular mt-2 text-sm text-muted-foreground">
         {verdict.schedule.length} payments of {formatUSD(verdict.schedule[1]?.amount ?? verdict.schedule[0].amount)} if bought today:{" "}
         {verdict.schedule.map((p, i) => (i === 0 ? "today" : formatShort(p.date))).join(", ")}
@@ -334,9 +336,10 @@ function Plus({
             {state.plus.via === "demo" ? "Demo trial, no real payment." : "Stripe test mode, no real money moves."} After the trial, the
             plan you picked starts.
           </p>
-          <Button variant="link" className="h-auto p-0 text-muted-foreground" onClick={() => save({ ...state, plus: null })}>
+          <Button variant="link" className="h-11 p-0 text-muted-foreground" onClick={() => save({ ...state, plus: null })}>
             Cancel Plus
           </Button>
+          <p className="text-xs text-muted-foreground">Turns Plus off in this browser. Test mode: no real subscription is billed.</p>
         </div>
       </aside>
     );
