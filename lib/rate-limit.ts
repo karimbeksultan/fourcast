@@ -56,7 +56,8 @@ export function rateLimitedResponse(retryAfter: number): Response {
 const limiters = new Map<string, ReturnType<typeof createRateLimiter>>();
 
 /** For an AI route: null when the request may go on, otherwise the 429 to return. Each route has its own budget. */
-export function limitAiRoute(route: "read-plan" | "dispute", request: Request): Response | null {
+/** Also used by /api/checkout and /checkout/confirm: each call there creates or reads a Stripe session. */
+export function limitAiRoute(route: "read-plan" | "dispute" | "checkout" | "checkout-confirm", request: Request): Response | null {
   let limiter = limiters.get(route);
   if (!limiter) limiters.set(route, (limiter = createRateLimiter()));
   const result = limiter.check(clientIp(request));

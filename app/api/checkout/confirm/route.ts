@@ -1,10 +1,13 @@
 import { connection } from "next/server";
+import { limitAiRoute } from "@/lib/rate-limit";
 import { stripeClient } from "@/lib/stripe";
 
 // GET ?session_id=cs_test_… → { ok }: true once Stripe says the checkout is complete and the subscription is live.
 // The UI calls it on /check?session_id=… after Stripe sends the user back, then turns Plus on.
 export async function GET(request: Request) {
   await connection(); // reads env and asks Stripe at request time, never at build time
+  const limited = limitAiRoute("checkout-confirm", request);
+  if (limited) return limited;
   const stripe = stripeClient();
   if (!stripe) return Response.json({ ok: false, code: "no_keys" }, { status: 503 });
 
