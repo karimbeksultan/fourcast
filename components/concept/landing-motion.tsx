@@ -17,7 +17,7 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 export function RevealHeadline({ words, highlight, className }: { words: string[]; highlight: string; className?: string }) {
   return (
     <h1 className={className}>
-      {words.join(" ")} <span className="inline-block rounded-md bg-payday px-2.5 text-on-payday">{highlight}</span>
+      {words.join(" ")} <span className="mt-[0.14em] inline-block rounded-md bg-payday px-2.5 pb-[0.1em] leading-none text-on-payday">{highlight}</span>
     </h1>
   );
 }

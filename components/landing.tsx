@@ -90,7 +90,7 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
         <figure>
           <blockquote className="text-[clamp(1.875rem,3.8vw,3rem)] leading-[1.1] font-bold tracking-tight text-balance">
             &ldquo;Missed a $7 payment by 5 hours&hellip; spending power went from{" "}
-            <span className="rounded-md bg-foreground box-decoration-clone px-2 text-background">1000 to 200</span>.&rdquo;
+            <span className="mt-[0.14em] inline-block rounded-md bg-foreground px-2 pb-[0.1em] leading-none text-background">1000 to 200</span>.&rdquo;
           </blockquote>
           <figcaption className="mt-4 max-w-xl text-pretty text-muted-foreground">
             An Afterpay user, App Store review, 2026. Klarna shows Klarna. Afterpay shows Afterpay. Nobody warns you first.
@@ -169,7 +169,7 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
       <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24" aria-labelledby="price">
         <h2 id="price" className="max-w-4xl text-[clamp(2rem,4vw,3.25rem)] leading-[1.08] font-bold tracking-tight text-balance">
           Seeing the risk is free. The evening reminder is{" "}
-          <span className="rounded-md bg-primary box-decoration-clone px-2.5 text-primary-foreground">$29.99 a year</span>
+          <span className="mt-[0.14em] inline-block rounded-md bg-primary px-2.5 pb-[0.1em] leading-none text-primary-foreground">$29.99 a year</span>
         </h2>
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border bg-card p-6">
