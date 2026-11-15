@@ -6,8 +6,6 @@ import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { AnswerPanels, Band, RevealHeadline } from "@/components/concept/landing-motion";
 import { MorningStory } from "@/components/concept/morning-story";
-import { BlurFade } from "@/components/ui/blur-fade";
-import { NumberTicker } from "@/components/ui/number-ticker";
 import { useToday } from "@/hooks/use-today";
 import { getConceptSample, nextRisk } from "@/lib/concept";
 import { buildTimeline } from "@/lib/plan";
@@ -46,7 +44,8 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
       {/* Hero */}
       <section className="bg-primary text-primary-foreground">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pt-12 pb-16 sm:pt-20 lg:grid-cols-[1fr_1.05fr] lg:pb-24">
-          <BlurFade delay={0.05} inView>
+          {/* No entrance animation here: the headline, the buttons and the numbers are in the server HTML as they end up. */}
+          <div>
             <RevealHeadline
               words={["Know", "tonight", "if", "tomorrow's", "payment"]}
               highlight="will clear"
@@ -77,10 +76,10 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
               )}
             </div>
             <p className="mt-4 text-sm text-pretty text-primary-foreground">No sign-up, no bank login. Your plans are saved only in this browser.</p>
-          </BlurFade>
-          <BlurFade delay={0.2} inView className="mx-auto w-full max-w-md lg:max-w-none">
+          </div>
+          <div className="mx-auto w-full max-w-md lg:max-w-none">
             <Preview />
-          </BlurFade>
+          </div>
         </div>
       </section>
 
@@ -100,7 +99,7 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
         <dl className="grid content-end gap-6">
           <div className="border-t-2 border-foreground pt-3">
             <dt className="tabular text-5xl font-bold tracking-tight">
-              <NumberTicker value={26} className="tracking-tight text-current" />%
+              26%
             </dt>
             <dd className="mt-1 text-pretty">
               of US pay-later users paid late in the past year.{" "}
@@ -116,7 +115,7 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
           </div>
           <div className="border-t-2 border-foreground pt-3">
             <dt className="tabular text-5xl font-bold tracking-tight">
-              <NumberTicker value={11} className="tracking-tight text-current" />%
+              11%
             </dt>
             <dd className="mt-1 text-pretty">
               had a pay-later payment set off a bank overdraft or NSF fee.{" "}
@@ -182,12 +181,12 @@ export function Landing({ hasData, onSample, onStart }: { hasData: boolean; onSa
           <div className="rounded-lg border-2 border-primary bg-card p-6">
             <p className="text-2xl font-bold">Plus, $29.99 a year</p>
             <p className="mt-1 text-pretty text-muted-foreground">
-              A reminder at 8 pm before every risky payment, Payday Sync, and the exact day a new buy would run you short. Free for
+              A calendar reminder at 8 pm before every risky payment, Payday Sync, and how much short a new buy would run you. Free for
               your next 2 paydays.
             </p>
           </div>
         </div>
-        <Link href="/pricing" className="mt-6 inline-block text-lg font-semibold text-primary underline underline-offset-4">
+        <Link href="/pricing" className="mt-4 inline-flex min-h-11 items-center text-lg font-semibold text-primary underline underline-offset-4">
           Compare Free and Plus
         </Link>
       </section>

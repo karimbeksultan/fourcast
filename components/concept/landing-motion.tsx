@@ -1,6 +1,6 @@
 "use client";
 
-// Supporting motion for the landing: the headline that writes itself in, the marquee band, and three
+// Supporting pieces for the landing: the headline (static), the marquee band, and three
 // colored panels whose small live pieces show the three answers. Every piece has a reduced-motion path.
 import { motion, useInView, useReducedMotion } from "motion/react";
 import { Check, CircleX, PackageCheck, Pause, Play, Store, Wallet } from "lucide-react";
@@ -13,42 +13,11 @@ import { cn } from "@/lib/utils";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-/** Headline words rise in one after another; the highlighted phrase gets its box swept in from the left. */
+/** The headline as plain text with the highlighted phrase on its plate. Static on purpose: it is the first thing on the page. */
 export function RevealHeadline({ words, highlight, className }: { words: string[]; highlight: string; className?: string }) {
-  const reduce = useReducedMotion() ?? false;
   return (
-    <h1 className={className} aria-label={`${words.join(" ")} ${highlight}`}>
-      <span aria-hidden>
-        {words.map((w, i) => (
-          <span key={i} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
-            <motion.span
-              className="inline-block"
-              initial={reduce ? false : { y: "105%" }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.7, delay: 0.08 + i * 0.06, ease: EASE }}
-            >
-              {w}&nbsp;
-            </motion.span>
-          </span>
-        ))}
-        <span className="relative inline-block px-2.5">
-          <motion.span
-            className="absolute inset-0 rounded-md bg-payday"
-            style={{ originX: 0 }}
-            initial={reduce ? false : { scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.55, delay: 0.1 + words.length * 0.06, ease: EASE }}
-          />
-          <motion.span
-            className="relative text-on-payday"
-            initial={reduce ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.35 + words.length * 0.06 }}
-          >
-            {highlight}
-          </motion.span>
-        </span>
-      </span>
+    <h1 className={className}>
+      {words.join(" ")} <span className="inline-block rounded-md bg-payday px-2.5 text-on-payday">{highlight}</span>
     </h1>
   );
 }
@@ -82,7 +51,7 @@ export function Band({ text, tone = "ink" }: { text: string; tone?: "ink" | "sky
           onClick={() => setPaused(!paused)}
           aria-label={paused ? "Play moving text" : "Pause moving text"}
           className={cn(
-            "absolute top-1/2 right-3 z-10 flex size-9 -translate-y-1/2 items-center justify-center rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+            "absolute top-1/2 right-2 z-10 flex size-11 -translate-y-1/2 items-center justify-center rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
             tone === "ink" ? "bg-foreground hover:bg-background/15" : "bg-payday-soft hover:bg-foreground/10",
           )}
         >

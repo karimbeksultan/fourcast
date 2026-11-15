@@ -109,7 +109,7 @@ export function MorningStory({ risk, paycheck }: { risk: DebitRisk; paycheck: nu
               type="button"
               onClick={() => setPaused(!paused)}
               aria-label={paused ? "Play the story" : "Pause the story"}
-              className="flex size-8 items-center justify-center rounded-md border outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="flex size-11 items-center justify-center rounded-md border outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               {paused ? <Play className="size-4" aria-hidden /> : <Pause className="size-4" aria-hidden />}
             </button>
