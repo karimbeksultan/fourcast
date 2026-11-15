@@ -6,7 +6,7 @@ import { PLUS_MONTHLY_CENTS, PLUS_PRICE_CENTS, stripeClient, trialEndUnix } from
 // No test key → 503 no_keys, and the UI keeps its demo checkout.
 export async function POST(request: Request) {
   // 30 a minute per IP: every call creates a Stripe session.
-  const limited = limitAiRoute("checkout", request);
+  const limited = await limitAiRoute("checkout", request);
   if (limited) return limited;
 
   const stripe = stripeClient();

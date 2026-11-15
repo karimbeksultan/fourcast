@@ -35,7 +35,7 @@ export type Plan = {
   installment: Cents;
   paymentsLeft: number;
   nextDue: ISODate;
-  /** 14 for Pay in 4. */
+  /** 14 for Pay in 4. 30 means monthly: same day each month, by the calendar (lib/plan.ts planDate). */
   intervalDays: number;
   /** "returned": the item went back but the lender may still take the payments (F3). Missing means active. */
   status?: "active" | "returned";
@@ -52,6 +52,8 @@ export type Plus = {
   since: ISODate;
   trialEnds: ISODate;
   via: "stripe_test" | "demo";
+  /** Stripe test checkout session (cs_test_…): lets /api/checkout/confirm re-check and /api/checkout/cancel cancel. */
+  sessionId?: string;
 };
 
 export type AppState = {

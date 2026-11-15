@@ -39,6 +39,7 @@ export const PlusSchema = z.object({
   since: isoDate,
   trialEnds: isoDate,
   via: z.enum(["stripe_test", "demo"]),
+  sessionId: z.string().regex(/^cs_test_[A-Za-z0-9]+$/).optional(),
 });
 
 export const AppStateSchema = z.object({

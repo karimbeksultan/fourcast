@@ -14,7 +14,7 @@ const fail = (code: DisputeError, error: string, status: number) => Response.jso
 
 export async function POST(request: Request) {
   // First, before reading the body: 30 a minute per IP keeps the free AI quota safe (429 rate_limited).
-  const limited = limitAiRoute("dispute", request);
+  const limited = await limitAiRoute("dispute", request);
   if (limited) return limited;
 
   let raw: unknown;

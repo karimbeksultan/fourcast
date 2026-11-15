@@ -10,6 +10,7 @@ Dates are relative to the day the page is opened; the table shows them for **Sun
 - Status: **short** if the lowest point is below $0, **tight** if below $100, otherwise **ok**. **Concept branch:** each day counts at its lowest, the morning (after autopay, before the paycheck) or the end of the day, so Forecast and Guard give the same answer.
 - **Guard (morning model):** lenders debit in the morning, the paycheck lands in the afternoon. A plan payment's *morning* = yesterday's end-of-day balance minus that day's rent and plan payments, in order, before the paycheck and spending. **fails** if the morning goes below $0 (short by that much), **tight** if it clears with less than $50 left. End-of-day numbers do not change.
 - Twice-a-month pay: a payday on the 15th or the 28th–31st means the 15th and the last day of each month; on the 1st, the 1st and the 15th; otherwise two days 15 apart (a day past the end of a short month moves to its last day).
+- Monthly plans (Affirm) follow the calendar: the same day each month; the 31st moves to the last day of a shorter month.
 - Pay in 4: the first payment on the day of purchase, then every 14 days; leftover cents go to the first payment.
 - A purchase "fits" on a day if, bought that day, the balance never goes below $0 from then until after its last payment (even past day 42), **and** no plan payment fails that morning because of it (or fails deeper than it already would). Its own payments count in the morning of the day they land.
 - **Already short:** without the purchase, the first day in the 42 when a plan payment fails that morning or the day ends below $0. Then no price fits until that is fixed on Guard.
@@ -68,8 +69,8 @@ Results depend on the model, so these are checked by hand on the live site, not 
 
 | Paste this text | Expected |
 |---|---|
-| `Affirm. 36 monthly payments of $43.00. Payment 2 of 36 made. Next payment: $43.00 due December 1, 2026` | Affirm, $43.00 x 34 left, every 30 days, **"2 of 36 paid"**; **Add plan** saves it (before 15 Nov it was read but not saved) |
-| `Affirm. 12 monthly payments of $87.50. Payment 3 of 12 is due Nov 28` | Affirm, $87.50, **10 left**, every 30 days, next Nov 28 |
+| `Affirm. 36 monthly payments of $43.00. Payment 2 of 36 made. Next payment: $43.00 due December 1, 2026` | Affirm, $43.00 x 34 left, every month (same day each month), **"2 of 36 paid"**; **Add plan** saves it (before 15 Nov it was read but not saved) |
+| `Affirm. 12 monthly payments of $87.50. Payment 3 of 12 is due Nov 28` | Affirm, $87.50, **10 left**, every month: Nov 28, Dec 28, Jan 28, Feb 28… |
 | The sample Klarna confirmation (`getSampleKlarnaText`, "Then every 2 weeks until paid off") | Klarna, Target, $80.00 x 3 left, every 14 days, next in 4 days |
 | Any text that is not a plan, e.g. a grocery receipt | **"That doesn't look like a pay-later plan. Check the text or type it in."** |
 

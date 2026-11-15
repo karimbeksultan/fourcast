@@ -16,7 +16,7 @@ const fail = (code: ReadPlanError, error: string, status: number) => Response.js
 
 export async function POST(request: Request) {
   // First, before reading the body: 30 a minute per IP keeps the free AI quota safe (429 rate_limited).
-  const limited = limitAiRoute("read-plan", request);
+  const limited = await limitAiRoute("read-plan", request);
   if (limited) return limited;
 
   let body: ReadPlanRequest;
