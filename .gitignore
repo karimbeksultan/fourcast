@@ -50,3 +50,7 @@ AGENTS.md
 
 # Internal notes: personal task lists and internal reviews. Kept on disk, not in the public repo.
 notes/
+
+# Playwright
+/test-results/
+/playwright-report/
