@@ -10,7 +10,7 @@ import { planFromDraft } from "./read-plan";
 import { clientIp, createRateLimiter, RATE_LIMIT, rateLimitedResponse } from "./rate-limit";
 import { applyCheckIn, buildTimeline, planHistory, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
-import { AppStateSchema, DisputeRequestSchema, MAX_CENTS, PlanDraftSchema } from "./schema";
+import { AppStateSchema, DisputeRequestSchema, MAX_CENTS, PlanDraftSchema, PlanSchema } from "./schema";
 import { loadState, saveState } from "./storage";
 import type { AppState, Money } from "./types";
 
@@ -227,6 +227,21 @@ describe("edge cases", () => {
   });
 });
 
+describe("README: check it yourself with your own numbers", () => {
+  // $215 in checking, $1,180 every 2 weeks in 5 days, rent $700 on the 1st, $175 a week,
+  // Klarna $45 x 3 in 3 days, Afterpay $62.50 x 2 on payday.
+  it("Afterpay won't clear on payday morning: $17.50 short, move $30", () => {
+    const s = state(money({ balance: 21_500, paycheck: 118_000, nextPayday: addDays(TODAY, 5), rent: 70_000, rentDay: 1, weeklySpend: 17_500 }), [
+      { id: "k", lender: "Klarna", merchant: "", installment: 4_500, paymentsLeft: 3, nextDue: addDays(TODAY, 3), intervalDays: 14 },
+      { id: "a", lender: "Afterpay", merchant: "", installment: 6_250, paymentsLeft: 2, nextDue: addDays(TODAY, 5), intervalDays: 14 },
+    ]);
+    // $215 − 5 days × $25 − Klarna $45 = $45 at the end of Thu; Fri morning $45 − $62.50 = −$17.50.
+    const first = debitRisks(s, TODAY)[0];
+    expect(first).toMatchObject({ date: "2026-11-20", lender: "Afterpay", level: "fails", morning: -1_750, shortBy: 1_750, paydayLater: true });
+    expect(moveAmount(first.shortBy)).toBe(3_000);
+  });
+});
+
 describe("Guard: the morning model", () => {
   const plan = (id: string, installment: number, nextDue = TODAY) => ({
     id,
@@ -343,6 +358,14 @@ describe("reading a plan with AI (no network: what we do with the model's answer
     expect([every("biweekly"), every("every 2 weeks"), every("weekly"), every("Monthly"), every(3)]).toEqual([14, 14, 7, 30, 14]);
     // A 24-month plan with 18 payments left is a real plan, not "unreadable".
     expect(PlanDraftSchema.safeParse({ ...draft, paymentsLeft: 18 }).success).toBe(true);
+  });
+
+  it("a 36-month Affirm plan the AI reads can also be saved (draft, plan and storage caps agree)", () => {
+    const affirm = PlanDraftSchema.parse({ ...draft, merchant: "Peloton", installment: 43, paymentsLeft: 34, totalPayments: 36, every: "month" });
+    const plan = planFromDraft(affirm, "affirm-36");
+    expect(plan).toMatchObject({ installment: 4_300, paymentsLeft: 34, totalPayments: 36, intervalDays: 30 });
+    expect(PlanSchema.safeParse(plan).success).toBe(true);
+    expect(AppStateSchema.safeParse({ ...withKlarna(), plans: [...withKlarna().plans, plan] }).success).toBe(true);
   });
 });
 

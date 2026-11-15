@@ -55,8 +55,26 @@ If AI is off, the same plan is entered by hand in four fields.
 | Check $240 in 4, today | **Not right now** · $92.50 short on Thu, Dec 3 · morning risk: Klarna · Target on Thu, Dec 3, $52.50 short · already short without the buy: Fri, Dec 4, morning, $12.50 |
 | Best day / Payday Sync | **Sat, Dec 5** |
 
+## Check it yourself: your own numbers
+Start over, then in **Plans** enter: balance **$215**, paycheck **$1,180 every 2 weeks, next in 5 days**, rent **$700 on the 1st**, everyday spending **$175 a week**; plans **Klarna $45 x 3, next in 3 days** and **Afterpay $62.50 x 2, next on payday**.
+
+Expected on Tonight: **Afterpay won't clear** on payday morning, **$17.50 short**, **Move $30.00** the evening before (golden test "README: check it yourself").
+- $215 - 5 days x $25 everyday spending - Klarna $45 = **$45** at the end of the day before payday.
+- Payday morning, before the paycheck: $45 - Afterpay $62.50 = **-$17.50**.
+- What to move: $17.50 + $10, rounded up to $5 = **$30.00**.
+
+## Paste these into "Add a plan" (AI reading)
+Results depend on the model, so these are checked by hand on the live site, not in the tests.
+
+| Paste this text | Expected |
+|---|---|
+| `Affirm. 36 monthly payments of $43.00. Payment 2 of 36 made. Next payment: $43.00 due December 1, 2026` | Affirm, $43.00 x 34 left, every 30 days, **"2 of 36 paid"**; **Add plan** saves it (before 15 Nov it was read but not saved) |
+| `Affirm. 12 monthly payments of $87.50. Payment 3 of 12 is due Nov 28` | Affirm, $87.50, **10 left**, every 30 days, next Nov 28 |
+| The sample Klarna confirmation (`getSampleKlarnaText`, "Then every 2 weeks until paid off") | Klarna, Target, $80.00 x 3 left, every 14 days, next in 4 days |
+| Any text that is not a plan, e.g. a grocery receipt | **"That doesn't look like a pay-later plan. Check the text or type it in."** |
+
 ## Edge cases (in the tests)
-Paycheck and payment on the same day (end of day fine, morning fails) · two payments on one morning taken in order · tight below $50 · rent before a plan payment the same morning · a returned plan's payments marked disputed · rent on the 31st in February · a purchase followed past day 42 · $100 split in 3 · weekly spending adds up exactly · time zones and DST · Payday Sync is off for monthly pay · a purchase that deepens a failing morning debit does not fit (Afterpay $25 → $40 short) · already short without the purchase, even $1 does not fit · semimonthly paydays on the 15th and the last day (Jan 15, Jan 31, Feb 15, Feb 28; a debit on Jan 31 with $0 fails that morning) · evening check-in on Dec 3 with $27.50 keeps Zip $12.50 short (today's debits are not taken twice).
+Paycheck and payment on the same day (end of day fine, morning fails) · two payments on one morning taken in order · tight below $50 · rent before a plan payment the same morning · a returned plan's payments marked disputed · rent on the 31st in February · a purchase followed past day 42 · $100 split in 3 · weekly spending adds up exactly · time zones and DST · Payday Sync is off for monthly pay · a purchase that deepens a failing morning debit does not fit (Afterpay $25 → $40 short) · already short without the purchase, even $1 does not fit · semimonthly paydays on the 15th and the last day (Jan 15, Jan 31, Feb 15, Feb 28; a debit on Jan 31 with $0 fails that morning) · evening check-in on Dec 3 with $27.50 keeps Zip $12.50 short (today's debits are not taken twice) · a 36-month Affirm plan read by AI also passes the storage schema · the README's own-numbers case: Afterpay $17.50 short on payday morning, move $30.
 
 ## Payment history (planHistory)
 No bank link: the past is inferred from each plan. Pay in 4 (every 2 weeks) counts 4 payments unless `totalPayments` is set (read from "payment 2 of 4" in a screenshot). Payments before the plan was added are shown only if their date is before today. A passed due date counts as taken by autopay unless marked "Didn't go through". Sample Klarna (3 left, next Nov 19): 1 of 4 paid, $80 of $320.

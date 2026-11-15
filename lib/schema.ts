@@ -30,8 +30,9 @@ export const PlanSchema = z.object({
   status: z.enum(["active", "returned"]).optional(),
   returnedOn: isoDate.optional(),
   refundStage: z.enum(["store_refunded"]).optional(),
-  totalPayments: z.number().int().min(1).max(24).optional(),
-  missed: z.array(isoDate).max(24).optional(),
+  // Same caps as paymentsLeft: monthly plans run up to 36 payments.
+  totalPayments: z.number().int().min(1).max(36).optional(),
+  missed: z.array(isoDate).max(36).optional(),
 });
 
 export const PlusSchema = z.object({
