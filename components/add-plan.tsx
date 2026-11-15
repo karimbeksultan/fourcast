@@ -19,6 +19,7 @@ const ERRORS: Record<string, string> = {
   unreadable: "That doesn't look like a pay-later plan. Check the text or type it in.",
   timeout: "That took too long. Type the plan in instead.",
   too_large: "That image is too big. Try a smaller screenshot or type it in.",
+  rate_limited: "Too many tries in a minute. Wait a moment, or enter the plan by hand.",
 };
 
 const selectClass =
@@ -45,7 +46,7 @@ export function AddPlan({ today, sample, onAdd }: { today: ISODate; sample: bool
       });
       const data = (await res.json()) as ReadPlanResponse;
       if ("plan" in data) setFound(data.plan);
-      else setError(ERRORS[data.code] ?? data.error);
+      else setError(res.status === 429 ? ERRORS.rate_limited : (ERRORS[data.code] ?? data.error));
     } catch {
       setError("Couldn't reach Fourcast. Check your connection or type the plan in.");
     } finally {

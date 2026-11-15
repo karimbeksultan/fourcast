@@ -101,6 +101,10 @@ export function RiskCard({
             <span>
               Move <span className="tabular font-semibold">{formatUSD(moveAmount(risk.shortBy))}</span> into checking{" "}
               {night === today ? "tonight" : night < today ? "now" : `on the evening of ${formatShort(night)}`}.
+              <span className="tabular block text-muted-foreground">
+                {formatUSD(risk.shortBy)} short + $10 so one card swipe doesn&apos;t sink it, rounded up to{" "}
+                {formatUSD(moveAmount(risk.shortBy))}.
+              </span>
             </span>
           </li>
         )}

@@ -114,6 +114,10 @@ export function TonightHero({
                 {fails ? (
                   <>
                     Move <span className="tabular font-semibold">{formatUSD(move)}</span> into checking {evening(night, today)}.
+                    {/* Why the amount is bigger than the shortfall: the rule of moveAmount() in lib/plan.ts, in words. */}
+                    <span className="tabular mt-1 block text-sm text-muted-foreground">
+                      {formatUSD(risk.shortBy)} short + $10 so one card swipe doesn&apos;t sink it, rounded up to {formatUSD(move)}.
+                    </span>
                   </>
                 ) : (
                   <>Hold off on card spending until it clears.</>
