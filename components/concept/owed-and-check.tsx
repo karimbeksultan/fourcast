@@ -66,7 +66,7 @@ export function OwedSummary({
 
       {active.length > 0 && (
         <details className="group text-sm">
-          <summary className="cursor-pointer font-semibold text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+          <summary className="cursor-pointer py-3 font-semibold text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
             Sent something back?
           </summary>
           <ul className="mt-2 space-y-1">

@@ -131,7 +131,7 @@ export function AddPlan({
         setError(null);
       }}
       className={cn(
-        "h-10 flex-1 rounded-lg px-3 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        "h-11 flex-1 rounded-lg px-3 text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
         mode === m ? "bg-card text-foreground" : "text-muted-foreground hover:text-foreground",
       )}
     >
