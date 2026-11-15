@@ -24,12 +24,14 @@ The app screens share one frame (`components/app-shell.tsx`): a sidebar with the
 - **The math is plain code, not AI.** `lib/plan.ts` simulates 42 days from your balance, paychecks, rent, everyday spending and every plan. Every screen uses one *morning model*: each payment is checked against yesterday's end-of-day balance minus that morning's debits, before the paycheck (`debitRisks`, `dayLow`), so Tonight, Plans, Forecast and Before you buy give the same answer. The evening check-in (`applyCheckIn`) takes what's in checking now and never counts today's debits twice. Payment history (`planHistory`) is inferred from each plan, because there is no bank link. Every demo number is a golden test in `lib/plan.test.ts`; the rules and expected numbers are in [`demo_inputs.md`](demo_inputs.md).
 - **AI does two small jobs, always with a fallback.** It reads a pasted confirmation or a screenshot into a plan (`/api/read-plan`; without it you type four fields), and it can polish a dispute letter (`/api/dispute`; the template always works, and the AI draft is used only if it keeps every fact). Models: Gemini Flash-Lite via Google AI Studio; when one model's free quota runs out (429) the next takes over at once, and Gemma 4 31B is the slow last resort.
 - **No accounts, no bank link.** State lives in `localStorage` with a versioned zod schema. The server stores nothing; keys stay on the server. Two things leave the browser, only when you ask: the text or screenshot you want read into a plan, and your notes for a dispute letter, go to Google's Gemini models. The footer and the FAQ say so.
+- **Plus is a test-mode paywall, unlocked in this browser.** After Stripe Checkout (test mode only; live keys are refused), `/api/checkout/confirm` asks Stripe whether the subscription is live and the browser then turns Plus on in `localStorage`. With accounts, a Stripe webhook would own the entitlement and "Cancel" would go through the Stripe Customer Portal.
+- **The AI routes are rate-limited:** 30 requests a minute per IP (`lib/rate-limit.ts`, in memory, 429 with `Retry-After`), so nobody can burn the free model quota. Every response carries basic security headers (`next.config.ts`).
 
 ## Run it
 ```bash
 npm install
 npm run dev      # http://localhost:3000
-npm test         # 39 golden tests: the demo numbers, the morning model, check-in, payment history, edge cases
+npm test         # 43 golden tests: the demo numbers, the morning model, check-in, payment history, edge cases
 npm run build
 ```
 Everything works without keys: reading screenshots falls back to manual entry, dispute letters use the template, and the paywall uses a demo checkout. To turn them on, copy `.env.example` to `.env` and add a free Google AI Studio key (`LLM_1_API_KEY`, `LLM_2_API_KEY`) and a Stripe **test** key (`STRIPE_SECRET_KEY=sk_test_…`; live keys are refused).
