@@ -62,14 +62,14 @@ export function PlanCard({
           </div>
         </div>
         {onRemove && (
-          <Button variant="ghost" size="icon" onClick={onRemove} aria-label={`Remove ${plan.lender} plan`}>
+          <Button variant="ghost" size="icon" className="size-11" onClick={onRemove} aria-label={`Remove ${plan.lender} plan`}>
             <X />
           </Button>
         )}
       </div>
 
       <details className="group mt-2 pl-13">
-        <summary className="cursor-pointer text-sm font-semibold text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+        <summary className="cursor-pointer py-3 text-sm font-semibold text-primary outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
           Payment history
         </summary>
         <ol className="mt-2 space-y-1" aria-label={`${plan.lender} payments`}>
@@ -88,12 +88,12 @@ export function PlanCard({
         <div className="mt-3 flex flex-wrap gap-2 pl-13">
           <a
             href={`/dispute?plan=${encodeURIComponent(plan.id)}`}
-            className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="inline-flex h-11 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground outline-none hover:bg-primary/90 focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             Write my dispute
           </a>
           {onUndoReturn && (
-            <Button variant="ghost" className="h-9 text-muted-foreground" onClick={onUndoReturn}>
+            <Button variant="ghost" className="h-11 text-muted-foreground" onClick={onUndoReturn}>
               <Undo2 aria-hidden />
               Not returned
             </Button>
@@ -115,18 +115,18 @@ export function PlanCard({
           >
             <div className="space-y-1">
               <Label htmlFor={`ret-${plan.id}`}>Returned on</Label>
-              <Input id={`ret-${plan.id}`} type="date" className="h-9 w-40" value={on} max={today} onChange={(e) => setOn(e.target.value)} />
+              <Input id={`ret-${plan.id}`} type="date" className="h-11 w-40" value={on} max={today} onChange={(e) => setOn(e.target.value)} />
             </div>
-            <Button type="submit" className="h-9">
+            <Button type="submit" className="h-11">
               Mark as returned
             </Button>
-            <Button type="button" variant="ghost" className="h-9" onClick={() => setAsking(false)}>
+            <Button type="button" variant="ghost" className="h-11" onClick={() => setAsking(false)}>
               Cancel
             </Button>
           </form>
         ) : (
           <div className="mt-2 pl-13">
-            <Button variant="ghost" className="h-8 px-2 text-muted-foreground" onClick={() => setAsking(true)}>
+            <Button variant="ghost" className="h-11 px-2 text-muted-foreground" onClick={() => setAsking(true)}>
               <PackageX aria-hidden />
               I returned this
             </Button>

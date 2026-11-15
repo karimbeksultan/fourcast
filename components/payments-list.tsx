@@ -80,7 +80,7 @@ function Column({ title, total, rows, empty }: { title: string; total: number; r
         <button
           type="button"
           onClick={() => setAll(!all)}
-          className="mt-2 text-sm font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary underline underline-offset-4 outline-none hover:no-underline focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           {all ? "Show fewer" : `Show all ${rows.length}`}
         </button>

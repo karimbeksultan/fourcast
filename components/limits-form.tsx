@@ -36,7 +36,7 @@ export function LimitsForm({ state, onSave }: { state: AppState; onSave: (next: 
         ) : (
           <p className="text-muted-foreground">Optional. Add them to see what&apos;s at stake when a payment is at risk.</p>
         )}
-        <Button variant="outline" className="h-9" onClick={() => setEditing(true)}>
+        <Button variant="outline" className="h-11 px-4" onClick={() => setEditing(true)}>
           {saved.length > 0 ? "Edit limits" : "Add limits"}
         </Button>
       </div>

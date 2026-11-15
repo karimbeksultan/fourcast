@@ -38,7 +38,8 @@ export function MoneyForm({ initial, today, onSave }: { initial: Money | null; t
     if (!/^\d{4}-\d{2}-\d{2}$/.test(f.nextPayday)) return setError("Pick your next payday.");
     if (!Number.isInteger(rentDay) || rentDay < 1 || rentDay > 31) return setError("Rent day should be 1 to 31.");
     setError(null);
-    onSave({ balance, paycheck, frequency: f.frequency, nextPayday: f.nextPayday, rent, rentDay, weeklySpend });
+    // balanceOn: the day this balance was typed, so the app can say when it gets old.
+    onSave({ balance, balanceOn: today, paycheck, frequency: f.frequency, nextPayday: f.nextPayday, rent, rentDay, weeklySpend });
   };
 
   const field = (id: keyof typeof f, label: string, hint?: string, placeholder?: string) => (

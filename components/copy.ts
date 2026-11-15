@@ -65,3 +65,13 @@ export function verdictLine(v: Verdict): string {
   const also = already ? `, and you're already short on ${formatShort(already.date)}` : "";
   return `Buying today would take you below $0${first}${also}.`;
 }
+
+/**
+ * The plan payment this buy would knock over, by name: the purchase's own first payment comes out today,
+ * and a payment already scheduled then fails on its morning. null when the buy fits or nothing is hit.
+ */
+export function morningRiskLine(v: Verdict): string | null {
+  const m = v.morningRisk;
+  if (v.verdict === "fits" || !m) return null;
+  return `${m.lender}${m.merchant ? ` · ${m.merchant}` : ""} on ${formatShort(m.date)} would be ${formatUSD(m.shortBy)} short that morning.`;
+}
