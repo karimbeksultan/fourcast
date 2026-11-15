@@ -154,12 +154,14 @@ POST { lender, merchant, installment, paymentsLeft, nextDue, issue, returnedOn?,
 - **Подвал (как было):** `Not financial advice. Your data stays in your browser.`
 
 ## 10. Демо-сценарий v2 (≤ 2 минут, открыто 15.11)
-1. Главная → `Try It With Sample Data` → **Guard:** `Your limits are safe` (три плана; Zip оставляет $147.50 утром Fri Dec 4).
-2. Добавить Klarna по тексту (AI, ~2 с) → **Guard:** `1 payment at risk` — Zip $40, Fri Dec 4, утром не хватит $12.50, зарплата придёт позже. Действие: `Move $25 into checking tonight`. (Риск появляется только после Klarna: «план у другого кредитора сломал утро Zip».)
-3. `Forecast`: сетка, на Dec 4 «!», история дня: `Before your paycheck: −$12.50`.
-4. `Before you buy`: $240 → `Not right now` → пейвол → Stripe в тестовом режиме (карта 4242) → `Not today. Buy Sat, Dec 5: every payment lands the morning after payday.`
-5. План Afterpay → `I returned this` → `Write my dispute` → письмо + CFPB.
-6. Календарь `.ics` → напоминание накануне → check-in.
+**Решение 15.11, 05:50: показываем путь через Tonight** (так работает кнопка на сайте; риск виден в первую секунду, без живого AI). Числа — `demo_inputs.md`, раздел «Tonight sample», проверены на проде.
+1. Главная → `Try it with sample data` → **Tonight:** `Zip won't clear on Fri, Dec 4.` · `Autopay takes $40.00 that morning and you'd be $12.50 short, hours before your paycheck lands. At stake: your $600.00 Zip limit.` · `Move $25.00 into checking on the evening of Thu, Dec 3.`
+2. Полоса утренних балансов → нажать Fri, Dec 4: `Morning, after autopay −$12.50` → `Paycheck lands +$1,450.00` → `End of day $1,397.50`. Фраза: «банк вечером покажет $1 397, а утром Zip не прошёл».
+3. `Remind me Thu at 8 pm` — напоминание накануне (Plus, файл `.ics` с check-in по ссылке).
+4. **Money in returns:** Nordstrom с Afterpay, $40.00 ещё запланировано → `Write the dispute letter` → письмо + CFPB (не дольше 10 с).
+5. `Forecast`: `You'll run short` · на Dec 4 «!» · `Before your paycheck lands −$12.50` · `$720.00 left to pay, 8 payments in the next 6 weeks`.
+6. `Before you buy`: $240 → `Not right now` → пейвол (первая строка — напоминание в 8 pm) → Stripe в тестовом режиме (карта 4242) → `Buy Sat, Dec 5: every payment lands the morning after payday.`
+7. По желанию, если сеть быстрая: `Plans` → добавить план, вставить текст Klarna → AI за ~2 с заполняет карточку. Показать карточку, **Add plan не нажимать** (Klarna в образце уже есть). Если AI молчит дольше 5 с — пропускаем шаг.
 
 ## 11. Дек v2 (10 слайдов, Аят)
 1. Титульный: Fourcast, трек **Money**, обещание.

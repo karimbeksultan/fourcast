@@ -4,7 +4,7 @@
 
 Autopay for Klarna, Afterpay, Affirm and Zip runs in the morning; the paycheck lands in the afternoon. One payment that bounces for a few hours can cut a spending limit from $1,000 to $200. Each lender's app only sees its own plans. Fourcast puts all of them next to your paycheck, finds the payments that won't make it, and tells you the night before what to do: *"Move $25 into checking tonight, or pay it by hand after your paycheck lands."*
 
-**Live:** https://fourcast-zimran.vercel.app — no sign-up, and your plans are saved only in your browser. Press **Try it with sample data**: it opens **Tonight**: Klarna's $80 autopay won't clear, $12.50 short that morning (opened on Nov 15, that's Thu, Dec 3), so move $25 into checking the evening before. Zip on payday morning is next.
+**Live:** https://fourcast-zimran.vercel.app — no sign-up, and your plans are saved only in your browser. Press **Try it with sample data**: it opens **Tonight**: Zip's $40 autopay won't clear on the morning of payday, $12.50 short hours before the paycheck lands (opened on Nov 15, that's Fri, Dec 4), so move $25 into checking the evening before.
 
 Built for Business Cup 2.0 (AIESEC NU × Zimran), track **Money**, for adults in the US aged 25–45.
 

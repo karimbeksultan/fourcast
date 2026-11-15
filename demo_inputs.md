@@ -44,14 +44,15 @@ If AI is off, the same plan is entered by hand in four fields.
 | Calendar file | 7 payment events with a reminder at 8 pm the evening before + 3 payday events; links `/?due=YYYY-MM-DD` |
 
 ## Tonight sample (the landing's "Try it with sample data" opens `/tonight`)
-`getConceptSample(today)` in `lib/concept.ts`: the sample above **plus** the Klarna plan **plus** a returned Nordstrom order on Afterpay (2 payments of $40.00 still scheduled, Wed Nov 18 and Wed Dec 2, returned 9 days ago), limits Klarna $750, Zip $600. Same math, different numbers:
+`getConceptSample(today)` in `lib/concept.ts`: the sample above **plus** the Klarna plan **plus** a returned Nordstrom order on Afterpay (1 payment of $40.00 still scheduled, Sun Dec 6, after the Dec 4 payday; store refunded, lender not yet), limits Klarna $750, Zip $600. It gives the same headline as the step-2 story above:
 
 | Input | Expected |
 |---|---|
-| Tonight | **Klarna won't clear on Thu, Dec 3**: $80.00 that morning, **$12.50 short**, at stake the $750 Klarna limit · **Move $25.00** on the evening of Wed, Dec 2 · 1 more payment at risk: Zip, Fri Dec 4, **$92.50 short** |
-| Forecast | short · lowest −$92.50 on the morning of Fri, Dec 4 |
-| Money in returns | $80.00 still scheduled on returned orders (Nordstrom, Afterpay) |
-| Check $240 in 4, today | **Not right now** · $52.50 short on Wed, Dec 2 · morning risk: Afterpay · Nordstrom on Wed, Dec 2, $12.50 short · already short without the buy: Thu, Dec 3, morning, $12.50 |
+| Tonight | **Zip won't clear on Fri, Dec 4**: $40.00 that morning, **$12.50 short**, hours before the paycheck lands · at stake the $600 Zip limit · **Move $25.00** on the evening of Thu, Dec 3 · nothing else at risk |
+| Morning strip, Fri Dec 4 | morning after autopay −$12.50 · paycheck +$1,450.00 · end of day $1,397.50 |
+| Forecast | short · lowest $12.50 short on the morning of Fri, Dec 4 · $720.00 left to pay, 8 payments in 6 weeks |
+| Money in returns | $40.00 still scheduled on returned orders (Nordstrom with Afterpay) |
+| Check $240 in 4, today | **Not right now** · $92.50 short on Thu, Dec 3 · morning risk: Klarna · Target on Thu, Dec 3, $52.50 short · already short without the buy: Fri, Dec 4, morning, $12.50 |
 | Best day / Payday Sync | **Sat, Dec 5** |
 
 ## Edge cases (in the tests)
