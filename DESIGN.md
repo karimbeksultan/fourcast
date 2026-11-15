@@ -67,5 +67,14 @@ Your money [7 fields]                [Add due dates to my calendar]    Payday Sy
 - Check-in (`/?due=`): "Tomorrow Klarna takes $80.00. What's in checking right now?" Button **Update**. Results: "You're covered: $X left after it." / "You'll be $X short tomorrow. Move money in tonight or skip a buy."
 - Footer: "Not financial advice. Your data stays in your browser."
 
+- Save error (Add a plan): "We couldn't save this plan. Check the amount and the number of payments, or type it in." Button **Type it in**. Manual form: "We couldn't save this plan. Check the amount and the number of payments." / "That's more than $10M. Check the amount." / "Payments left should be 1 to 36."
+- Tonight, after **I moved $25.00**: title "Marked as moved." (tight payment: "Marked as seen."), line "Fourcast can't see your bank. Plans and Forecast keep counting your last typed balance until you update it.", buttons **Update my balance**, **Undo**. Never "covered": Fourcast only knows what the person told it.
+- Tonight, move amount: "$12.50 short + $10 so one card swipe doesn't sink it, rounded up to $25.00." Log: "What Fourcast caught", "1 payment flagged, 1 handled, 1 return followed", "From your plans for the next 6 weeks. Fourcast doesn't see your bank, so \"moved\" is what you told it."
+- Plus, one wording everywhere (paywall, Pricing, FAQ): "A calendar reminder at 8 pm…", "How much short a new buy would run you, and the first day it fits", choice **$29.99 a year** (Save 50%) / **$4.99 a month** under "After the trial", "Cancel any time on Before you buy.", "Stripe test mode: card 4242 4242 4242 4242, no real money moves." Pricing, "How the trial works": Today / 8 pm before your first risky payment / Your second payday.
+- Check a buy: "Or try" $100 / $240 / $500; "What the answer tells you"; "Enter a price up to $10,000."
+- Rate limit: "Too many tries in a minute. Wait a moment, or enter the plan by hand." Dispute: "…or use the standard letter." + **Use the standard letter**.
+- Landing hero: the headline, both buttons and the 26% / 11% figures are plain text in the server HTML, with no entrance animation. Motion stays where it explains the product (the morning story, the answer panels, the bands), each with a pause button and a reduced-motion path.
+- Touch targets: on a phone every button and standalone link is at least 44 px tall (links inside a sentence are exempt). Secondary actions on Tonight are outline buttons.
+
 ## States
 Loading: gray skeleton rows in the same shape as the content. Empty: the welcome. Error: the message says what happened and offers the manual path. Buttons that can't work yet are hidden, not disabled with no reason.
