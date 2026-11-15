@@ -189,7 +189,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </header>
 
           <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 pt-6 pb-8 sm:px-6 sm:pt-8 sm:pb-12 lg:px-8">{children}</main>
-          <footer className="mx-auto w-full max-w-6xl px-4 pb-24 text-xs text-pretty text-muted-foreground sm:px-6 sm:pb-6 lg:px-8">
+          <footer className="mx-auto w-full max-w-6xl px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] text-xs text-pretty text-muted-foreground sm:px-6 sm:pb-6 lg:px-8">
             {FOOTNOTE}
           </footer>
         </div>
@@ -203,12 +203,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               href={t.href}
               aria-current={active(t.href) ? "page" : undefined}
               className={cn(
-                "relative flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium outline-none focus-visible:bg-muted",
+                "flex h-16 min-w-0 flex-col items-center justify-center gap-0.5 text-[0.6875rem] leading-tight font-medium whitespace-nowrap outline-none focus-visible:bg-muted",
                 active(t.href) ? "text-primary" : "text-muted-foreground",
               )}
             >
-              {active(t.href) && <span className="absolute inset-x-6 top-0 h-1 rounded-b bg-primary" aria-hidden />}
-              <t.icon className="size-5" aria-hidden />
+              <span className={cn("flex h-7 w-14 items-center justify-center rounded-full", active(t.href) && "bg-ok-soft")}>
+                <t.icon className="size-5" aria-hidden />
+              </span>
               {t.label}
             </Link>
           ))}

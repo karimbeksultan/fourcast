@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock } from "lucide-react";
+import { CalendarCheck, CircleCheck, Lock, Sunrise } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { toCents, verdictLine } from "@/components/copy";
@@ -17,6 +17,9 @@ import { addDays, formatShort, formatUSD } from "@/lib/dates";
 import { buildTimeline, checkPurchase, PAY_IN_4_INTERVAL, paydaysBetween } from "@/lib/plan";
 import type { AppState, ISODate, Purchase, Timeline, Verdict } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+/** Prices to try with one tap: they only fill the field; the answer still comes from checkPurchase. */
+const QUICK_PRICES = ["100", "240", "500"];
 
 export default function CheckPage() {
   const [state, save] = useAppState();
@@ -121,7 +124,50 @@ export default function CheckPage() {
             {error}
           </p>
         )}
+        <div className="flex w-full flex-wrap items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Or try</span>
+          {QUICK_PRICES.map((p) => (
+            <button
+              key={p}
+              type="button"
+              aria-pressed={value === p}
+              onClick={() => {
+                setPrice(p);
+                setError(null);
+                setPurchase(null);
+              }}
+              className={cn(
+                "tabular h-9 rounded-full border px-3.5 font-medium outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50",
+                value === p && "border-primary bg-ok-soft",
+              )}
+            >
+              ${p}
+            </button>
+          ))}
+        </div>
       </form>
+
+      {!purchase && (
+        <section aria-labelledby="what-you-get" className="max-w-xl rounded-md border bg-card p-4 sm:p-5">
+          <h2 id="what-you-get" className="font-semibold">
+            What the answer tells you
+          </h2>
+          <ul className="mt-3 space-y-2.5 text-muted-foreground">
+            <li className="flex gap-2.5">
+              <CircleCheck className="mt-0.5 size-4.5 shrink-0 text-primary" aria-hidden />
+              Whether it fits today, with your other plans and rent counted in.
+            </li>
+            <li className="flex gap-2.5">
+              <Sunrise className="mt-0.5 size-4.5 shrink-0 text-primary" aria-hidden />
+              If it doesn&apos;t: the first morning you&apos;d be short, and by how much.
+            </li>
+            <li className="flex gap-2.5">
+              <CalendarCheck className="mt-0.5 size-4.5 shrink-0 text-primary" aria-hidden />
+              The 4 payment dates. With Plus, the day to buy so each one lands after payday.
+            </li>
+          </ul>
+        </section>
+      )}
 
       {verdict && purchase && (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
