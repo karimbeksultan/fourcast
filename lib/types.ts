@@ -173,13 +173,15 @@ export type DisputeRequest = {
   today: ISODate;
 };
 export type DisputeLetter = { subject: string; body: string };
-export type DisputeError = "bad_request" | "timeout" | "too_large";
+/** "rate_limited": more than 30 requests a minute from one IP (429, Retry-After in seconds). */
+export type DisputeError = "bad_request" | "timeout" | "too_large" | "rate_limited";
 export type DisputeResponse =
   | { letter: DisputeLetter; source: "ai" | "template" }
   | { error: string; code: DisputeError };
 
 export type ReadPlanRequest = { text?: string; imageBase64?: string; today?: ISODate };
-export type ReadPlanError = "no_keys" | "unreadable" | "timeout" | "too_large";
+/** "rate_limited": more than 30 requests a minute from one IP (429, Retry-After in seconds). */
+export type ReadPlanError = "no_keys" | "unreadable" | "timeout" | "too_large" | "rate_limited";
 export type ReadPlanResponse =
   | { plan: Plan }
   | { error: string; code: ReadPlanError };

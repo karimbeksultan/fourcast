@@ -1,5 +1,6 @@
 import { todayISO } from "@/lib/dates";
 import { LlmError, providers } from "@/lib/llm";
+import { limitAiRoute } from "@/lib/rate-limit";
 import { readPlan } from "@/lib/read-plan";
 import type { ReadPlanError, ReadPlanRequest } from "@/lib/types";
 
@@ -14,6 +15,10 @@ export const maxDuration = 60;
 const fail = (code: ReadPlanError, error: string, status: number) => Response.json({ error, code }, { status });
 
 export async function POST(request: Request) {
+  // First, before reading the body: 30 a minute per IP keeps the free AI quota safe (429 rate_limited).
+  const limited = limitAiRoute("read-plan", request);
+  if (limited) return limited;
+
   let body: ReadPlanRequest;
   try {
     const raw: unknown = await request.json();

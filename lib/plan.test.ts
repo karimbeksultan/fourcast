@@ -7,6 +7,7 @@ import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
 import { extractJson } from "./llm";
 import { planFromDraft } from "./read-plan";
+import { clientIp, createRateLimiter, RATE_LIMIT, rateLimitedResponse } from "./rate-limit";
 import { applyCheckIn, buildTimeline, planHistory, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
 import { AppStateSchema, DisputeRequestSchema, MAX_CENTS, PlanDraftSchema } from "./schema";
@@ -342,6 +343,48 @@ describe("reading a plan with AI (no network: what we do with the model's answer
     expect([every("biweekly"), every("every 2 weeks"), every("weekly"), every("Monthly"), every(3)]).toEqual([14, 14, 7, 30, 14]);
     // A 24-month plan with 18 payments left is a real plan, not "unreadable".
     expect(PlanDraftSchema.safeParse({ ...draft, paymentsLeft: 18 }).success).toBe(true);
+  });
+});
+
+describe("rate limit on the AI routes (in memory, per IP)", () => {
+  const T0 = 1_000_000;
+
+  it("30 a minute: the 31st inside the window gets a retry time, the window slides", () => {
+    const limiter = createRateLimiter();
+    expect(RATE_LIMIT).toBe(30);
+    for (let i = 0; i < 30; i++) expect(limiter.check("1.1.1.1", T0 + i * 1_000).ok).toBe(true);
+    // 31st at T0+30 s: the first request (T0) leaves the window at T0+60 s, so 30 s to wait.
+    expect(limiter.check("1.1.1.1", T0 + 30_000)).toEqual({ ok: false, retryAfter: 30 });
+    // Refused requests don't count: once the first one has left the window, one more fits.
+    expect(limiter.check("1.1.1.1", T0 + 60_001).ok).toBe(true);
+    expect(limiter.check("1.1.1.1", T0 + 60_002).ok).toBe(false);
+  });
+
+  it("a full minute later it resets, and other IPs have their own budget", () => {
+    const limiter = createRateLimiter(2, 60_000);
+    expect([limiter.check("a", T0).ok, limiter.check("a", T0).ok, limiter.check("a", T0).ok]).toEqual([true, true, false]);
+    expect(limiter.check("b", T0).ok).toBe(true);
+    expect(limiter.check("a", T0 + 60_000).ok).toBe(true);
+  });
+
+  it("the map never grows past its cap: expired IPs go first, then the least recently seen", () => {
+    const limiter = createRateLimiter(30, 60_000, 3);
+    ["a", "b", "c"].forEach((ip) => limiter.check(ip, T0));
+    limiter.check("d", T0 + 61_000);
+    expect(limiter.size()).toBe(1);
+    ["e", "f", "g"].forEach((ip) => limiter.check(ip, T0 + 61_000));
+    expect(limiter.size()).toBe(3);
+  });
+
+  it("the IP is the first x-forwarded-for address, then x-real-ip; the 429 has our JSON and Retry-After", async () => {
+    const req = (headers: Record<string, string>) => new Request("https://x.test/api/read-plan", { method: "POST", headers });
+    expect(clientIp(req({ "x-forwarded-for": "203.0.113.7, 10.0.0.1" }))).toBe("203.0.113.7");
+    expect(clientIp(req({ "x-real-ip": "198.51.100.2" }))).toBe("198.51.100.2");
+    expect(clientIp(req({}))).toBe("unknown");
+    const res = rateLimitedResponse(12);
+    expect(res.status).toBe(429);
+    expect(res.headers.get("Retry-After")).toBe("12");
+    expect(await res.json()).toMatchObject({ code: "rate_limited" });
   });
 });
 

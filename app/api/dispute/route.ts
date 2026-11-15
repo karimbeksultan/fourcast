@@ -1,4 +1,5 @@
 import { writeDispute } from "@/lib/dispute";
+import { limitAiRoute } from "@/lib/rate-limit";
 import { DISPUTE_DETAILS_MAX, DisputeRequestSchema } from "@/lib/schema";
 import type { DisputeError } from "@/lib/types";
 
@@ -12,6 +13,10 @@ export const maxDuration = 60;
 const fail = (code: DisputeError, error: string, status: number) => Response.json({ error, code }, { status });
 
 export async function POST(request: Request) {
+  // First, before reading the body: 30 a minute per IP keeps the free AI quota safe (429 rate_limited).
+  const limited = limitAiRoute("dispute", request);
+  if (limited) return limited;
+
   let raw: unknown;
   try {
     raw = await request.json();
