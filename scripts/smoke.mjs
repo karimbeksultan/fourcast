@@ -1,6 +1,6 @@
 // Smoke check after every deploy: npm run smoke -- https://your-app.vercel.app
-// Pages answer 200, /api/health says ok, /api/read-plan refuses an empty or null body, /api/dispute an empty one.
-// No AI call is made, so it costs no model quota.
+// Pages answer 200 with the security headers, /api/health says ok, /api/read-plan refuses an empty or null body,
+// /api/dispute an empty one. No AI call is made and only 3 AI-route requests are sent, far below the 30-a-minute limit.
 const base = (process.argv[2] || process.env.SMOKE_URL || "").replace(/\/+$/, "");
 if (!base) {
   console.error("Usage: npm run smoke -- https://your-app.vercel.app");
@@ -27,10 +27,27 @@ async function get(path) {
 }
 
 const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
-const pages = ["/", "/plans", "/timeline", "/check", "/dispute", "/pricing", "/faq", `/?due=${tomorrow}`, `/plans?due=${tomorrow}`];
+const pages = ["/", "/tonight", "/plans", "/timeline", "/check", "/dispute", "/pricing", "/faq", `/?due=${tomorrow}`, `/plans?due=${tomorrow}`];
 for (const path of pages) {
   await check(`GET ${path}`, () => get(path).then(() => ""));
 }
+
+// Set in next.config.ts for every path.
+const SECURITY_HEADERS = {
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "strict-origin-when-cross-origin",
+  "x-frame-options": "DENY",
+  "content-security-policy": "frame-ancestors 'none'",
+  "permissions-policy": "camera=(), microphone=(), geolocation=()",
+};
+await check("security headers on /", async () => {
+  const res = await get("/");
+  const wrong = Object.entries(SECURITY_HEADERS)
+    .filter(([key, value]) => !(res.headers.get(key) ?? "").includes(value))
+    .map(([key]) => `${key}: ${res.headers.get(key) ?? "missing"}`);
+  if (wrong.length) throw new Error(wrong.join("; "));
+  return `${Object.keys(SECURITY_HEADERS).length} headers`;
+});
 
 await check("GET /api/health", async () => {
   const body = await (await get("/api/health")).json();
