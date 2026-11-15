@@ -44,7 +44,7 @@ export default function DisputePage() {
         <h1 className="text-3xl font-bold tracking-tight">Write my dispute</h1>
         <p className="text-lg text-muted-foreground">Open a plan on Plans and choose &quot;I returned this&quot; first.</p>
         <Link href="/plans" className={cn(buttonVariants(), "h-12 px-6 text-base")}>
-          Go to Guard
+          Go to Plans
         </Link>
       </section>
     );

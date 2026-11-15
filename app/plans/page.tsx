@@ -4,6 +4,7 @@ import { ShieldCheck, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { AddPlan } from "@/components/add-plan";
+import { getConceptSample } from "@/lib/concept";
 import { guardTitle } from "@/components/guard";
 import { CheckIn } from "@/components/check-in";
 import { FREQUENCY_LABEL } from "@/components/copy";
@@ -19,7 +20,6 @@ import { useQueryParam } from "@/hooks/use-query-param";
 import { useToday } from "@/hooks/use-today";
 import { formatShort, formatUSD } from "@/lib/dates";
 import { buildTimeline, debitRisks } from "@/lib/plan";
-import { getSampleState } from "@/lib/sample";
 import { clearState, emptyState } from "@/lib/storage";
 import type { AppState, ISODate } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ export default function PlansPage() {
   if (state === null)
     return (
       <Welcome
-        onSample={() => save(getSampleState(today))}
+        onSample={() => save(getConceptSample(today))}
         onStart={() => save(emptyState())}
       />
     );
@@ -147,7 +147,7 @@ function Overview({
           )}
         </div>
         {!state.sample && (
-          <Button variant="outline" size="sm" className="h-8" onClick={() => clearState()}>
+          <Button variant="outline" size="sm" className="h-11 px-4" onClick={() => clearState()}>
             Start over
           </Button>
         )}
@@ -288,7 +288,7 @@ function Overview({
             {state.money && !editMoney && (
               <Button
                 variant="outline"
-                className="h-9"
+                className="h-11 px-4"
                 onClick={() => setEditMoney(true)}
               >
                 Edit

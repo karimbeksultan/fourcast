@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "FAQ — Fourcast" };
 const QA: [string, string][] = [
   [
     "Why would a payment fail if I'm getting paid that day?",
-    "Pay-later apps usually take the payment in the morning, and paychecks often land in the afternoon. If checking can't cover it in between, the payment fails, a late fee may follow, and some lenders cut your spending limit. Guard checks every payment against what's there that morning.",
+    "Pay-later apps usually take the payment in the morning, and paychecks often land in the afternoon. If checking can't cover it in between, the payment fails, a late fee may follow, and some lenders cut your spending limit. Fourcast checks every payment against what's there that morning.",
   ],
   [
     "Do you know exactly when my lender takes the payment?",
