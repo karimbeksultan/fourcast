@@ -26,6 +26,7 @@ export default function DisputePage() {
   const [letter, setLetter] = useState<(Letter & { source: "ai" | "template" }) | null>(null);
   const [writing, setWriting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [limited, setLimited] = useState(false);
 
   if (state === undefined || !today) {
     return (
@@ -64,12 +65,18 @@ export default function DisputePage() {
   const write = async () => {
     setWriting(true);
     setCopied(false);
+    setLimited(false);
     try {
       const res = await fetch("/api/dispute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...input, today }),
       });
+      // Rate limit (30 a minute per IP): say so instead of quietly switching to the template.
+      if (res.status === 429) {
+        setLimited(true);
+        return;
+      }
       if (res.ok) {
         const data = (await res.json()) as { letter?: Letter; source?: "ai" | "template" };
         if (data.letter?.subject && data.letter?.body) {
@@ -140,6 +147,21 @@ export default function DisputePage() {
           <Button type="submit" className="h-12 px-6 text-base" disabled={writing}>
             {writing ? "Writing…" : letter ? "Write it again" : "Write my letter"}
           </Button>
+          {limited && (
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-short" role="alert">
+              Too many tries in a minute. Wait a moment, or use the standard letter.
+              <button
+                type="button"
+                onClick={() => {
+                  setLimited(false);
+                  setLetter({ ...draftDispute(input), source: "template" });
+                }}
+                className="font-semibold text-primary underline underline-offset-4 outline-none hover:no-underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                Use the standard letter
+              </button>
+            </p>
+          )}
         </form>
 
         <aside className="space-y-3 rounded-md border bg-card p-4 text-sm sm:p-5">
