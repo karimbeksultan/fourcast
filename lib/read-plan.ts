@@ -2,7 +2,25 @@
 // This is the only place Fourcast uses AI; all math stays in lib/plan.ts.
 import { askFirst, extractJson, type ChatMessage } from "./llm";
 import { PlanDraftSchema } from "./schema";
+import type { PlanDraft } from "./schema";
 import { LENDERS, type ISODate, type Plan } from "./types";
+
+/** Days between payments: 7 weekly, 30 for monthly plans (Affirm), otherwise 14 (Pay in 4). */
+const INTERVAL = { week: 7, "2 weeks": 14, month: 30 } as const;
+
+/** The AI's draft (dollars) as a Plan (cents). Exported for the golden tests. */
+export function planFromDraft(draft: PlanDraft, id: string): Plan {
+  return {
+    id,
+    lender: draft.lender,
+    merchant: draft.merchant,
+    installment: Math.round(draft.installment * 100),
+    paymentsLeft: draft.paymentsLeft,
+    nextDue: draft.nextDue,
+    intervalDays: INTERVAL[draft.every ?? "2 weeks"],
+    ...(draft.totalPayments && draft.totalPayments >= draft.paymentsLeft ? { totalPayments: draft.totalPayments } : {}),
+  };
+}
 
 function prompt(today: ISODate): string {
   return [
@@ -14,6 +32,7 @@ function prompt(today: ISODate): string {
     ' "installment": amount of each remaining payment in US dollars (number),',
     ' "paymentsLeft": number of payments not yet made (integer),',
     ' "totalPayments": payments in the whole plan, e.g. 4 for "payment 2 of 4" (integer, or null if not shown),',
+    ' "every": how often a payment is taken: "2 weeks" for Pay in 4, "month" for monthly plans, "week" if weekly (or null if not shown),',
     ' "nextDue": date of the next payment as YYYY-MM-DD}',
     'If this is not a pay-later plan, reply {"error":"unreadable"}.',
   ].join("\n");
@@ -36,14 +55,5 @@ export async function readPlan(input: { text?: string; imageBase64?: string }, t
     return parsed.success ? parsed.data : null;
   });
 
-  return {
-    id: `plan-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
-    lender: draft.lender,
-    merchant: draft.merchant,
-    installment: Math.round(draft.installment * 100),
-    paymentsLeft: draft.paymentsLeft,
-    nextDue: draft.nextDue,
-    intervalDays: 14,
-    ...(draft.totalPayments && draft.totalPayments >= draft.paymentsLeft ? { totalPayments: draft.totalPayments } : {}),
-  };
+  return planFromDraft(draft, `plan-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`);
 }

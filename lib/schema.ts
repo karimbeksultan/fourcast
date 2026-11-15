@@ -23,7 +23,8 @@ export const PlanSchema = z.object({
   lender: z.enum(LENDERS),
   merchant: z.string(),
   installment: cents.min(1),
-  paymentsLeft: z.number().int().min(1).max(12),
+  // Up to 36: monthly Affirm plans run 12, 24 or 36 months.
+  paymentsLeft: z.number().int().min(1).max(36),
   nextDue: isoDate,
   intervalDays: z.number().int().min(1).max(31),
   status: z.enum(["active", "returned"]).optional(),
@@ -58,7 +59,7 @@ export const DisputeRequestSchema = z.object({
   merchant: z.string().max(1_000).transform((v) => v.trim().slice(0, 80)),
   installment: cents.min(1).max(10_000_000),
   // 0: the plan is paid off, but the lender still charged (double charge, charged after cancel).
-  paymentsLeft: z.number().int().min(0).max(12),
+  paymentsLeft: z.number().int().min(0).max(36),
   nextDue: isoDate,
   issue: z.enum(DISPUTE_ISSUES),
   // The UI may send null for "not given"; treat it like a missing field.
@@ -78,9 +79,20 @@ export const PlanDraftSchema = z.object({
   lender: z.enum(LENDERS),
   merchant: z.string().max(80).default(""),
   installment: z.number().positive().max(100_000),
-  paymentsLeft: z.number().int().min(1).max(12),
+  paymentsLeft: z.number().int().min(1).max(36),
   nextDue: isoDate,
   // Optional: models often say null when the confirmation doesn't show it.
-  totalPayments: z.number().int().min(1).max(24).nullish(),
+  totalPayments: z.number().int().min(1).max(36).nullish(),
+  // How often a payment is taken. Lenient on purpose: an unexpected word must not make a good plan "unreadable".
+  // "monthly", "every month" → month; "weekly" → week; anything else, missing or null → 2 weeks (Pay in 4).
+  every: z
+    .unknown()
+    .transform((v): "week" | "2 weeks" | "month" => {
+      const t = typeof v === "string" ? v.toLowerCase() : "";
+      if (t.includes("month")) return "month";
+      if (/week(ly)?/.test(t) && !/(2|two|bi|other)/.test(t)) return "week";
+      return "2 weeks";
+    })
+    .optional(),
 });
 export type PlanDraft = z.infer<typeof PlanDraftSchema>;

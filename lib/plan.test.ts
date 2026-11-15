@@ -5,9 +5,11 @@ import { getConceptSample, nextRisk, owedByLender } from "./concept";
 import { addDays, toISODate } from "./dates";
 import { keepsFacts, templateLetter } from "./dispute";
 import { buildIcs } from "./ics";
+import { extractJson } from "./llm";
+import { planFromDraft } from "./read-plan";
 import { applyCheckIn, buildTimeline, planHistory, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
-import { AppStateSchema, DisputeRequestSchema, MAX_CENTS } from "./schema";
+import { AppStateSchema, DisputeRequestSchema, MAX_CENTS, PlanDraftSchema } from "./schema";
 import { loadState, saveState } from "./storage";
 import type { AppState, Money } from "./types";
 
@@ -318,6 +320,28 @@ describe("storage", () => {
     expect(saveState(huge)).toBe(false);
     expect(loadState()?.plans).toHaveLength(4);
     expect(loadState()?.money?.balance).toBe(92_250);
+  });
+});
+
+describe("reading a plan with AI (no network: what we do with the model's answer)", () => {
+  const draft = { lender: "Affirm" as const, merchant: "Apple", installment: 87.5, paymentsLeft: 12, nextDue: "2026-12-01" };
+
+  it("the JSON is found inside a code fence, after reasoning tags, or after braces in the reasoning", () => {
+    expect(extractJson('```json\n{"a": 1}\n```')).toEqual({ a: 1 });
+    expect(extractJson('<thought>maybe {"a": 0}? no</thought>{"a": 2}')).toEqual({ a: 2 });
+    expect(extractJson('Thinking about {braces} first. Answer: {"a": 3}')).toEqual({ a: 3 });
+    expect(extractJson("no json here")).toBeNull();
+  });
+
+  it("dollars become cents; a monthly Affirm plan is every 30 days, Pay in 4 every 14", () => {
+    const monthly = PlanDraftSchema.parse({ ...draft, every: "month", totalPayments: 24 });
+    expect(planFromDraft(monthly, "x")).toMatchObject({ installment: 8_750, intervalDays: 30, paymentsLeft: 12, totalPayments: 24 });
+    expect(planFromDraft(PlanDraftSchema.parse({ ...draft, every: null }), "x").intervalDays).toBe(14);
+    expect(planFromDraft(PlanDraftSchema.parse(draft), "x").intervalDays).toBe(14);
+    const every = (v: unknown) => planFromDraft(PlanDraftSchema.parse({ ...draft, every: v }), "x").intervalDays;
+    expect([every("biweekly"), every("every 2 weeks"), every("weekly"), every("Monthly"), every(3)]).toEqual([14, 14, 7, 30, 14]);
+    // A 24-month plan with 18 payments left is a real plan, not "unreadable".
+    expect(PlanDraftSchema.safeParse({ ...draft, paymentsLeft: 18 }).success).toBe(true);
   });
 });
 
