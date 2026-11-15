@@ -56,8 +56,9 @@ The app screens share one frame (`components/app-shell.tsx`): a sidebar with the
 ```bash
 npm install
 npm run dev      # http://localhost:3000
-npm test         # 47 golden tests: the demo numbers, the morning model, check-in, payment history, AI fallbacks, rate limit, edge cases
+npm test         # 48 golden tests: the demo numbers, the morning model, check-in, payment history, AI fallbacks, rate limit, edge cases
 npm run build
+npm run eval:read -- https://fourcast-zimran.vercel.app   # 4 real AI calls: does AI read the plans right, and how fast
 ```
 Everything works without keys: reading screenshots falls back to manual entry, dispute letters use the template, and the paywall uses a demo checkout. To turn them on, copy `.env.example` to `.env` and add a free Google AI Studio key (`LLM_1_API_KEY`, `LLM_2_API_KEY`), optionally an OpenRouter key as a third provider (`LLM_3_API_KEY`), and a Stripe **test** key (`STRIPE_SECRET_KEY=sk_test_…`; live keys are refused).
 

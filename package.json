@@ -12,7 +12,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "eval:read": "node scripts/eval-read-plan.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
