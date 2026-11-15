@@ -16,6 +16,8 @@ export type ChatMessage = {
 
 export const BUDGET_MS = 10_000;
 export const LAST_RESORT_BUDGET_MS = 40_000;
+/** After one model says "this is not a plan", how long the other slots still get. */
+export const UNREADABLE_GRACE_MS = 2_500;
 const START_AT_MS = [0, 4_000, 6_000];
 
 export function providers(): Provider[] {
@@ -115,9 +117,13 @@ export async function askFirst<T>(
       let stretched = false;
       const started = new Set<number>();
 
+      // Once a model has said "this is not a plan", running out of time means "unreadable", not "timeout".
       const setDeadline = (budgetMs: number) => {
         clearTimeout(deadline);
-        deadline = setTimeout(() => reject(new LlmError("timeout")), Math.max(0, startedAt + budgetMs - Date.now()));
+        deadline = setTimeout(
+          () => reject(new LlmError(answeredBadly ? "unreadable" : "timeout")),
+          Math.max(0, startedAt + budgetMs - Date.now()),
+        );
       };
       const startSlot = (i: number) => {
         if (started.has(i) || controller.signal.aborted) return;
@@ -136,7 +142,7 @@ export async function askFirst<T>(
         for (const model of modelsToTry(p)) {
           if (controller.signal.aborted) return;
           const lastResort = p.models.length > 1 && model === p.models[p.models.length - 1];
-          if (lastResort && !stretched) {
+          if (lastResort && !stretched && !answeredBadly) {
             stretched = true;
             setDeadline(lastResortMs);
           }
@@ -152,7 +158,12 @@ export async function askFirst<T>(
           const took = `${Date.now() - startedAt} ms`;
           if (value === null) {
             console.info(`[llm] ${p.name} ${model} answered in ${took}, not usable`);
-            answeredBadly = true; // the model read it and found no plan; another model would say the same
+            // The model read it and found no plan; another model will most likely say the same, so the
+            // others get a short grace period instead of the whole budget (a receipt shouldn't take 10 s).
+            if (!answeredBadly) {
+              answeredBadly = true;
+              setDeadline(Math.min(Date.now() - startedAt + UNREADABLE_GRACE_MS, stretched ? lastResortMs : budgetMs));
+            }
             return slotFailed(false);
           }
           console.info(`[llm] ${p.name} ${model} answered in ${took}`);

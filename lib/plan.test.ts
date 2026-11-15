@@ -373,6 +373,21 @@ describe("AI client fallbacks (fetch is faked, no network)", () => {
     await expect(askFirst([{ role: "user", content: "hi" }], () => 1, { budgetMs: 100, lastResortMs: 100 })).rejects.toBeInstanceOf(LlmError);
     expect(Date.now() - t0).toBeLessThan(1_000);
   });
+
+  it("a receipt, not a plan: \"unreadable\" in about 2.5 s, not a 10 s timeout while a slow slot thinks", async () => {
+    slot(1, "fast-model");
+    slot(2, "slow-model-2");
+    vi.stubGlobal("fetch", (url: string, init: RequestInit) =>
+      url.startsWith("https://ai1.test")
+        ? Promise.resolve(answer('{"error":"unreadable"}'))
+        : new Promise((_, reject) => init.signal?.addEventListener("abort", () => reject(new Error("aborted")))),
+    );
+    const t0 = Date.now();
+    const error = await askFirst([{ role: "user", content: "receipt" }], () => null).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(LlmError);
+    expect((error as LlmError).code).toBe("unreadable");
+    expect(Date.now() - t0).toBeLessThan(4_000);
+  });
 });
 
 describe("reading a plan with AI (no network: what we do with the model's answer)", () => {
