@@ -47,7 +47,7 @@ const QA: [string, string][] = [
   ],
   [
     "What does Plus cost, and can I cancel?",
-    "$29.99 a year or $4.99 a month, free until your second payday. Cancel any time on Check a buy. In this demo no real payment is taken.",
+    "$29.99 a year or $4.99 a month, free until your second payday. Cancel any time on Before you buy. Stripe test mode: card 4242 4242 4242 4242, no real money moves.",
   ],
   ["Is this financial advice?", "No. Fourcast counts your own numbers and shows the result. The decision is yours."],
 ];

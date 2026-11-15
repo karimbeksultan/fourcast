@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils";
 
 /** Prices to try with one tap: they only fill the field; the answer still comes from checkPurchase. */
 const QUICK_PRICES = ["100", "240", "500"];
+/** Pay in 4 doesn't go higher than this; in cents. */
+const MAX_PRICE = 1_000_000;
 
 export default function CheckPage() {
   const [state, save] = useAppState();
@@ -75,6 +77,7 @@ export default function CheckPage() {
   const check = () => {
     const cents = toCents(value);
     if (!cents || cents <= 0) return setError("Enter the price, like 240.");
+    if (cents > MAX_PRICE) return setError("Enter a price up to $10,000.");
     setError(null);
     setPurchase({ price: cents, payments: 4 });
   };
@@ -137,7 +140,7 @@ export default function CheckPage() {
                 setPurchase(null);
               }}
               className={cn(
-                "tabular h-9 rounded-full border px-3.5 font-medium outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50",
+                "tabular h-11 rounded-full border px-4 font-medium outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50",
                 value === p && "border-primary bg-ok-soft",
               )}
             >
@@ -328,7 +331,8 @@ function Plus({
         <div className="space-y-1 border-t pt-3 text-sm">
           <p className="font-semibold">Plus is on until {formatShort(state.plus.trialEnds)}.</p>
           <p className="text-muted-foreground">
-            {state.plus.via === "demo" ? "Demo trial, no real payment." : "Test-mode payment."} Then $29.99 a year.
+            {state.plus.via === "demo" ? "Demo trial, no real payment." : "Stripe test mode, no real money moves."} After the trial, the
+            plan you picked starts.
           </p>
           <Button variant="link" className="h-auto p-0 text-muted-foreground" onClick={() => save({ ...state, plus: null })}>
             Cancel Plus

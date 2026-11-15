@@ -12,11 +12,18 @@ const FREE = [
   "Mark a return and get a dispute letter",
   "Your 6-week forecast and a yes or not-yet before you buy",
 ];
+/** The trial in three steps. No dates here: they depend on the person's payday, and the paywall shows them. */
+const TRIAL = [
+  ["Today", "Plus turns on. Nothing is charged."],
+  ["8 pm before your first risky payment", "The calendar reminder goes off, with what to move and a one-number check-in."],
+  ["Your second payday", "The trial ends and the plan you picked starts: $29.99 a year or $4.99 a month."],
+] as const;
+
 const PLUS = [
   "Everything in Free",
-  "A reminder at 8 pm the night before every risky payment, with a one-number check-in",
+  "A calendar reminder at 8 pm the night before every risky payment, with a one-number check-in",
   "Payday Sync: the day to buy so every payment lands the morning after payday",
-  "The exact day a new buy would run you short, and the first day it fits",
+  "How much short a new buy would run you, and the first day it fits",
 ];
 
 const link =
@@ -75,9 +82,19 @@ export default function PricingPage() {
         <h2 id="terms" className="text-2xl font-bold">
           How the trial works
         </h2>
-        <p>Plus is free until your second payday from today. Cancel any time in the app, and nothing is charged.</p>
+        <ol className="grid gap-3 sm:grid-cols-3">
+          {TRIAL.map(([when, what], i) => (
+            <li key={when} className="rounded-md bg-card p-4">
+              <p className="text-sm font-semibold text-primary">
+                {i + 1}. {when}
+              </p>
+              <p className="mt-1 text-pretty">{what}</p>
+            </li>
+          ))}
+        </ol>
+        <p>Cancel any time on Before you buy.</p>
         <p>Why a year: one cut limit or one average overdraft fee ($26.77, Bankrate 2025) costs about as much as a year of Plus.</p>
-        <p className="text-sm text-muted-foreground">This is a hackathon demo: checkout runs in demo mode and no real payment is taken.</p>
+        <p className="text-sm text-muted-foreground">Stripe test mode: card 4242 4242 4242 4242, no real money moves.</p>
       </section>
     </>
   );
