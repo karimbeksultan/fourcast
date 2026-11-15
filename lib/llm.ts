@@ -148,10 +148,14 @@ export async function askFirst<T>(
             continue; // quota, retired model, overload or network: try the next model
           }
           const value = accept(text);
+          // Which model answered and how long the whole ask took (Vercel function logs). No user data.
+          const took = `${Date.now() - startedAt} ms`;
           if (value === null) {
+            console.info(`[llm] ${p.name} ${model} answered in ${took}, not usable`);
             answeredBadly = true; // the model read it and found no plan; another model would say the same
             return slotFailed(false);
           }
+          console.info(`[llm] ${p.name} ${model} answered in ${took}`);
           return resolve(value);
         }
         slotFailed(true);
