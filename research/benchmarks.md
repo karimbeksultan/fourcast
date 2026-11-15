@@ -37,13 +37,13 @@ The organizers suggested RevenueCat and Adapty for these numbers (FAQ Q33). Neit
 | Finance app retention, day 1 / 7 / 30 | 12% / 6% / 2% | same |
 
 ## What this changes in BRIEF → "Business"
-1. **Renewal 40% is too optimistic.** The benchmark is 27–28% after one year (RevenueCat), or 22.1% for Utilities (Adapty). Use **28%**. Yearly LTV ≈ $27 net × 1 / (1 − 0.28) ≈ **$37**. The old figure was $45.
+1. **Renewal 40% is too optimistic.** The benchmark is 27–28% after one year (RevenueCat), or 22.1% for Utilities (Adapty). Use **28%**. Yearly LTV ≈ $26 net (after Stripe fees and 8.3% refunds) × 1 / (1 − 0.28) ≈ **$36**. The old figure was $45.
 2. **$29.99 a year sits just below the $34.80 median yearly price.** The price is defensible: it is about one overdraft ($26.77), and below what a typical app charges.
 3. **The trial ends at the second payday, 14–28 days in.** The benchmark for a 10–32 day trial is **35–42% trial → paid**, so use ~35%.
-4. **Paid installs do not pay back.** At $4.13 per install and 2.1% freemium download → paid, a paying user costs about **$200**, far above our ~$27 CAC ceiling. Even a hard paywall (10.7%) gives ~$39. So the plan has to be organic: search at the moment of pain ("Klarna late fee", "afford another Afterpay") and the shareable Payday Sync screenshot. Say this on stage before the jury asks.
+4. **Paid installs do not pay back.** At $4.13 per install and 2.1% freemium download → paid, a paying user costs about **$200**, far above our ~$26 CAC ceiling. Even a hard paywall (10.7%) gives ~$39. So the plan has to be organic: search at the moment of pain ("Klarna late fee", "afford another Afterpay") and the shareable Payday Sync screenshot. Say this on stage before the jury asks.
 5. **"5% of 17.6M pay" is a different denominator.** Benchmarks measure payers per download (2.0–2.1%), not per person in the market. Keep 5% labeled as an assumption, and state that it needs about 2.4× the median download → paid rate applied to the whole beachhead.
 
 ## Three numbers for the slide
 - **42.5%**: median trial → paid for 17–32 day trials (RevenueCat 2026). Our trial runs to the second payday.
-- **28%**: yearly subscribers still paying after one year (RevenueCat 2026), so LTV ≈ $37 on $29.99.
+- **28%**: yearly subscribers still paying after one year (RevenueCat 2026), so LTV ≈ $36 on $29.99 ($26 net).
 - **$4.13**: what a finance app install costs in North America (Adjust 2026), which is why we grow through search and shared screenshots, not ads.
