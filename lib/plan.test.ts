@@ -381,6 +381,15 @@ describe("calendar file", () => {
     expect(ics).toContain("https://fourcast.example/?due=2026-12-03");
     expect(ics.split("\r\n").every((line) => line.length <= 75)).toBe(true);
   });
+
+  it("a payment due today gets its event but no reminder (8 pm yesterday is already past)", () => {
+    const s = state(money({ balance: 100_000, nextPayday: "2026-12-31" }), [
+      { id: "t", lender: "Klarna", merchant: "", installment: 5_000, paymentsLeft: 2, nextDue: TODAY, intervalDays: 14 },
+    ]);
+    const ics = buildIcs(s, TODAY, "https://fourcast.example");
+    expect(ics).toContain("DTSTART;VALUE=DATE:20261115");
+    expect(ics.match(/BEGIN:VALARM/g)).toHaveLength(1);
+  });
 });
 
 describe("payment history (no bank link: inferred from the plan)", () => {

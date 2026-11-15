@@ -99,7 +99,8 @@ export function buildIcs(state: AppState, today: ISODate, baseUrl: string): stri
         summary,
         `${plan.lender} takes ${amount} this morning${beforePay}. The night before, check in with what's in checking: ${url}`,
         url,
-        alarm,
+        // A payment due today would ring at 8 pm yesterday, already in the past: no reminder for it.
+        date > today ? alarm : null,
       );
     }
   }
