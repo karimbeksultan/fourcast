@@ -46,7 +46,6 @@ The app screens share one frame (`components/app-shell.tsx`): a sidebar with the
 
 ## Known limits
 - **The debit time is an assumption.** Lenders don't publish when autopay runs, so Fourcast assumes the worst case: in the morning, before the paycheck lands. If your paycheck arrives early (for example, early direct deposit), it is more cautious than it needs to be.
-- **Monthly plans step 30 days**, not calendar months, so a monthly due date drifts by a day or two each month.
 - **Plus is a flag in this browser.** "Cancel Plus" turns it off here but does not cancel the Stripe test subscription. With accounts, a Stripe webhook would own the entitlement and Cancel would go through the Stripe Customer Portal.
 - **The rate limit is counted per server instance** (in memory), so it stops bursts from one client, not a global quota.
 - **Calendar reminders depend on the calendar app.** Each payment in the `.ics` file carries its own 8 pm reminder. We have not tested every app: Google Calendar may ignore reminders inside an imported file and use your default notifications instead.
@@ -56,7 +55,7 @@ The app screens share one frame (`components/app-shell.tsx`): a sidebar with the
 ```bash
 npm install
 npm run dev      # http://localhost:3000
-npm test         # 48 golden tests: the demo numbers, the morning model, check-in, payment history, AI fallbacks, rate limit, edge cases
+npm test         # 49 golden tests: the demo numbers, the morning model, check-in, payment history, AI fallbacks, rate limit, edge cases
 npm run build
 npm run eval:read -- https://fourcast-zimran.vercel.app   # 4 real AI calls: does AI read the plans right, and how fast
 ```

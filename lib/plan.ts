@@ -29,6 +29,16 @@ export const WINDOW_DAYS = 42;
 /** Below this lowest balance the timeline says "tight". */
 export const TIGHT_BELOW: Cents = 10_000;
 export const PAY_IN_4_INTERVAL = 14;
+/** intervalDays of a monthly plan (Affirm): it moves by calendar month, same day each month (31st → 30th, Feb 28). */
+export const MONTHLY_INTERVAL = 30;
+
+/** Date of payment k of a plan (k = 0 is nextDue, negative = earlier). Monthly plans follow the calendar. */
+export function planDate(plan: Plan, k: number): ISODate {
+  if (plan.intervalDays !== MONTHLY_INTERVAL) return addDays(plan.nextDue, k * plan.intervalDays);
+  const { year, month, day } = parts(plan.nextDue);
+  const index = year * 12 + (month - 1) + k;
+  return clampedDate(Math.floor(index / 12), (index % 12) + 1, day);
+}
 /** A debit that clears but leaves less than this in checking that morning is "tight": one card swipe and it fails. */
 export const GUARD_BUFFER: Cents = 5_000;
 
@@ -96,7 +106,7 @@ export function rentDatesBetween(money: Money | null, from: ISODate, to: ISODate
 export function planDebits(plan: Plan, from: ISODate): ISODate[] {
   const out: ISODate[] = [];
   for (let k = 0; k < plan.paymentsLeft; k++) {
-    const date = addDays(plan.nextDue, k * plan.intervalDays);
+    const date = planDate(plan, k);
     if (date >= from) out.push(date);
   }
   return out;
@@ -113,12 +123,12 @@ export function planHistory(plan: Plan, today: ISODate): PlanHistory {
   // Payments before the plan was added can only be in the past: a date that would fall after today is
   // not invented (then the plan simply had fewer payments than the guess).
   for (let j = Math.max(plan.totalPayments ?? guess, plan.paymentsLeft) - plan.paymentsLeft; j >= 1; j--) {
-    const date = addDays(plan.nextDue, -j * plan.intervalDays);
+    const date = planDate(plan, -j);
     if (date < today) payments.push({ date, amount: plan.installment, status: "before" });
   }
   const total = payments.length + plan.paymentsLeft;
   for (let k = 0; k < plan.paymentsLeft; k++) {
-    const date = addDays(plan.nextDue, k * plan.intervalDays);
+    const date = planDate(plan, k);
     const status = date > today ? "upcoming" : date === today ? "today" : missed.has(date) ? "missed" : "taken";
     payments.push({ date, amount: plan.installment, status });
   }

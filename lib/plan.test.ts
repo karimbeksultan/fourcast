@@ -8,7 +8,7 @@ import { buildIcs } from "./ics";
 import { askFirst, extractJson, LlmError } from "./llm";
 import { planFromDraft } from "./read-plan";
 import { clientIp, createRateLimiter, RATE_LIMIT, rateLimitedResponse } from "./rate-limit";
-import { applyCheckIn, buildTimeline, planHistory, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, splitPayments, spendOn } from "./plan";
+import { applyCheckIn, buildTimeline, planDebits, planHistory, checkPurchase, debitRisks, GUARD_BUFFER, moveAmount, paydaysBetween, splitPayments, spendOn } from "./plan";
 import { getSampleKlarnaPlan, getSampleState } from "./sample";
 import { AppStateSchema, DisputeRequestSchema, MAX_CENTS, PlanDraftSchema, PlanSchema } from "./schema";
 import { loadState, saveState } from "./storage";
@@ -417,6 +417,16 @@ describe("reading a plan with AI (no network: what we do with the model's answer
     expect(plan).toMatchObject({ installment: 4_300, paymentsLeft: 34, totalPayments: 36, intervalDays: 30 });
     expect(PlanSchema.safeParse(plan).success).toBe(true);
     expect(AppStateSchema.safeParse({ ...withKlarna(), plans: [...withKlarna().plans, plan] }).success).toBe(true);
+  });
+
+  it("a monthly plan follows the calendar: same day each month, the 31st moves to the month's last day, no drift", () => {
+    const monthly = { id: "m", lender: "Affirm" as const, merchant: "", installment: 8_750, paymentsLeft: 12, nextDue: "2026-11-28", intervalDays: 30 };
+    const dates = planDebits(monthly, "2026-11-15");
+    expect(dates.slice(0, 4)).toEqual(["2026-11-28", "2026-12-28", "2027-01-28", "2027-02-28"]);
+    expect(dates[11]).toBe("2027-10-28"); // with 30-day steps it would have drifted to Oct 3
+    expect(planDebits({ ...monthly, nextDue: "2027-01-31", paymentsLeft: 3 }, "2027-01-01")).toEqual(["2027-01-31", "2027-02-28", "2027-03-31"]);
+    // Payments already made are counted back by the calendar too.
+    expect(planHistory({ ...monthly, nextDue: "2027-01-28", totalPayments: 12, paymentsLeft: 10 }, "2027-01-15").payments.slice(0, 2).map((p) => p.date)).toEqual(["2026-11-28", "2026-12-28"]);
   });
 });
 
