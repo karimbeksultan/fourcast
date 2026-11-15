@@ -52,6 +52,8 @@ export type Plus = {
   since: ISODate;
   trialEnds: ISODate;
   via: "stripe_test" | "demo";
+  /** Stripe test checkout session (cs_test_…): lets /api/checkout/confirm re-check and /api/checkout/cancel cancel. */
+  sessionId?: string;
 };
 
 export type AppState = {
