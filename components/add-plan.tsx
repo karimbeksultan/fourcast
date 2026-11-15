@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { addDays, formatShort, formatUSD } from "@/lib/dates";
 import { shrinkImage } from "@/lib/image";
 import { getSampleKlarnaText } from "@/lib/sample";
+import { MAX_CENTS } from "@/lib/schema";
 import { LENDERS, type ISODate, type Lender, type Plan, type ReadPlanResponse } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { toCents, toDollars } from "./copy";
@@ -22,22 +23,37 @@ const ERRORS: Record<string, string> = {
   rate_limited: "Too many tries in a minute. Wait a moment, or enter the plan by hand.",
 };
 
+/** The page could not save the plan (the schema refused it). Said once, with the manual path next to it. */
+const SAVE_ERROR = "We couldn't save this plan. Check the amount and the number of payments, or type it in.";
+
 const selectClass =
   "h-11 w-full rounded-lg border border-input bg-card px-2.5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
-export function AddPlan({ today, sample, onAdd }: { today: ISODate; sample: boolean; onAdd: (plan: Plan) => void }) {
+export function AddPlan({
+  today,
+  sample,
+  onAdd,
+}: {
+  today: ISODate;
+  sample: boolean;
+  /** Returns false when the plan was not saved; the form then keeps its values and shows the error. */
+  onAdd: (plan: Plan) => boolean;
+}) {
   const [mode, setMode] = useState<Mode>("paste");
   const [text, setText] = useState("");
   const [reading, setReading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [found, setFound] = useState<Plan | null>(null);
-  const [manual, setManual] = useState({ lender: "Klarna" as Lender, merchant: "", amount: "", left: "3", next: addDays(today, 7) });
+  const [saveError, setSaveError] = useState(false);
+  // interval: 14 days for Pay in 4; a plan read by AI keeps its own (30 for monthly) when it is fixed by hand.
+  const [manual, setManual] = useState({ lender: "Klarna" as Lender, merchant: "", amount: "", left: "3", next: addDays(today, 7), interval: 14 });
   const [manualError, setManualError] = useState<string | null>(null);
 
   const read = async (body: { text?: string; imageBase64?: string }) => {
     setReading(true);
     setError(null);
     setFound(null);
+    setSaveError(false);
     try {
       const res = await fetch("/api/read-plan", {
         method: "POST",
@@ -71,29 +87,34 @@ export function AddPlan({ today, sample, onAdd }: { today: ISODate; sample: bool
         amount: toDollars(from.installment),
         left: String(from.paymentsLeft),
         next: from.nextDue,
+        interval: from.intervalDays,
       });
     }
     setMode("manual");
     setFound(null);
+    setSaveError(false);
   };
 
   const addManual = () => {
     const installment = toCents(manual.amount);
     const left = Number(manual.left);
     if (!installment || installment <= 0) return setManualError("Enter the amount of each payment.");
-    if (!Number.isInteger(left) || left < 1 || left > 12) return setManualError("Payments left should be 1 to 12.");
+    if (installment > MAX_CENTS) return setManualError("That's more than $10M. Check the amount.");
+    if (!Number.isInteger(left) || left < 1 || left > 36) return setManualError("Payments left should be 1 to 36.");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(manual.next)) return setManualError("Pick the date of the next payment.");
     setManualError(null);
-    onAdd({
+    const saved = onAdd({
       id: `plan-${Date.now().toString(36)}`,
       lender: manual.lender,
       merchant: manual.merchant.trim(),
       installment,
       paymentsLeft: left,
       nextDue: manual.next,
-      intervalDays: 14,
+      intervalDays: manual.interval,
     });
-    setManual({ ...manual, merchant: "", amount: "" });
+    // Keep what was typed when it wasn't saved.
+    if (!saved) return setManualError("We couldn't save this plan. Check the amount and the number of payments.");
+    setManual({ ...manual, merchant: "", amount: "", interval: 14 });
   };
 
   const tab = (m: Mode, label: string) => (
@@ -187,11 +208,16 @@ export function AddPlan({ today, sample, onAdd }: { today: ISODate; sample: bool
           <p className="tabular text-sm">
             {formatUSD(found.installment)} × {found.paymentsLeft} left, next {formatShort(found.nextDue)}
           </p>
+          {saveError && (
+            <p className="rounded-lg bg-short-soft p-3 text-sm" role="alert">
+              {SAVE_ERROR}
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             <Button
               className="h-11 px-5 text-base"
               onClick={() => {
-                onAdd(found);
+                if (!onAdd(found)) return setSaveError(true);
                 setFound(null);
                 setText("");
               }}
@@ -199,7 +225,7 @@ export function AddPlan({ today, sample, onAdd }: { today: ISODate; sample: bool
               Add plan
             </Button>
             <Button variant="outline" className="h-11" onClick={() => toManual(found)}>
-              Fix something
+              {saveError ? "Type it in" : "Fix something"}
             </Button>
           </div>
         </div>

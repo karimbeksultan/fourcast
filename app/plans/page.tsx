@@ -92,7 +92,7 @@ function Overview({
 }: {
   state: AppState;
   today: ISODate;
-  save: (s: AppState) => void;
+  save: (s: AppState) => boolean;
 }) {
   const due = useQueryParam("due");
   const [checkInOpen, setCheckInOpen] = useState(true);
@@ -259,7 +259,8 @@ function Overview({
               sample={state.sample}
               onAdd={(plan) => {
                 const next = { ...state, plans: [...state.plans, plan] };
-                save(next);
+                // Not saved (the schema refused it): no "plan added"; the form keeps what was typed and says why.
+                if (!save(next)) return false;
                 if (next.money) {
                   const n = debitRisks(next, today).filter(
                     (r) => !r.disputed,
@@ -270,6 +271,7 @@ function Overview({
                   window.scrollTo({ top: 0, behavior: "smooth" });
                   setTimeout(() => setNotice(null), 8_000);
                 }
+                return true;
               }}
             />
           </div>
