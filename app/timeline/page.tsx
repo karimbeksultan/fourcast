@@ -1,5 +1,6 @@
 "use client";
 
+import { StaleBalance } from "@/components/stale-balance";
 import { CalendarPlus, Lock } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -50,6 +51,7 @@ export default function TimelinePage() {
 
   return (
     <>
+      <StaleBalance state={state} today={today} />
       <header className="space-y-1">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{STATUS_TITLE[t.status]}</h1>
         <LowestLine timeline={t} className="max-w-2xl text-lg sm:text-xl" />

@@ -11,6 +11,7 @@ import { MorningStrip } from "@/components/concept/morning-strip";
 import { OwedSummary, QuickCheck } from "@/components/concept/owed-and-check";
 import { ReturnsTracker } from "@/components/concept/returns-tracker";
 import { TonightHero } from "@/components/concept/tonight-hero";
+import { StaleBalance } from "@/components/stale-balance";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppState } from "@/hooks/use-app-state";
 import { useToday } from "@/hooks/use-today";
@@ -82,6 +83,7 @@ function Tonight({ state, today, save }: { state: AppState; today: ISODate; save
 
   return (
     <div className="space-y-8">
+      <StaleBalance state={state} today={today} />
       <TonightHero
         risk={risk}
         more={Math.max(0, openRisks - 1)}

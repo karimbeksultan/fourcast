@@ -72,6 +72,7 @@ Your money [7 fields]                [Add due dates to my calendar]    Payday Sy
 - Tonight, move amount: "$12.50 short + $10 so one card swipe doesn't sink it, rounded up to $25.00." Log: "What Fourcast caught", "1 payment flagged, 1 handled, 1 return followed", "From your plans for the next 6 weeks. Fourcast doesn't see your bank, so \"moved\" is what you told it."
 - Plus, one wording everywhere (paywall, Pricing, FAQ): "A calendar reminder at 8 pm…", "How much short a new buy would run you, and the first day it fits", choice **$29.99 a year** (Save 50%) / **$4.99 a month** under "After the trial", "Cancel any time on Before you buy.", "Stripe test mode: card 4242 4242 4242 4242, no real money moves." Pricing, "How the trial works": Today / 8 pm before your first risky payment / Your second payday.
 - Check what we read (Add a plan): "$43.00 × 34 left, next Tue, Dec 1, every month, 2 of 36 paid" (frequency always; "X of Y paid" when the text gave the total).
+- Old balance (Tonight, Forecast; only when the balance was typed on an earlier day): "Your balance is from Thu, Nov 12. Update it so the answer here is right." Button **Update my balance**.
 - Check a buy, morning risk (under the verdict): "Klarna · Target on Thu, Dec 3 would be $52.50 short that morning."
 - Check a buy: "Or try" $100 / $240 / $500; "What the answer tells you"; "Enter a price up to $10,000."
 - Rate limit: "Too many tries in a minute. Wait a moment, or enter the plan by hand." Dispute: "…or use the standard letter." + **Use the standard letter**.
